@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?define Service1Name = "GatewayProcessorService" ?>
+<?define Service1DisplayName = "Microsoft InnerEye Gateway Processor" ?>
+<?define Service1Description = "Processes all incoming Dicom files and exports the results as Dicom RT files" ?>
+
+<?define Service2Name = "GatewayReceiveService" ?>
+<?define Service2DisplayName = "Microsoft InnerEye Gateway Receiver" ?>
+<?define Service2Description = "Receives all incoming Dicom files and passes them to the processor service" ?>
+
+<?define Manufacturer = "Microsoft Corporation" ?>
+  
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Id="*" Name="$(var.PRODUCTNAME)" Language="1033" Version="!(bind.FileVersion.Service1MainExecutable)" Manufacturer="$(var.Manufacturer)" UpgradeCode="5b0d1312-348e-492c-9447-de720c151cd8">
+    
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    
+    <Icon Id="icon.ico" SourceFile="$(var.ProjectDir)\Icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+ 
+    <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.PRODUCTNAME) is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <InstallExecuteSequence>
+      <Custom Action="PreUninstallAction" Before="RemoveFiles" />
+      <Custom Action="SetCustomActionDataValue" Before="ValidateProductKeyAction" />
+      <Custom Action="ValidateProductKeyAction" After="InstallFiles">NOT Installed</Custom>
+    </InstallExecuteSequence>
+     
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <UIRef Id="WixUI_FeatureTree2" />
+      
+    <Feature Id="MainApplication1" Title="Main Application1" Level="1">
+      <ComponentGroupRef Id="Service1Components" />
+    </Feature>
+    
+    <Feature Id="MainApplication2" Title="Main Application2" Level="1">
+      <ComponentGroupRef Id="Service2Components" />
+    </Feature>
+
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_462_OR_LATER_INSTALLED"/>
+
+    <Condition Message="This application requires .NET Framework 4.6.2 or higher. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_462_OR_LATER_INSTALLED]]>
+    </Condition>
+  </Product>
+  
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLDIR" Name="$(var.PRODUCTNAME)">
+          <Directory Id="SERVICE1INSTALLDIR" Name="$(var.Service1DisplayName)" />
+          <Directory Id="SERVICE2INSTALLDIR" Name="$(var.Service2DisplayName)" />
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="Service1Components" Directory="SERVICE1INSTALLDIR">
+      <Component Id="$(var.SERVICE1EXE)" Guid="{1240E0CD-B3D2-44A7-B064-11B3C0709D70}">
+        <File Id="Service1MainExecutable" Source="$(var.SERVICE1BINFOLDER)\$(var.SERVICE1EXE)" KeyPath="yes" />
+        <RemoveFile Id="SERVICE1ALLFILES" Name="*.*" On="both" />
+        <ServiceInstall Id="Service1Installer" Type="ownProcess" Name="$(var.Service1Name)" DisplayName="$(var.Service1DisplayName)" Description="$(var.Service1Description)" Start="auto" ErrorControl="normal" />
+        <ServiceControl Id="Start1Service" Start="install" Stop="both" Remove="uninstall" Name="$(var.Service1Name)" Wait="yes" />
+        <util:ServiceConfig 
+          FirstFailureActionType="restart"
+          SecondFailureActionType="restart"
+          ThirdFailureActionType="reboot"
+          RestartServiceDelayInSeconds="60"
+          ServiceName="$(var.Service1Name)"
+          RebootMessage="$(var.PRODUCTNAME) has encountered an error and requires a reboot."
+          ResetPeriodInDays="1" />
+      </Component>
+      <ComponentGroupRef Id="Service1.Generated" />
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="Service2Components" Directory="SERVICE2INSTALLDIR">
+      <Component Id="$(var.SERVICE2EXE)" Guid="{1240E0CD-B3D2-44A7-B064-11B3C0709D71}">
+        <File Id="Service2MainExecutable" Source="$(var.SERVICE2BINFOLDER)\$(var.SERVICE2EXE)" KeyPath="yes" />
+        <RemoveFile Id="SERVICE2ALLFILES" Name="*.*" On="both" />
+        <ServiceInstall Id="Service2Installer" Type="ownProcess" Name="$(var.Service2Name)" DisplayName="$(var.Service2DisplayName)" Description="$(var.Service2Description)" Start="auto" ErrorControl="normal" />
+        <ServiceControl Id="Start2Service" Start="install" Stop="both" Remove="uninstall" Name="$(var.Service2Name)" Wait="yes"/>
+        <util:ServiceConfig
+          FirstFailureActionType="restart"
+          SecondFailureActionType="restart"
+          ThirdFailureActionType="reboot"
+          RestartServiceDelayInSeconds="60"
+          ServiceName="$(var.Service2Name)"
+          RebootMessage="$(var.PRODUCTNAME) has encountered an error and requires a reboot."
+          ResetPeriodInDays="1" />
+      </Component>
+      <ComponentGroupRef Id="Service2.Generated" />
+    </ComponentGroup>
+  </Fragment>
+  
+  <Fragment>
+    <Binary Id="ActionsBinary" SourceFile="$(var.Microsoft.InnerEye.Listener.Wix.Actions.TargetDir)$(var.Microsoft.InnerEye.Listener.Wix.Actions.TargetName).CA.dll"/>
+    <CustomAction Id="PreUninstallAction" BinaryKey="ActionsBinary" DllEntry="PreUninstall" Return="check" />
+    <CustomAction Id="SetCustomActionDataValue" Return="check" Property="ValidateProductKeyAction" Value="UILevel=[UILevel];" />
+    <CustomAction Id="ValidateProductKeyAction" BinaryKey="ActionsBinary" DllEntry="ValidateProductKey" Return="check" Execute="deferred" Impersonate="no" />
+  </Fragment>
+</Wix>

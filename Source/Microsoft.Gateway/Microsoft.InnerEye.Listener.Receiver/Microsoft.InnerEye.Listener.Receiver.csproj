@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net462</TargetFramework>
+    <Platforms>x64</Platforms>
+    <PackageId>Microsoft.InnerEye.Listener.Receiver</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
+    <Company>Microsoft Corporation</Company>
+    <Product>Microsoft InnerEye Gateway</Product>
+    <Description>Receiver Windows Service for Microsoft InnerEye Gateway.</Description>
+    <Copyright>© Microsoft Corporation</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
+    <RuntimeIdentifiers>win7-x64;win10-x64</RuntimeIdentifiers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Anonymizer\DICOMAnonymizer\DICOMAnonymizer.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Azure.Segmentation.API.Common\Microsoft.InnerEye.Azure.Segmentation.API.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Azure.Segmentation.Client\Microsoft.InnerEye.Azure.Segmentation.Client.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.DataProvider\Microsoft.InnerEye.Listener.DataProvider.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Gateway.Logging\Microsoft.InnerEye.Gateway.Logging.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Gateway.MessageQueueing\Microsoft.InnerEye.Gateway.MessageQueueing.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Gateway.Models\Microsoft.InnerEye.Gateway.Models.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Listener.Common\Microsoft.InnerEye.Listener.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.ServiceProcess" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

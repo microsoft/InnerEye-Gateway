@@ -1,0 +1,102 @@
+[
+  {
+    "CallingAET": "Scanner",
+    "CalledAET": "RGPelvisCT",
+    "AETConfig": {
+      "Config": {
+        "AETConfigType": "Model",
+        "ModelsConfig": [
+          {
+            "ModelId": "b033d049-0233-4068-bc0f-aaaabbbbcccc",
+            "ChannelConstraints": [
+              {
+                "ChannelID": "ct",
+                "ImageFilter": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "ChannelConstraints": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "MinChannelImages": -1,
+                "MaxChannelImages": -1
+              }
+            ],
+            "TagReplacements": [
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 8,
+                  "Element": 4158
+                },
+                "Value": "NOT FOR CLINICAL USE"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 2
+                },
+                "Value": "InnerEye"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 4
+                },
+                "Value": "NOT FOR CLINICAL USE"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 8,
+                  "Element": 112
+                },
+                "Value": "Microsoft Corporation"
+              },
+              {
+                "Operation": "AppendIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 38
+                },
+                "Value": " NOT FOR CLINICAL USE"
+              }
+            ]
+          },
+          {
+            "ModelId": "b033d049-0233-4068-bc0f-c64cec48e8fa",
+            "ChannelConstraints": [
+              {
+                "ChannelID": "ct",
+                "ImageFilter": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "ChannelConstraints": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "MinChannelImages": -1,
+                "MaxChannelImages": -1
+              }
+            ],
+            "TagReplacements": []
+          }
+        ]
+      },
+      "Destination": {
+        "Title": "PACS",
+        "Port": 1105,
+        "Ip": "localhost"
+      },
+      "ShouldReturnImage": false
+    }
+  }
+]

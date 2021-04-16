@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <Platforms>x64</Platforms>
+    <PackageId>Microsoft.InnerEye.DicomConstraints.Tests</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
+    <Company>Microsoft Corporation</Company>
+    <Product>Microsoft InnerEye Gateway</Product>
+    <Description>Tests for Microsoft.InnerEye.DicomConstraints for Microsoft InnerEye Gateway.</Description>
+    <Copyright>© Microsoft Corporation</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
+    <RuntimeIdentifiers>win7-x64;win10-x64</RuntimeIdentifiers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.InnerEye.DicomConstraints\Microsoft.InnerEye.DicomConstraints.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="currenttypes.json" />
+  </ItemGroup>
+</Project>

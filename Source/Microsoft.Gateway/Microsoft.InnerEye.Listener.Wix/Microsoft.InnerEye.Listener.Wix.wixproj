@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>10b27116-9b19-4f19-83c0-19af5aeaf6d3</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>Microsoft.InnerEye.Gateway</OutputName>
+    <OutputType>Package</OutputType>
+    <SERVICE1BINFOLDER Condition=" '$(SERVICE1BINFOLDER)' == '' ">..\Microsoft.InnerEye.Listener.Processor\bin\$(Platform)\$(Configuration)\net462</SERVICE1BINFOLDER>
+    <SERVICE2BINFOLDER Condition=" '$(SERVICE2BINFOLDER)' == '' ">..\Microsoft.InnerEye.Listener.Receiver\bin\$(Platform)\$(Configuration)\net462</SERVICE2BINFOLDER>
+    <PRODUCTNAME Condition=" '$(PRODUCTNAME)' == '' ">Microsoft InnerEye Gateway</PRODUCTNAME>
+    <SERVICE1EXE Condition=" '$(SERVICE1EXE)' == '' ">Microsoft.InnerEye.Listener.Processor.exe</SERVICE1EXE>
+    <SERVICE2EXE Condition=" '$(SERVICE2EXE)' == '' ">Microsoft.InnerEye.Listener.Receiver.exe</SERVICE2EXE>
+    <DefineConstants>SERVICE1BINFOLDER=$(SERVICE1BINFOLDER);SERVICE2BINFOLDER=$(SERVICE2BINFOLDER);PRODUCTNAME=$(PRODUCTNAME);SERVICE1EXE=$(SERVICE1EXE);SERVICE2EXE=$(SERVICE2EXE)</DefineConstants>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <VerboseOutput>True</VerboseOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Service1.Generated.wxs" />
+    <Compile Include="Service2.Generated.wxs" />
+    <Compile Include="Library.wxs" />
+    <Compile Include="WixUI_FeatureTree2.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.InnerEye.Listener.Processor\Microsoft.InnerEye.Listener.Processor.csproj">
+      <Name>Microsoft.InnerEye.Listener.Processor</Name>
+      <Project>{163f75d2-4e40-4f9e-a671-ab3ef0e566eb}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.InnerEye.Listener.Receiver\Microsoft.InnerEye.Listener.Receiver.csproj">
+      <Name>Microsoft.InnerEye.Listener.Receiver</Name>
+      <Project>{67e9b1c1-af93-46f7-a3f4-70ebab5e34bd}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.InnerEye.Listener.Wix.Actions\Microsoft.InnerEye.Listener.Wix.Actions.csproj">
+      <Name>Microsoft.InnerEye.Listener.Wix.Actions</Name>
+      <Project>{001c5475-43fa-4348-b218-8f12771b56ee}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="filter.xsl" />
+    <Content Include="Icon.ico" />
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+  <Target Name="BeforeBuild">
+    <HeatDirectory OutputFile="Service1.Generated.wxs" Transforms="filter.xsl" Directory="$(SERVICE1BINFOLDER)" KeepEmptyDirectories="false" DirectoryRefId="SERVICE1INSTALLDIR" ComponentGroupName="Service1.Generated" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" PreprocessorVariable="var.SERVICE1BINFOLDER" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="True" />
+    <HeatDirectory OutputFile="Service2.Generated.wxs" Transforms="filter.xsl" Directory="$(SERVICE2BINFOLDER)" KeepEmptyDirectories="false" DirectoryRefId="SERVICE2INSTALLDIR" ComponentGroupName="Service2.Generated" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" PreprocessorVariable="var.SERVICE2BINFOLDER" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="True" />
+  </Target>
+</Project>

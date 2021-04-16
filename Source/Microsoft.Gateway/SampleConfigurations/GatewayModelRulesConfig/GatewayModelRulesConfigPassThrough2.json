@@ -1,0 +1,40 @@
+[
+  {
+    "CallingAET": "RADIOMICS_APP",
+    "CalledAET": "PassThroughModel",
+    "AETConfig": {
+      "Config": {
+        "AETConfigType": "Model",
+        "ModelsConfig": [
+          {
+            "ModelId": "b033d049-0233-4068-bc0f-c64cec48e8fa",
+            "ChannelConstraints": [
+              {
+                "ChannelID": "ct",
+                "ImageFilter": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "ChannelConstraints": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "MinChannelImages": -1,
+                "MaxChannelImages": -1
+              }
+            ],
+            "TagReplacements": []
+          }
+        ]
+      },
+      "Destination": {
+        "Title": "RADIOMICS_APP",
+        "Port": 104,
+        "Ip": "127.0.0.1"
+      },
+      "ShouldReturnImage": false
+    }
+  }
+]

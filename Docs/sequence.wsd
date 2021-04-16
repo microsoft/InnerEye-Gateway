@@ -1,0 +1,59 @@
+@startuml sequence
+skinparam backgroundColor #EEEBDC
+skinparam handwritten false
+participant "DICOM Client" as dc
+participant "Receiver Service" as rt
+database "RootDicomFolder" as db
+queue "Upload Queue" as uq
+participant "Upload Service" as ut
+participant "Inference Web Service" as is
+queue "Download Queue" as dq
+participant "Download Service" as dt
+queue "Push Queue" as pq
+participant "Push Service" as pt
+participant "Destination" as dd
+queue "Delete Queue" as xq
+participant "Delete Service" as xt
+activate dc
+dc -> rt: Assoc Req
+activate rt
+loop
+dc -> rt: C-Store
+rt -> db: Save DICOM files
+end
+dc -> rt: Assoc Release
+deactivate dc
+rt -> uq: DICOM files rec'd
+uq -> ut
+deactivate rt
+activate ut
+db -> ut: Load DICOM files
+ut -> is: POST anonymised files
+activate is
+ut -> dq: Uploaded
+dq -> dt
+activate dt
+ut -> xq: Delete DICOM files
+xq -> xt
+deactivate ut
+activate xt
+xt -> db: Delete DICOM files
+deactivate xt
+is -> dt: Download DICOM-RT
+deactivate is
+dt -> db: Save DICOM-RT
+dt -> pq: Downloaded
+pq -> pt
+deactivate dt
+activate pt
+db -> pt: Load DICOM-RT
+activate dd
+pt -> dd: Send DICOM-RT
+deactivate dd
+pt -> xq: Delete DICOM-RT file
+xq -> xt
+deactivate pt
+activate xt
+xt -> db: Delete DICOM-RT file
+deactivate xt
+@enduml

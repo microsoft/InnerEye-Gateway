@@ -1,0 +1,81 @@
+[
+  {
+    "CallingAET": "RADIOMICS_APP",
+    "CalledAET": "PassThroughModel",
+    "AETConfig": {
+      "Config": {
+        "AETConfigType": "Model",
+        "ModelsConfig": [
+          {
+            "ModelId": "PassThroughModel:3",
+            "ChannelConstraints": [
+              {
+                "ChannelID": "ct",
+                "ImageFilter": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "ChannelConstraints": {
+                  "Constraints": [],
+                  "Op": "And",
+                  "discriminator": "GroupConstraint"
+                },
+                "MinChannelImages": -1,
+                "MaxChannelImages": -1
+              }
+            ],
+            "TagReplacements": [
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 8,
+                  "Element": 4158
+                },
+                "Value": "NOT FOR CLINICAL USE"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 2
+                },
+                "Value": "InnerEye"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 4
+                },
+                "Value": "NOT FOR CLINICAL USE"
+              },
+              {
+                "Operation": "UpdateIfExists",
+                "DicomTagIndex": {
+                  "Group": 8,
+                  "Element": 112
+                },
+                "Value": "Microsoft Corporation"
+              },
+              {
+                "Operation": "AppendIfExists",
+                "DicomTagIndex": {
+                  "Group": 12294,
+                  "Element": 38
+                },
+                "Value": " NOT FOR CLINICAL USE"
+              }
+            ]
+          }
+        ]
+      },
+      "Destination": {
+        "Title": "RADIOMICS_APP",
+        "Port": 104,
+        "Ip": "127.0.0.1"
+      },
+      "ShouldReturnImage": false
+    }
+  }
+]

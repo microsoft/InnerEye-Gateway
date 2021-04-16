@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <Platforms>x64</Platforms>
+    <PackageId>Microsoft.InnerEye.DicomConstraints</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
+    <Company>Microsoft Corporation</Company>
+    <Product>Microsoft InnerEye Gateway</Product>
+    <Description>Constraints for DICOM datasets for Microsoft InnerEye Gateway.</Description>
+    <Copyright>© Microsoft Corporation</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
+    <RuntimeIdentifiers>win7-x64;win10-x64</RuntimeIdentifiers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="fo-dicom.Desktop" Version="4.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="NJsonSchema" Version="10.1.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+</Project>

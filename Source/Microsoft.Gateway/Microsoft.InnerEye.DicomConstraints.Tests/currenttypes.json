@@ -1,0 +1,250 @@
+﻿{
+  "discriminator": "GroupConstraint",
+  "Constraints": [
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "OrderedIntConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": -2147483648,
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 32,
+          "Element": 17
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "OrderedDoubleConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": 1.7976931348623157E+308,
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 32,
+          "Element": 17
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "OrderedDateTimeConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": "2017-11-17T15:39:02.0088681Z",
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 32,
+          "Element": 17
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "OrderedStringConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": {
+            "Value": "hOOf",
+            "ComparisonType": 0
+          },
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 32,
+          "Element": 17
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "UIDStringOrderConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": {
+            "Value": "1.2.840.10008.5.1.4.1.1.2",
+            "ComparisonType": 0
+          },
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 8,
+          "Element": 22
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "PresentCanBeEmpty",
+      "Constraint": {
+        "discriminator": "TimeOrderConstraint",
+        "Function": {
+          "Order": "GreaterThanOrEqual",
+          "Value": "00:00:00",
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 8,
+          "Element": 49
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "PresentCanBeEmpty",
+      "Constraint": {
+        "discriminator": "StringContainsConstraint",
+        "Match": "HFS",
+        "Ordinal": 0,
+        "Index": {
+          "Group": 24,
+          "Element": 20736
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "RegexConstraint",
+        "Expression": "(hog)",
+        "Options": "ECMAScript",
+        "Ordinal": 0,
+        "Index": {
+          "Group": 8,
+          "Element": 4158
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "PresentNotEmpty",
+      "Constraint": {
+        "discriminator": "UIDStringOrderConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": {
+            "Value": "1.2.840.10008.5.1.4.1.1.2",
+            "ComparisonType": 0
+          },
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 8,
+          "Element": 22
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "OrderedStringConstraint",
+        "Function": {
+          "Order": "Equal",
+          "Value": {
+            "Value": "hOOf",
+            "ComparisonType": 0
+          },
+          "Ordinal": 0
+        },
+        "Index": {
+          "Group": 32,
+          "Element": 17
+        }
+      }
+    },
+    {
+      "discriminator": "RequiredTagConstraint",
+      "RequirementLevel": "Optional",
+      "Constraint": {
+        "discriminator": "GroupTagConstraint",
+        "Group": {
+          "discriminator": "GroupConstraint",
+          "Constraints": [
+            {
+              "discriminator": "OrderedStringConstraint",
+              "Function": {
+                "Order": "Equal",
+                "Value": {
+                  "Value": "HOOF",
+                  "ComparisonType": 0
+                },
+                "Ordinal": 0
+              },
+              "Index": {
+                "Group": 24,
+                "Element": 21
+              }
+            },
+            {
+              "discriminator": "OrderedStringConstraint",
+              "Function": {
+                "Order": "Equal",
+                "Value": {
+                  "Value": "LEAF",
+                  "ComparisonType": 0
+                },
+                "Ordinal": 0
+              },
+              "Index": {
+                "Group": 24,
+                "Element": 21
+              }
+            },
+            {
+              "discriminator": "OrderedStringConstraint",
+              "Function": {
+                "Order": "Equal",
+                "Value": {
+                  "Value": "FLOWER",
+                  "ComparisonType": 0
+                },
+                "Ordinal": 0
+              },
+              "Index": {
+                "Group": 24,
+                "Element": 21
+              }
+            },
+            {
+              "discriminator": "OrderedStringConstraint",
+              "Function": {
+                "Order": "Equal",
+                "Value": {
+                  "Value": "HOG",
+                  "ComparisonType": 0
+                },
+                "Ordinal": 0
+              },
+              "Index": {
+                "Group": 24,
+                "Element": 21
+              }
+            }
+          ],
+          "Op": "Or"
+        },
+        "Index": {
+          "Group": 24,
+          "Element": 21
+        }
+      }
+    }
+  ],
+  "Op": "Or"
+}

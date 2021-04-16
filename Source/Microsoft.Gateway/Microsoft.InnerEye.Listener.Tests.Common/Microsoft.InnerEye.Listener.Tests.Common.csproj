@@ -1,0 +1,166 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <Platforms>x64</Platforms>
+    <PackageId>Microsoft.InnerEye.Listener.Tests.Common</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
+    <Company>Microsoft Corporation</Company>
+    <Product>Microsoft InnerEye Gateway</Product>
+    <Description>Common test project for Microsoft InnerEye Gateway.</Description>
+    <Copyright>© Microsoft Corporation</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
+    <RuntimeIdentifiers>win7-x64;win10-x64</RuntimeIdentifiers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\charls.dll">
+      <Link>Assets\charls.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\cmr.dll">
+      <Link>Assets\cmr.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmdata.dll">
+      <Link>Assets\dcmdata.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmdsig.dll">
+      <Link>Assets\dcmdsig.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmdump.exe">
+      <Link>Assets\dcmdump.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmfg.dll">
+      <Link>Assets\dcmfg.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmimage.dll">
+      <Link>Assets\dcmimage.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmimgle.dll">
+      <Link>Assets\dcmimgle.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmiod.dll">
+      <Link>Assets\dcmiod.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmjpeg.dll">
+      <Link>Assets\dcmjpeg.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmjpls.dll">
+      <Link>Assets\dcmjpls.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmnet.dll">
+      <Link>Assets\dcmnet.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmpmap.dll">
+      <Link>Assets\dcmpmap.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmpstat.dll">
+      <Link>Assets\dcmpstat.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmqrdb.dll">
+      <Link>Assets\dcmqrdb.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmrt.dll">
+      <Link>Assets\dcmrt.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmseg.dll">
+      <Link>Assets\dcmseg.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmsr.dll">
+      <Link>Assets\dcmsr.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmtls.dll">
+      <Link>Assets\dcmtls.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmtract.dll">
+      <Link>Assets\dcmtract.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\dcmwlm.dll">
+      <Link>Assets\dcmwlm.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\i2d.dll">
+      <Link>Assets\i2d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\ijg12.dll">
+      <Link>Assets\ijg12.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\ijg16.dll">
+      <Link>Assets\ijg16.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\ijg8.dll">
+      <Link>Assets\ijg8.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\oflog.dll">
+      <Link>Assets\oflog.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\ofstd.dll">
+      <Link>Assets\ofstd.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dcmtk-3.6.5-win64-dynamic\bin\storescu.exe">
+      <Link>Assets\storescu.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dicom3tools\cyggcc_s-1.dll">
+      <Link>Assets\dicom3tools\cyggcc_s-1.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dicom3tools\cygstdc++-6.dll">
+      <Link>Assets\dicom3tools\cygstdc++-6.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dicom3tools\cygwin1.dll">
+      <Link>Assets\dicom3tools\cygwin1.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dicom3tools\dciodvfy.exe">
+      <Link>Assets\dicom3tools\dciodvfy.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\dicom3tools\dciodvfy.exe.local">
+      <Link>Assets\dicom3tools\dciodvfy.exe.local</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SCP.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SCU.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<!--
+First-time install dialog sequence:
+ - WixUI_WelcomeDlg
+ - WixUI_LicenseAgreementDlg
+ - WixUI_CustomizeDlg
+ - WixUI_VerifyReadyDlg
+ - WixUI_DiskCostDlg
+
+Maintenance dialog sequence:
+ - WixUI_MaintenanceWelcomeDlg
+ - WixUI_MaintenanceTypeDlg
+ - WixUI_CustomizeDlg
+ - WixUI_VerifyReadyDlg
+
+Patch dialog sequence:
+ - WixUI_WelcomeDlg
+ - WixUI_VerifyReadyDlg
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <UI Id="WixUI_FeatureTree2">
+        <UIRef Id="WixUI_InstallDir" />
+        <Publish Dialog="WelcomeDlg"
+              Control="Next"
+              Event="NewDialog"
+              Value="InstallDirDlg"
+              Order="2">1</Publish>
+        <Publish Dialog="InstallDirDlg"
+              Control="Back"
+              Event="NewDialog"
+              Value="WelcomeDlg"
+              Order="2">1</Publish>
+      </UI>
+    <UIRef Id="WixUI_Common" />
+  </Fragment>
+</Wix>

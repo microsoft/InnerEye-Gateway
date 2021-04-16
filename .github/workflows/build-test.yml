@@ -1,0 +1,64 @@
+name: BuildAndTest.CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  solution: './Source/Microsoft.Gateway/Microsoft.Gateway.sln'
+  buildPlatform: x64
+  buildConfiguration: Release
+
+jobs:
+  build-test:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
+
+    - name: Setup Nuget
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: 'latest'
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Nuget Restore
+      run: nuget restore ${{ env.solution }}
+
+    - name: Download Dependencies
+      shell: Powershell
+      run: |
+        cd .\Source\Microsoft.Gateway
+        .\download_dcmtk.ps1
+
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: 'csharp'
+
+    - name: Build Solution
+      run: msbuild.exe /nologo /t:build  /p:UseSharedCompilation=false /p:Configuration=${{ env.buildConfiguration }} /p:Platform=${{ env.buildPlatform }} ${{ env.solution }} 
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1
+
+    - name: Test Solution
+      shell: Powershell
+      run: |
+        $erroractionpreference = "stop"
+
+        $TestFiles = $(Get-ChildItem $PATH -include *tests*.dll -exclude "*TestAdapter*","*TestPlatform*","*MSTest*" -recurse | where {$_.FullName -notlike "*obj*"}).fullname
+        $TestArgs = $TestFiles + "/Platform:x64"
+        
+        vstest.console.exe $TestArgs
+        exit $lastexitcode

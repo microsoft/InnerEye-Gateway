@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <Platforms>x64</Platforms>
+    <PackageId>Microsoft.InnerEye.Azure.Segmentation.Client</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
+    <Company>Microsoft Corporation</Company>
+    <Product>Microsoft InnerEye Gateway</Product>
+    <Description>Segmentation Client for Microsoft InnerEye Gateway.</Description>
+    <Copyright>© Microsoft Corporation</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
+    <RuntimeIdentifiers>win7-x64;win10-x64</RuntimeIdentifiers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Anonymizer\DICOMAnonymizer\DICOMAnonymizer.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.Azure.Segmentation.API.Common\Microsoft.InnerEye.Azure.Segmentation.API.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.InnerEye.DicomConstraints\Microsoft.InnerEye.DicomConstraints.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+</Project>
