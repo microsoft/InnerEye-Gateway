@@ -85,22 +85,6 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         }
 
         /// <summary>
-        /// The pre-uninstall custom action.
-        /// </summary>
-        /// <param name="session">The WiX session.</param>
-        /// <returns>The action result.</returns>
-        [CustomAction]
-        public static ActionResult PreUninstall(Session session)
-        {
-            // Note: this method runs with Admin privileges. To debug Visual Studio must be running as Admin.
-#if DEBUG
-            Debugger.Launch();
-#endif
-
-            return ActionResult.Success;
-        }
-
-        /// <summary>
         /// Validates the license key using the InnerEye segmentation client.
         /// </summary>
         /// <param name="processorSettings">Processor settings.</param>

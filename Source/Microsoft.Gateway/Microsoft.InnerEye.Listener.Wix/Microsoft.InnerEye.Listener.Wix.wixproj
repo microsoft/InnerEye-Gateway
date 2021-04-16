@@ -8,12 +8,13 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>Microsoft.InnerEye.Gateway</OutputName>
     <OutputType>Package</OutputType>
+    <CONFIGFOLDER Condition=" '$(CONFIGFOLDER)' == '' ">..\SampleConfigurations</CONFIGFOLDER>
     <SERVICE1BINFOLDER Condition=" '$(SERVICE1BINFOLDER)' == '' ">..\Microsoft.InnerEye.Listener.Processor\bin\$(Platform)\$(Configuration)\net462</SERVICE1BINFOLDER>
     <SERVICE2BINFOLDER Condition=" '$(SERVICE2BINFOLDER)' == '' ">..\Microsoft.InnerEye.Listener.Receiver\bin\$(Platform)\$(Configuration)\net462</SERVICE2BINFOLDER>
     <PRODUCTNAME Condition=" '$(PRODUCTNAME)' == '' ">Microsoft InnerEye Gateway</PRODUCTNAME>
     <SERVICE1EXE Condition=" '$(SERVICE1EXE)' == '' ">Microsoft.InnerEye.Listener.Processor.exe</SERVICE1EXE>
     <SERVICE2EXE Condition=" '$(SERVICE2EXE)' == '' ">Microsoft.InnerEye.Listener.Receiver.exe</SERVICE2EXE>
-    <DefineConstants>SERVICE1BINFOLDER=$(SERVICE1BINFOLDER);SERVICE2BINFOLDER=$(SERVICE2BINFOLDER);PRODUCTNAME=$(PRODUCTNAME);SERVICE1EXE=$(SERVICE1EXE);SERVICE2EXE=$(SERVICE2EXE)</DefineConstants>
+    <DefineConstants>CONFIGFOLDER=$(CONFIGFOLDER);SERVICE1BINFOLDER=$(SERVICE1BINFOLDER);SERVICE2BINFOLDER=$(SERVICE2BINFOLDER);PRODUCTNAME=$(PRODUCTNAME);SERVICE1EXE=$(SERVICE1EXE);SERVICE2EXE=$(SERVICE2EXE)</DefineConstants>
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -26,6 +27,7 @@
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Config.Generated.wxs" />
     <Compile Include="Service1.Generated.wxs" />
     <Compile Include="Service2.Generated.wxs" />
     <Compile Include="Library.wxs" />
@@ -85,6 +87,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
+    <HeatDirectory OutputFile="Config.Generated.wxs" Directory="$(CONFIGFOLDER)" KeepEmptyDirectories="false" DirectoryRefId="CONFIGINSTALLDIR" ComponentGroupName="Config.Generated" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" PreprocessorVariable="var.CONFIGFOLDER" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="True" />
     <HeatDirectory OutputFile="Service1.Generated.wxs" Transforms="filter.xsl" Directory="$(SERVICE1BINFOLDER)" KeepEmptyDirectories="false" DirectoryRefId="SERVICE1INSTALLDIR" ComponentGroupName="Service1.Generated" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" PreprocessorVariable="var.SERVICE1BINFOLDER" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="True" />
     <HeatDirectory OutputFile="Service2.Generated.wxs" Transforms="filter.xsl" Directory="$(SERVICE2BINFOLDER)" KeepEmptyDirectories="false" DirectoryRefId="SERVICE2INSTALLDIR" ComponentGroupName="Service2.Generated" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" PreprocessorVariable="var.SERVICE2BINFOLDER" ToolPath="$(WixToolPath)" TreatWarningsAsErrors="True" />
   </Target>
