@@ -18,8 +18,6 @@
         /// </summary>
         public static void Main()
         {
-            var configurationsPathRoot = "../../../../../SampleConfigurations";
-
             // Create the loggerFactory as Console + Log4Net.
             using (var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -28,6 +26,13 @@
                 builder.AddLog4Net();
             }))
             {
+                var relativePaths = new[] {
+                    "../Config",
+                    "../../../../../SampleConfigurations"
+                };
+
+                var configurationsPathRoot = ConfigurationService.FindRelativeDirectory(relativePaths, loggerFactory.CreateLogger("Main"));
+
                 var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
                     loggerFactory.CreateLogger("ProcessorSettings"),
                     configurationsPathRoot);

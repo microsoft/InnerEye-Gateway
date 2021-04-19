@@ -76,14 +76,15 @@
         /// <summary>
         /// Create a new segmentation client based on settings in JSON file.
         /// </summary>
+        /// <param name="logger">Optional logger for client.</param>
         /// <param name="licenseKeyEnvVar">Optional override license key env var for testing.</param>
         /// <returns>New IInnerEyeSegmentationClient.</returns>
-        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(string licenseKeyEnvVar = null) =>
+        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(ILogger logger = null, string licenseKeyEnvVar = null) =>
             () =>
             {
                 var settings = ProcessorSettings();
 
-                return new InnerEyeSegmentationClient(settings.InferenceUri, licenseKeyEnvVar ?? settings.LicenseKeyEnvVar);
+                return new InnerEyeSegmentationClient(settings.InferenceUri, licenseKeyEnvVar ?? settings.LicenseKeyEnvVar, logger);
             };
     }
 }

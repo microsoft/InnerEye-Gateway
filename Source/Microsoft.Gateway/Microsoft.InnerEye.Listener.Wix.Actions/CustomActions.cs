@@ -5,6 +5,7 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
     using System.Diagnostics;
 #endif
     using System.IO;
+    using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
     using System.Windows.Forms;
@@ -33,12 +34,12 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         private static string InstallPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft InnerEye Gateway");
 
         /// <summary>
-        /// Gets the processor settings path.
+        /// Gets the config folder path.
         /// </summary>
         /// <value>
-        /// The processor settings path.
+        /// The config folder path.
         /// </value>
-        private static string ProcessorInstallDirectory => Path.Combine(InstallPath, "Microsoft InnerEye Gateway Processor");
+        private static string ConfigInstallDirectory => Path.Combine(InstallPath, "Config");
 
         /// <summary>
         /// The pre-install custom action.
@@ -61,9 +62,15 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 
             var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
                 null,
-                ProcessorInstallDirectory);
+                ConfigInstallDirectory);
 
             var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
+
+#pragma warning disable CA5364 // Do Not Use Deprecated Security Protocols
+#pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+#pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
+#pragma warning restore CA5364 // Do Not Use Deprecated Security Protocols
 
             // First time install so lets display a form to grab the license key.
             DialogResult licenseKeyDialogResult = DialogResult.No;
@@ -93,14 +100,14 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         internal static async Task<(bool Result, string ValidationText)> ValidateLicenseKeyAsync(ProcessorSettings processorSettings, string licenseKey)
         {
             var validationText = string.Empty;
-            var existingLicenseKey = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar);
+            var existingLicenseKey = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine);
 
             try
             {
                 // Update the settings for the Gateway.
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey);
+                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey, EnvironmentVariableTarget.Machine);
 
-                using (var segmentationClient = new InnerEyeSegmentationClient(processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar))
+                using (var segmentationClient = new InnerEyeSegmentationClient(processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar, null))
                 {
                     await segmentationClient.PingAsync();
                 }
@@ -111,13 +118,13 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             {
                 validationText = "Failed to connect to the internet";
                 // Restore the previous environment variable
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey);
+                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
             }
             catch (Exception)
             {
                 validationText = "Invalid product key";
                 // Restore the previous environment variable
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey);
+                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
             }
 
             return (false, validationText);

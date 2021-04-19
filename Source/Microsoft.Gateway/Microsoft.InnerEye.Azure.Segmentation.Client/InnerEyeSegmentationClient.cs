@@ -14,9 +14,9 @@
     using Dicom;
 
     using DICOMAnonymizer;
-
+    using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
-
+    using Microsoft.InnerEye.Gateway.Logging;
     using static DICOMAnonymizer.AnonymizeEngine;
 
     /// <summary>
@@ -127,6 +127,7 @@
         private readonly HttpClientHandler _httpClientHandler;
         private readonly RetryHandler _retryHandler;
         private readonly HttpClient _client;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// The de anonymize try add replace at top level
@@ -155,15 +156,27 @@
         /// <param name="licenseKeyEnvVar">The license key environment variable.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
-            string licenseKeyEnvVar)
+            string licenseKeyEnvVar,
+            ILogger logger)
         {
+            _logger = logger;
+
             HttpClientHandler httpHandler = null;
             RetryHandler retryHandler = null;
             HttpClient client = null;
 
             try
             {
-                var licenseKey = Environment.GetEnvironmentVariable(licenseKeyEnvVar) ?? string.Empty;
+                var licenseKey = Environment.GetEnvironmentVariable(licenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
+
+                if (string.IsNullOrEmpty(licenseKey))
+                {
+                    var message = string.Format("License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
+                        baseAddress, licenseKeyEnvVar);
+
+                    var logEntry = LogEntry.Create(ServiceStatus.Starting);
+                    logEntry.Log(_logger, LogLevel.Error, new Exception(message));
+                }
 
                 var timeOut = TimeSpan.FromMinutes(10);
                 httpHandler = new HttpClientHandler();

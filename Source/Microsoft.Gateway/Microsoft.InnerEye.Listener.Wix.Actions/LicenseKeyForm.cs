@@ -33,7 +33,7 @@
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void LicenseKeyForm_Load(object sender, EventArgs e)
         {
-            licenseKeyTextBox.Text = Environment.GetEnvironmentVariable(_processorSettings.LicenseKeyEnvVar) ?? string.Empty;
+            licenseKeyTextBox.Text = Environment.GetEnvironmentVariable(_processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
         }
 
         /// <summary>
