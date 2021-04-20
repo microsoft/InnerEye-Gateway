@@ -54,15 +54,23 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             Debugger.Launch();
 #endif
 
+            // Make sure that the applications are run as services.
+            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
+                null,
+                ConfigInstallDirectory);
+            gatewayProcessorConfigProvider.SetRunAsConsole(false);
+
+            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
+                null,
+                ConfigInstallDirectory);
+            gatewayReceiveConfigProvider.SetRunAsConsole(false);
+
             // Check if the installer is running unattended - lets skip the UI if true
             if (session.CustomActionData[UILevelCustomActionKey] == "2")
             {
                 return ActionResult.Success;
             }
 
-            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
-                null,
-                ConfigInstallDirectory);
 
             var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
 

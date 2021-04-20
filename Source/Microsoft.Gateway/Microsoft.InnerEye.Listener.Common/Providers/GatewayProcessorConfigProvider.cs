@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
@@ -37,6 +38,20 @@
             Load();
             return _t;
         }
+
+        /// <summary>
+        /// Update GatewayProcessorConfig file, according to an update callback function.
+        /// </summary>
+        /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
+        public void Update(Func<GatewayProcessorConfig, GatewayProcessorConfig> updater) =>
+            UpdateFile(updater, EqualityComparer<GatewayProcessorConfig>.Default);
+
+        /// <summary>
+        /// Set ServiceSettings.RunAsConsole.
+        /// </summary>
+        /// <param name="runAsConsole">If we should run the services as a console application.</param>
+        public void SetRunAsConsole(bool runAsConsole) =>
+            Update(gatewayProcessorConfig => gatewayProcessorConfig.With(new ServiceSettings(runAsConsole)));
 
         /// <summary>
         /// Load ServiceSettings from a JSON file.

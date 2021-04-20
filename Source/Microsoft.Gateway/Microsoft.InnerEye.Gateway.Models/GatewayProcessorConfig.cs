@@ -55,6 +55,28 @@
             ConfigurationServiceConfig = configurationServiceConfig;
         }
 
+        /// <summary>
+        /// Clone this into a new instance of the <see cref="GatewayProcessorConfig"/> class, optionally replacing some properties.
+        /// </summary>
+        /// <param name="serviceSettings">Optional new service settings.</param>
+        /// <param name="processorSettings">Optional new processor settings.</param>
+        /// <param name="dequeueServiceConfig">Optional new dequeue service config.</param>
+        /// <param name="downloadServiceConfig">Optional new download service config.</param>
+        /// <param name="configurationServiceConfig">Optional new configuration service config.</param>
+        /// <returns>New GatewayProcessorConfig.</returns>
+        public GatewayProcessorConfig With(
+            ServiceSettings serviceSettings = null,
+            ProcessorSettings processorSettings = null,
+            DequeueServiceConfig dequeueServiceConfig = null,
+            DownloadServiceConfig downloadServiceConfig = null,
+            ConfigurationServiceConfig configurationServiceConfig = null) =>
+                new GatewayProcessorConfig(
+                    serviceSettings ?? ServiceSettings,
+                    processorSettings ?? ProcessorSettings,
+                    dequeueServiceConfig ?? DequeueServiceConfig,
+                    downloadServiceConfig ?? DownloadServiceConfig,
+                    configurationServiceConfig ?? ConfigurationServiceConfig);
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
