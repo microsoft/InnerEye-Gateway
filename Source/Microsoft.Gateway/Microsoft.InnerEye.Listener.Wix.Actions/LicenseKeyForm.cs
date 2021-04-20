@@ -4,22 +4,22 @@
     using System.Threading.Tasks;
     using System.Windows.Forms;
 
-    using Microsoft.InnerEye.Gateway.Models;
+    using Microsoft.InnerEye.Listener.Common.Providers;
 
     public partial class LicenseKeyForm : Form
     {
         /// <summary>
-        /// The temporary settings.
+        /// Gateway processor config provider.
         /// </summary>
-        private readonly ProcessorSettings _processorSettings;
+        private readonly GatewayProcessorConfigProvider _gatewayProcessorConfigProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LicenseKeyForm"/> class.
         /// </summary>
-        /// <param name="processorSettings">The temporary settings.</param>
-        public LicenseKeyForm(ProcessorSettings processorSettings)
+        /// <param name="processorSettings">Gateway processor config provider.</param>
+        public LicenseKeyForm(GatewayProcessorConfigProvider gatewayProcessorConfigProvider)
         {
-            _processorSettings = processorSettings;
+            _gatewayProcessorConfigProvider = gatewayProcessorConfigProvider;
 
             InitializeComponent();
 
@@ -33,7 +33,10 @@
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void LicenseKeyForm_Load(object sender, EventArgs e)
         {
-            licenseKeyTextBox.Text = Environment.GetEnvironmentVariable(_processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
+            var processorSettings = _gatewayProcessorConfigProvider.ProcessorSettings();
+
+            inferenceUriTextBox.Text = processorSettings.InferenceUri.AbsoluteUri;
+            licenseKeyTextBox.Text = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
         }
 
         /// <summary>
@@ -56,8 +59,9 @@
         /// <returns></returns>
         private async Task ValidateLicenseKeyAsync()
         {
+            var inferenceUri = new Uri(inferenceUriTextBox.Text);
             var licenseKey = licenseKeyTextBox.Text;
-            var (result, validationText) = await CustomActions.ValidateLicenseKeyAsync(_processorSettings, licenseKey);
+            var (result, validationText) = await CustomActions.ValidateLicenseKeyAsync(_gatewayProcessorConfigProvider, licenseKey, inferenceUri);
 
             invalidKeyLabel.Text = validationText;
 

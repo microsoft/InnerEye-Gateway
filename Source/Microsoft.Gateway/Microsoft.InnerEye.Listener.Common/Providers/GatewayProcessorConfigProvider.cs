@@ -54,6 +54,16 @@
             Update(gatewayProcessorConfig => gatewayProcessorConfig.With(new ServiceSettings(runAsConsole)));
 
         /// <summary>
+        /// Set ProcessorSettings.InferenceUri.
+        /// </summary>
+        /// <param name="inferenceUri">Inference API Uri.</param>
+        public void SetInferenceUri(Uri inferenceUri) =>
+            Update(gatewayProcessorConfig =>
+                gatewayProcessorConfig.With(
+                    processorSettings: gatewayProcessorConfig.ProcessorSettings.With(
+                        inferenceUri: inferenceUri)));
+
+        /// <summary>
         /// Load ServiceSettings from a JSON file.
         /// </summary>
         /// <returns>Loaded ServiceSettings.</returns>

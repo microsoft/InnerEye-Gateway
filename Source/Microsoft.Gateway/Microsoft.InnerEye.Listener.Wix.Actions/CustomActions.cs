@@ -11,8 +11,6 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
     using System.Windows.Forms;
 
     using Microsoft.Deployment.WindowsInstaller;
-    using Microsoft.InnerEye.Azure.Segmentation.Client;
-    using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.Common.Providers;
 
     /// <summary>
@@ -71,9 +69,6 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
                 return ActionResult.Success;
             }
 
-
-            var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
-
 #pragma warning disable CA5364 // Do Not Use Deprecated Security Protocols
 #pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
@@ -82,8 +77,7 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 
             // First time install so lets display a form to grab the license key.
             DialogResult licenseKeyDialogResult = DialogResult.No;
-            // TODO FIX INSTALLER
-            using (var form = new LicenseKeyForm(processorSettings))
+            using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
             {
                 licenseKeyDialogResult = form.ShowDialog();
             }
@@ -102,20 +96,24 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         /// <summary>
         /// Validates the license key using the InnerEye segmentation client.
         /// </summary>
-        /// <param name="processorSettings">Processor settings.</param>
+        /// <param name="gatewayProcessorConfigProvider">Gateway processor config provider.</param>
         /// <param name="licenseKey">The license key to validate.</param>
+        /// <param name="inferenceUri">Inference Uri to validate.</param>
         /// <returns>If valid and text to display with the validation result.</returns>
-        internal static async Task<(bool Result, string ValidationText)> ValidateLicenseKeyAsync(ProcessorSettings processorSettings, string licenseKey)
+        internal static async Task<(bool Result, string ValidationText)> ValidateLicenseKeyAsync(GatewayProcessorConfigProvider gatewayProcessorConfigProvider, string licenseKey, Uri inferenceUri)
         {
             var validationText = string.Empty;
+            var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
             var existingLicenseKey = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine);
+            var existingInferenceUri = processorSettings.InferenceUri;
 
             try
             {
                 // Update the settings for the Gateway.
                 Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey, EnvironmentVariableTarget.Machine);
+                gatewayProcessorConfigProvider.SetInferenceUri(inferenceUri);
 
-                using (var segmentationClient = new InnerEyeSegmentationClient(processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar, null))
+                using (var segmentationClient = gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
                     await segmentationClient.PingAsync();
                 }
@@ -125,14 +123,16 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             catch (HttpRequestException)
             {
                 validationText = "Failed to connect to the internet";
-                // Restore the previous environment variable
+                // Restore the previous config
                 Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
+                gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri);
             }
             catch (Exception)
             {
-                validationText = "Invalid product key";
-                // Restore the previous environment variable
+                validationText = "Invalid Uri or product key";
+                // Restore the previous config
                 Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
+                gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri);
             }
 
             return (false, validationText);
