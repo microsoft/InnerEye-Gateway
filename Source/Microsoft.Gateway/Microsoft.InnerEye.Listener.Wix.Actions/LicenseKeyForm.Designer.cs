@@ -122,7 +122,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(98, 18);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Product Key";
+            this.label1.Text = "Inference Service Uri and Product Key";
             // 
             // panel1
             // 
