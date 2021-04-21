@@ -5,6 +5,7 @@
     using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
+    using Microsoft.InnerEye.Gateway.Logging;
     using Microsoft.InnerEye.Gateway.Models;
 
     /// <summary>
@@ -54,14 +55,27 @@
             Update(gatewayProcessorConfig => gatewayProcessorConfig.With(new ServiceSettings(runAsConsole)));
 
         /// <summary>
-        /// Set ProcessorSettings.InferenceUri.
+        /// Update ProcessorSettings.
         /// </summary>
-        /// <param name="inferenceUri">Inference API Uri.</param>
-        public void SetInferenceUri(Uri inferenceUri) =>
-            Update(gatewayProcessorConfig =>
-                gatewayProcessorConfig.With(
-                    processorSettings: gatewayProcessorConfig.ProcessorSettings.With(
-                        inferenceUri: inferenceUri)));
+        /// <param name="inferenceUri">Optional new inference API Uri.</param>
+        /// <param name="licenseKey">Optional new license key.</param>
+        public void SetInferenceUri(Uri inferenceUri = null, string licenseKey = null)
+        {
+            if (inferenceUri != null)
+            {
+                Update(gatewayProcessorConfig =>
+                    gatewayProcessorConfig.With(
+                        processorSettings: gatewayProcessorConfig.ProcessorSettings.With(
+                            inferenceUri: inferenceUri)));
+            }
+
+            if (licenseKey != null)
+            {
+                var processorSettings = ProcessorSettings();
+
+                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey, EnvironmentVariableTarget.Machine);
+            }
+        }
 
         /// <summary>
         /// Load ServiceSettings from a JSON file.
@@ -102,14 +116,23 @@
         /// Create a new segmentation client based on settings in JSON file.
         /// </summary>
         /// <param name="logger">Optional logger for client.</param>
-        /// <param name="licenseKeyEnvVar">Optional override license key env var for testing.</param>
         /// <returns>New IInnerEyeSegmentationClient.</returns>
-        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(ILogger logger = null, string licenseKeyEnvVar = null) =>
+        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(ILogger logger = null) =>
             () =>
             {
-                var settings = ProcessorSettings();
+                var processorSettings = ProcessorSettings();
 
-                return new InnerEyeSegmentationClient(settings.InferenceUri, licenseKeyEnvVar ?? settings.LicenseKeyEnvVar, logger);
+                var licenseKey = processorSettings.LicenseKey;
+
+                if (string.IsNullOrEmpty(licenseKey))
+                {
+                    var message = string.Format("License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
+                        processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar);
+                    var logEntry = LogEntry.Create(ServiceStatus.Starting);
+                    logEntry.Log(logger, Microsoft.Extensions.Logging.LogLevel.Error, new Exception(message));
+                }
+
+                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);
             };
     }
 }

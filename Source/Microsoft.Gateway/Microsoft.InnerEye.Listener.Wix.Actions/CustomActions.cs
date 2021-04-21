@@ -7,6 +7,7 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
     using System.IO;
     using System.Net;
     using System.Net.Http;
+    using System.Security.Authentication;
     using System.Threading.Tasks;
     using System.Windows.Forms;
 
@@ -76,20 +77,19 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 #pragma warning restore CA5364 // Do Not Use Deprecated Security Protocols
 
             // First time install so lets display a form to grab the license key.
-            DialogResult licenseKeyDialogResult = DialogResult.No;
             using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
             {
-                licenseKeyDialogResult = form.ShowDialog();
-            }
+                var licenseKeyDialogResult = form.ShowDialog();
 
-            switch (licenseKeyDialogResult)
-            {
-                case DialogResult.Cancel:
-                    return ActionResult.UserExit;
-                case DialogResult.No:
-                    return ActionResult.NotExecuted;
-                default:
-                    return ActionResult.Success;
+                switch (licenseKeyDialogResult)
+                {
+                    case DialogResult.Cancel:
+                        return ActionResult.UserExit;
+                    case DialogResult.No:
+                        return ActionResult.NotExecuted;
+                    default:
+                        return ActionResult.Success;
+                }
             }
         }
 
@@ -104,14 +104,13 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         {
             var validationText = string.Empty;
             var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
-            var existingLicenseKey = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine);
+            var existingLicenseKey = processorSettings.LicenseKey;
             var existingInferenceUri = processorSettings.InferenceUri;
 
             try
             {
                 // Update the settings for the Gateway.
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey, EnvironmentVariableTarget.Machine);
-                gatewayProcessorConfigProvider.SetInferenceUri(inferenceUri);
+                gatewayProcessorConfigProvider.SetInferenceUri(inferenceUri, licenseKey);
 
                 using (var segmentationClient = gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
@@ -123,17 +122,18 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             catch (HttpRequestException)
             {
                 validationText = "Failed to connect to the internet";
-                // Restore the previous config
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
-                gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri);
+            }
+            catch (AuthenticationException)
+            {
+                validationText = "Invalid product key";
             }
             catch (Exception)
             {
                 validationText = "Invalid Uri or product key";
-                // Restore the previous config
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey, EnvironmentVariableTarget.Machine);
-                gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri);
             }
+
+            // Restore the previous config
+            gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri, existingLicenseKey);
 
             return (false, validationText);
         }

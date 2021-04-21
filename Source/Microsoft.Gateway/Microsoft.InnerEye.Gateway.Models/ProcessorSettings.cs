@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// ProcessorSettings class
@@ -43,6 +44,13 @@
         /// Gets the inference API Uri.
         /// </summary>
         public Uri InferenceUri { get; }
+
+        /// <summary>
+        /// Get the license key based on the environment variable.
+        /// </summary>
+        [JsonIgnore]
+        public string LicenseKey =>
+            Environment.GetEnvironmentVariable(LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

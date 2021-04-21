@@ -36,7 +36,7 @@
             var processorSettings = _gatewayProcessorConfigProvider.ProcessorSettings();
 
             inferenceUriTextBox.Text = processorSettings.InferenceUri.AbsoluteUri;
-            licenseKeyTextBox.Text = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
+            licenseKeyTextBox.Text = processorSettings.LicenseKey;
         }
 
         /// <summary>
