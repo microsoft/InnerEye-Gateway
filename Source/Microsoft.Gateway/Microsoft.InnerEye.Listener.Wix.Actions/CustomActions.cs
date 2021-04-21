@@ -6,7 +6,6 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 #endif
     using System.IO;
     using System.Net;
-    using System.Net.Http;
     using System.Security.Authentication;
     using System.Threading.Tasks;
     using System.Windows.Forms;
@@ -104,8 +103,8 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         {
             var validationText = string.Empty;
             var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
-            var existingLicenseKey = processorSettings.LicenseKey;
             var existingInferenceUri = processorSettings.InferenceUri;
+            var existingLicenseKey = processorSettings.LicenseKey;
 
             try
             {
@@ -119,17 +118,13 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 
                 return (true, validationText);
             }
-            catch (HttpRequestException)
-            {
-                validationText = "Failed to connect to the internet";
-            }
             catch (AuthenticationException)
             {
                 validationText = "Invalid product key";
             }
             catch (Exception)
             {
-                validationText = "Invalid Uri or product key";
+                validationText = "Unable to connect to inference service uri";
             }
 
             // Restore the previous config

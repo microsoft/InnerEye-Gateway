@@ -61,13 +61,17 @@
         {
             var inferenceUri = new Uri(inferenceUriTextBox.Text);
             var licenseKey = licenseKeyTextBox.Text;
+
+            invalidKeyLabel.Text = string.Empty;
+            invalidKeyLabel.Visible = false;
+
             var (result, validationText) = await CustomActions.ValidateLicenseKeyAsync(_gatewayProcessorConfigProvider, licenseKey, inferenceUri);
 
             invalidKeyLabel.Text = validationText;
+            invalidKeyLabel.Visible = !result;
 
             if (!result)
             {
-                invalidKeyLabel.Visible = true;
                 return;
             }
 

@@ -109,9 +109,9 @@
             this.label2.Location = new System.Drawing.Point(43, 49);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(398, 17);
+            this.label2.Size = new System.Drawing.Size(393, 17);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Click Next to validate the Inference Service Uri and product key.";
+            this.label2.Text = "Click Next to validate the inference service uri and product key.";
             // 
             // label1
             // 
@@ -120,7 +120,7 @@
             this.label1.Location = new System.Drawing.Point(24, 21);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(98, 18);
+            this.label1.Size = new System.Drawing.Size(294, 18);
             this.label1.TabIndex = 0;
             this.label1.Text = "Inference Service Uri and Product Key";
             // 
@@ -161,7 +161,7 @@
             this.invalidKeyLabel.Name = "invalidKeyLabel";
             this.invalidKeyLabel.Size = new System.Drawing.Size(623, 17);
             this.invalidKeyLabel.TabIndex = 7;
-            this.invalidKeyLabel.Text = "Invalid Uri or product key";
+            this.invalidKeyLabel.Text = "Error";
             this.invalidKeyLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.invalidKeyLabel.Visible = false;
             // 
@@ -172,9 +172,9 @@
             this.label4.Location = new System.Drawing.Point(17, 117);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(244, 17);
+            this.label4.Size = new System.Drawing.Size(239, 17);
             this.label4.TabIndex = 8;
-            this.label4.Text = "Use the following Inference Service Uri:";
+            this.label4.Text = "Use the following inference service uri:";
             // 
             // inferenceUriTextBox
             // 

@@ -339,27 +339,14 @@
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            try
+            var response = await _client.GetAsync("v1/ping");
+
+            if (response.StatusCode == HttpStatusCode.Forbidden)
             {
-                var response = await _client.GetAsync("v1/ping");
-
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    throw new AuthenticationException("Missing license key");
-                }
-
-                if (response.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    throw new AuthenticationException("Invalid license key");
-                }
-
-                response.EnsureSuccessStatusCode();
+                throw new AuthenticationException("Invalid license key");
             }
-            catch (HttpRequestException reqEx)
-            {
-                // Connectivity issue
-                throw reqEx;
-            }
+
+            response.EnsureSuccessStatusCode();
         }
 
         /// <summary>
