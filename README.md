@@ -80,7 +80,7 @@ To get started with setting up this project you will need the following pre-requ
 
 ## License Keys
 
-For security in InnerEye-Gateway and InnerEye-Inference the license keys are stored in environment variables and never stored in JSON or other configuration files. InnerEye-Inference uses the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` whereas InnerEye-Gateway allows the name of the environment variable to be configured in the JSON file in the `LicenseKeyEnvVar` property. This is so that the tests may be configured to run against a different InnerEye-Inference web service. Note also because the applications run as windows services the environment variables should be system variables, not user variables so they can be accessed by the services.
+For security in InnerEye-Gateway and InnerEye-Inference the license keys are stored in environment variables and never stored in JSON or other configuration files. InnerEye-Inference uses the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` whereas InnerEye-Gateway allows the name of the environment variable to be configured in the JSON file in the `LicenseKeyEnvVar` property. This is so that the tests may be configured to run against a different InnerEye-Inference web service. Note also that because the applications run as windows services the environment variables should be system variables, not user variables, so they can be accessed by the services.
 
 Alongside `LicenseKeyEnvVar` the property `InferenceUri` holds the URI of a running instance of InnerEye-Inference and the environment variable identified by `LicenseKeyEnvVar` should hold the license key for that instance.
 

@@ -27,7 +27,7 @@
         /// </summary>
         /// <param name="licenseKeyEnvVar">Optional new license key environment variable.</param>
         /// <param name="InferenceUri">Optional new inference API Uri.</param>
-        /// <returns>New ProcessorSettings.</returns></remarks>
+        /// <returns>New ProcessorSettings.</returns>
         public ProcessorSettings With(
             string licenseKeyEnvVar = null,
             Uri inferenceUri = null) =>

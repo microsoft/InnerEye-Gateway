@@ -42,9 +42,9 @@
         /// <summary>
         /// Clone this into a new instance of the <see cref="GatewayReceiveConfig"/> class, optionally replacing some properties.
         /// </summary>
-        /// <param name="serviceSettings">Service settings.</param>
-        /// <param name="receiveServiceConfig">Receive service config.</param>
-        /// <param name="configurationServiceConfig">Configuration service config.</param>
+        /// <param name="serviceSettings">Optional new service settings.</param>
+        /// <param name="receiveServiceConfig">Optional new receive service config.</param>
+        /// <param name="configurationServiceConfig">Optional new configuration service config.</param>
         /// <returns>New GatewayReceiveConfig.</returns>
         public GatewayReceiveConfig With(
             ServiceSettings serviceSettings = null,

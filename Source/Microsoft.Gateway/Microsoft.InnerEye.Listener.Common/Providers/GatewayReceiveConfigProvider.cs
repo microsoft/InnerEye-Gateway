@@ -48,7 +48,7 @@
         /// <summary>
         /// Set ServiceSettings.RunAsConsole.
         /// </summary>
-        /// <param name="runAsConsole">If we should run the services as a console application.</param>
+        /// <param name="runAsConsole">If we should run the service as a console application.</param>
         public void SetRunAsConsole(bool runAsConsole) =>
             Update(gatewayReceiveConfig => gatewayReceiveConfig.With(new ServiceSettings(runAsConsole)));
 
