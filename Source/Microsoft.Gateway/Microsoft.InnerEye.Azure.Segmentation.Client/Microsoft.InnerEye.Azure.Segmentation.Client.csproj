@@ -23,7 +23,6 @@
     <ProjectReference Include="..\..\Anonymizer\DICOMAnonymizer\DICOMAnonymizer.csproj" />
     <ProjectReference Include="..\Microsoft.InnerEye.Azure.Segmentation.API.Common\Microsoft.InnerEye.Azure.Segmentation.API.Common.csproj" />
     <ProjectReference Include="..\Microsoft.InnerEye.DicomConstraints\Microsoft.InnerEye.DicomConstraints.csproj" />
-    <ProjectReference Include="..\Microsoft.InnerEye.Gateway.Logging\Microsoft.InnerEye.Gateway.Logging.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.IO.Compression" />
