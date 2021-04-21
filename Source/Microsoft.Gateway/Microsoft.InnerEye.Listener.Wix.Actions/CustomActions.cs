@@ -109,7 +109,7 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             try
             {
                 // Update the settings for the Gateway.
-                gatewayProcessorConfigProvider.SetInferenceUri(inferenceUri, licenseKey);
+                gatewayProcessorConfigProvider.SetProcessorSettings(inferenceUri, licenseKey);
 
                 using (var segmentationClient = gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
@@ -128,7 +128,7 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             }
 
             // Restore the previous config
-            gatewayProcessorConfigProvider.SetInferenceUri(existingInferenceUri, existingLicenseKey);
+            gatewayProcessorConfigProvider.SetProcessorSettings(existingInferenceUri, existingLicenseKey);
 
             return (false, validationText);
         }

@@ -59,7 +59,7 @@
         /// </summary>
         /// <param name="inferenceUri">Optional new inference API Uri.</param>
         /// <param name="licenseKey">Optional new license key.</param>
-        public void SetInferenceUri(Uri inferenceUri = null, string licenseKey = null)
+        public void SetProcessorSettings(Uri inferenceUri = null, string licenseKey = null)
         {
             if (inferenceUri != null)
             {

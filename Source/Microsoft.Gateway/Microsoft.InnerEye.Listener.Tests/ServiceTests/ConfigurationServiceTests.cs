@@ -50,7 +50,7 @@
 
             try
             {
-                TestGatewayProcessorConfigProvider.SetInferenceUri(licenseKey: Guid.NewGuid().ToString());
+                TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: Guid.NewGuid().ToString());
 
                 using (var configurationService = CreateConfigurationService(
                     null,
@@ -67,7 +67,7 @@
             }
             finally
             {
-                TestGatewayProcessorConfigProvider.SetInferenceUri(licenseKey: existingLicenseKey);
+                TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: existingLicenseKey);
             }
         }
 
