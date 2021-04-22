@@ -48,16 +48,13 @@
 
             var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-            var gatewayConfig = GetTestGatewayReceiveConfig();
-            var gatewayReceiveConfig = gatewayConfig.With(
-                new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 160, gatewayConfig.GatewayDicomEndPoint.Ip),
-                tempFolder.FullName); // Save all data in the temp folder
+            var receivePort = 160;
 
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-            using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+            using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-            using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+            using (var receiveService = CreateReceiveService(receivePort, tempFolder))
             {
                 deleteService.Start();
                 pushService.Start();
@@ -67,7 +64,7 @@
 
                 DcmtkHelpers.SendFolderUsingDCMTK(
                     image,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                    receivePort,
                     ScuProfile.LEExplicitCT,
                     TestContext,
                     applicationEntityTitle: newTestAETConfigModel.CallingAET,
@@ -149,16 +146,13 @@
 
                 var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-                var gatewayConfig = GetTestGatewayReceiveConfig();
-                var gatewayReceiveConfig = gatewayConfig.With(
-                    new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 161, gatewayConfig.GatewayDicomEndPoint.Ip),
-                    tempFolder.FullName); // Save all data in the temp folder
+                var receivePort = 161;
 
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
                 {
                     deleteService.Start();
                     pushService.Start();
@@ -168,7 +162,7 @@
 
                     DcmtkHelpers.SendFolderUsingDCMTK(
                         @"Images\1ValidSmall",
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                        receivePort,
                         ScuProfile.LEExplicitCT,
                         TestContext,
                         applicationEntityTitle: newTestAETConfigModel.CallingAET,
@@ -229,16 +223,13 @@
 
                 var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-                var gatewayConfig = GetTestGatewayReceiveConfig();
-                var gatewayReceiveConfig = gatewayConfig.With(
-                    new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 162, gatewayConfig.GatewayDicomEndPoint.Ip),
-                    tempFolder.FullName); // Save all data in the temp folder
+                var receivePort = 162;
 
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
                 {
                     deleteService.Start();
                     pushService.Start();
@@ -248,7 +239,7 @@
 
                     DcmtkHelpers.SendFolderUsingDCMTK(
                         @"Images\1ValidSmall",
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                        receivePort,
                         ScuProfile.LEExplicitRTCT,
                         TestContext,
                         applicationEntityTitle: newTestAETConfigModel.CallingAET,

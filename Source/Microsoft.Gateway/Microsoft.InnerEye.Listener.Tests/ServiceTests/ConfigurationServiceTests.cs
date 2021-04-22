@@ -68,7 +68,7 @@
         {
             var client = GetMockInnerEyeSegmentationClient();
             // Create the services with multiple instances.
-            using (var downloadService = CreateDownloadService(null, 1, instances: 3))
+            using (var downloadService = CreateDownloadService(instances: 3))
             using (var uploadService = CreateUploadService(instances: 3))
             using (var configurationService = CreateConfigurationService(
                 client,

@@ -1,7 +1,7 @@
 [
   {
-    "CallingAET": "SCANNER",
     "CalledAET": "RGPelvisCT",
+    "CallingAET": "SCANNER",
     "AETConfig": {
       "Config": {
         "AETConfigType": "Model",

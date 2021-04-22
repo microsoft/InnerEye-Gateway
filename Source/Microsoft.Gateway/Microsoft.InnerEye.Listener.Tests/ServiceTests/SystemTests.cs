@@ -6,8 +6,6 @@
     using System.Threading.Tasks;
 
     using Dicom;
-
-    using Microsoft.InnerEye.Azure.Segmentation.API.Common;
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
@@ -69,7 +67,7 @@
                 using (var pushService = CreatePushService())
                 using (var uploadService = CreateUploadService(client))
                 using (var uploadQueue = uploadService.UploadQueue)
-                using (var downloadService = CreateDownloadService(client, OneHourSecs))
+                using (var downloadService = CreateDownloadService(client))
                 using (var configurationService = CreateConfigurationService(
                     client,
                     mockConfigurationServiceConfigProvider.GetConfiguration,
@@ -117,7 +115,7 @@
         [TestMethod]
         public async Task ServiceBaseExitsCorrectlyTest()
         {
-            using (var downloadService = CreateDownloadService(null, OneHourSecs))
+            using (var downloadService = CreateDownloadService())
             {
                 downloadService.Start();
 
@@ -141,9 +139,6 @@
             var segmentationClient = GetMockInnerEyeSegmentationClient();
             segmentationClient.RealSegmentation = false;
 
-            var gatewayReceiveConfig = GetTestGatewayReceiveConfig().With(
-                new DicomEndPoint("Gateway", 141, "localhost"));
-
             var resultDirectory = CreateTemporaryDirectory();
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultDirectory.FullName)))
@@ -164,11 +159,13 @@
 
                 Assert.IsTrue(result);
 
+                var receivePort = 141;
+
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService())
-                using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var uploadService = CreateUploadService(segmentationClient))
-                using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+                using (var receiveService = CreateReceiveService(receivePort))
                 {
                     deleteService.Start();
                     pushService.Start();
@@ -179,15 +176,15 @@
                     var dicomDataSender = new DicomDataSender();
                     var echoResult = await dicomDataSender.DicomEchoAsync(
                         testAETConfigModel.CallingAET,
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Title,
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Ip);
+                        testAETConfigModel.CalledAET,
+                        receivePort,
+                        "127.0.0.1");
 
                     Assert.IsTrue(echoResult == DicomOperationResult.Success);
 
                     DcmtkHelpers.SendFolderUsingDCMTK(
                         @"Images\1ValidSmall",
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                        receivePort,
                         ScuProfile.LEExplicitCT,
                         TestContext,
                         applicationEntityTitle: testAETConfigModel.CallingAET,
@@ -215,15 +212,16 @@
         [TestMethod]
         public async Task GatewayBadData()
         {
+            var receivePort = 141;
+
             var segmentationClient = GetMockInnerEyeSegmentationClient();
             var testAETConfigModel = GetTestAETConfigModel();
-            var gatewayReceiveConfig = GetTestGatewayReceiveConfig();
 
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService())
-            using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+            using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient))
-            using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+            using (var receiveService = CreateReceiveService(receivePort))
             using (var uploadQueue = receiveService.UploadQueue)
             {
                 deleteService.Start();
@@ -234,7 +232,7 @@
 
                 DcmtkHelpers.SendFileUsingDCMTK(
                     @"Images\LargeSeriesWithContour\rtstruct.dcm",
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                    receivePort,
                     ScuProfile.LEExplicitCT,
                     TestContext,
                     applicationEntityTitle: testAETConfigModel.CallingAET,

@@ -99,7 +99,7 @@
             segmentationClient.RealSegmentation = false;
 
             using (var deleteService = CreateDeleteService())
-            using (var downloadService = CreateDownloadService(segmentationClient, OneMinSecs))
+            using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var uploadQueue = uploadService.UploadQueue)
@@ -200,7 +200,7 @@
                 using (var deleteService = CreateDeleteService())
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
                 using (var uploadQueue = uploadService.UploadQueue)
-                using (var downloadService = CreateDownloadService(segmentationClient, OneMinSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
                 using (var pushQueue = pushService.PushQueue)
