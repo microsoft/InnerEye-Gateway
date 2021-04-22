@@ -398,12 +398,22 @@
             }
         }
 
+        protected void StartDicomDataReceiver(
+            ListenerDataReceiver dicomDataReceiver,
+            int port,
+            double? timeout = null)
+        {
+            var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(timeout ?? 1));
+            Assert.IsTrue(started);
+            Assert.IsTrue(dicomDataReceiver.IsListening);
+        }
+
         /// <summary>
         /// Constructs the set of DICOM services we support in InnerEye and the preferred Transfer Syntaxes
         /// for those services. 
         /// </summary>
         /// <returns></returns>
-        protected static Dictionary<DicomUID, DicomTransferSyntax[]> BuildAcceptedSopClassesAndTransferSyntaxes()
+        private static Dictionary<DicomUID, DicomTransferSyntax[]> BuildAcceptedSopClassesAndTransferSyntaxes()
         {
             // Syntaxes we accept for the Verification SOP (aka C-Echo) class in order of preference
             DicomTransferSyntax[] acceptedVerificationSyntaxes =

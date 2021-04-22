@@ -59,10 +59,8 @@
                 };
 
                 var testAETConfigModel = GetTestAETConfigModel();
-                dicomDataReceiver.StartServer(
-                    testAETConfigModel.AETConfig.Destination.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(1));
+
+                StartDicomDataReceiver(dicomDataReceiver, testAETConfigModel.AETConfig.Destination.Port);
 
                 using (var pushService = CreatePushService())
                 using (var uploadService = CreateUploadService(client))
@@ -152,12 +150,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                var result = dicomDataReceiver.StartServer(
-                    testAETConfigModel.AETConfig.Destination.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(result);
+                StartDicomDataReceiver(dicomDataReceiver, testAETConfigModel.AETConfig.Destination.Port);
 
                 var receivePort = 141;
 

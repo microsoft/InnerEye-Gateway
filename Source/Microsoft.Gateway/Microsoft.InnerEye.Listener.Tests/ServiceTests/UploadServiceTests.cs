@@ -190,12 +190,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                var result = dicomDataReceiver.StartServer(
-                    newTestAETConfigModel.AETConfig.Destination.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(5));
-
-                Assert.IsTrue(result);
+                StartDicomDataReceiver(dicomDataReceiver, newTestAETConfigModel.AETConfig.Destination.Port, 5);
 
                 using (var deleteService = CreateDeleteService())
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))

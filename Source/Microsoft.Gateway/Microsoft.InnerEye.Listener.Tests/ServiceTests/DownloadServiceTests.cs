@@ -50,9 +50,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(dicomDataReceiver.IsListening);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService())
@@ -330,9 +328,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(dicomDataReceiver.IsListening);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService(mockSegmentationClient))
