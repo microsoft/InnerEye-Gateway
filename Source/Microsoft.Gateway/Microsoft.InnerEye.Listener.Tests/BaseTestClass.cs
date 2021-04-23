@@ -398,12 +398,16 @@
             }
         }
 
+        /// <summary>
+        /// Start Dicom data receiver on a given port and check it is listening.
+        /// </summary>
+        /// <param name="dicomDataReceiver">Dicom data receiver.</param>
+        /// <param name="port">Port.</param>
         protected void StartDicomDataReceiver(
             ListenerDataReceiver dicomDataReceiver,
-            int port,
-            double? timeout = null)
+            int port)
         {
-            var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(timeout ?? 1));
+            var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(2));
             Assert.IsTrue(started);
             Assert.IsTrue(dicomDataReceiver.IsListening);
         }

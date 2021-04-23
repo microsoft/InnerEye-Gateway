@@ -32,7 +32,7 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port, 10);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var result1 = await dataSender.DicomEchoAsync(
                     "Hello",
