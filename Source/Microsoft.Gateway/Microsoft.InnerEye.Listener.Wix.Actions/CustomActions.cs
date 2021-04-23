@@ -69,11 +69,10 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
                 return ActionResult.Success;
             }
 
-#pragma warning disable CA5364 // Do Not Use Deprecated Security Protocols
-#pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-#pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
-#pragma warning restore CA5364 // Do Not Use Deprecated Security Protocols
+            // In the context of the installer, this may have a different SecurityProtocol to the application.
+            // In testing it was: SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls
+            // but it may vary. In order to value the uri and license key, we need TLS 1.2
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
             // First time install so lets display a form to grab the license key.
             using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
