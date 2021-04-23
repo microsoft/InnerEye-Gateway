@@ -14,9 +14,7 @@
     using Dicom;
 
     using DICOMAnonymizer;
-
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
-
     using static DICOMAnonymizer.AnonymizeEngine;
 
     /// <summary>
@@ -152,10 +150,10 @@
         /// Initializes a new instance of the <see cref="InnerEyeSegmentationClient"/> class.
         /// </summary>
         /// <param name="baseAddress">The base address.</param>
-        /// <param name="licenseKeyEnvVar">The license key environment variable.</param>
+        /// <param name="licenseKey">The license key.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
-            string licenseKeyEnvVar)
+            string licenseKey)
         {
             HttpClientHandler httpHandler = null;
             RetryHandler retryHandler = null;
@@ -163,8 +161,6 @@
 
             try
             {
-                var licenseKey = Environment.GetEnvironmentVariable(licenseKeyEnvVar) ?? string.Empty;
-
                 var timeOut = TimeSpan.FromMinutes(10);
                 httpHandler = new HttpClientHandler();
                 retryHandler = new RetryHandler(httpHandler);
@@ -343,22 +339,14 @@
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            try
-            {
-                var response = await _client.GetAsync("v1/ping");
+            var response = await _client.GetAsync("v1/ping");
 
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    throw new AuthenticationException("Invalid license key");
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException reqEx)
+            if (response.StatusCode == HttpStatusCode.Forbidden)
             {
-                // Connectivity issue
-                throw reqEx;
+                throw new AuthenticationException("Invalid license key");
             }
+
+            response.EnsureSuccessStatusCode();
         }
 
         /// <summary>

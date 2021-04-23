@@ -6,6 +6,7 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Logging;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
 
     /// <summary>
     /// Class that monitors a JSON settings file or folder.
@@ -82,6 +83,33 @@
         }
 
         /// <summary>
+        /// Update settings file, according to an update callback function.
+        /// </summary>
+        /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
+        /// <param name="equalityComparer">How to compare objects.</param>
+        protected void UpdateFile(Func<T, T> updater, IEqualityComparer<T> equalityComparer)
+        {
+            if (!File.Exists(_settingsFileOrFolderName))
+            {
+                throw new NotImplementedException(string.Format("Can only update single settings files: {0}", _settingsFileOrFolderName));
+            }
+
+            var (t, loaded) = LoadFile(_settingsFileOrFolderName);
+            if (!loaded)
+            {
+                return;
+            }
+
+            var newt = updater.Invoke(t);
+            if (equalityComparer.Equals(newt, t))
+            {
+                return;
+            }
+
+            SaveFile(newt, _settingsFileOrFolderName);
+        }
+
+        /// <summary>
         /// Load T from a JSON file.
         /// </summary>
         /// <param name="path">Path to file.</param>
@@ -102,6 +130,24 @@
 
                 return (default(T), false);
             }
+        }
+
+        /// <summary>
+        /// Save a T to a JSON file.
+        /// </summary>
+        /// <param name="t">Instance of type T.</param>
+        /// <param name="path">Path to file.</param>
+        private static void SaveFile(T t, string path)
+        {
+            var serializerSettings = new JsonSerializerSettings()
+            {
+                Converters = new[] { new StringEnumConverter() },
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Include
+            };
+
+            var jsonText = JsonConvert.SerializeObject(t, serializerSettings);
+            File.WriteAllText(path, jsonText);
         }
     }
 }

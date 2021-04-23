@@ -45,18 +45,29 @@
         [TestMethod]
         public void TestBadProductKeyStart()
         {
-            var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(licenseKeyEnvVar: "NOT_AN_ENV_VAR").Invoke();
-            using (var configurationService = CreateConfigurationService(
-                segmentationClient,
-                null,
-                CreateDownloadService(),
-                CreateUploadService()))
+            var processorSettings = TestGatewayProcessorConfigProvider.ProcessorSettings();
+            var existingLicenseKey = processorSettings.LicenseKey;
+
+            try
             {
-                configurationService.Start();
+                TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: Guid.NewGuid().ToString());
 
-                SpinWait.SpinUntil(() => !configurationService.IsExecutionThreadRunning, TimeSpan.FromSeconds(10));
+                using (var configurationService = CreateConfigurationService(
+                    null,
+                    null,
+                    CreateDownloadService(),
+                    CreateUploadService()))
+                {
+                    configurationService.Start();
 
-                Assert.IsFalse(configurationService.IsExecutionThreadRunning);
+                    SpinWait.SpinUntil(() => !configurationService.IsExecutionThreadRunning, TimeSpan.FromSeconds(10));
+
+                    Assert.IsFalse(configurationService.IsExecutionThreadRunning);
+                }
+            }
+            finally
+            {
+                TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: existingLicenseKey);
             }
         }
 

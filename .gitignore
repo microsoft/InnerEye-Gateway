@@ -358,6 +358,7 @@ __pycache__
 ecf/
 /.vscode
 
+/Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/Config.Generated.wxs
 /Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/Service1.Generated.wxs
 /Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/Service2.Generated.wxs
 /Source/Microsoft.Gateway/dcmtk-3.6.5-win64-dynamic

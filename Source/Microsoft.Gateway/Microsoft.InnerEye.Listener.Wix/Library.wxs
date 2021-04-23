@@ -22,14 +22,17 @@
     <MediaTemplate EmbedCab="yes" />
 
     <InstallExecuteSequence>
-      <Custom Action="PreUninstallAction" Before="RemoveFiles" />
       <Custom Action="SetCustomActionDataValue" Before="ValidateProductKeyAction" />
       <Custom Action="ValidateProductKeyAction" After="InstallFiles">NOT Installed</Custom>
     </InstallExecuteSequence>
      
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="WixUI_FeatureTree2" />
-      
+
+    <Feature Id="Configuration" Title="Configuration" Level="1">
+      <ComponentGroupRef Id="ConfigurationComponents" />
+    </Feature>
+
     <Feature Id="MainApplication1" Title="Main Application1" Level="1">
       <ComponentGroupRef Id="Service1Components" />
     </Feature>
@@ -49,11 +52,18 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLDIR" Name="$(var.PRODUCTNAME)">
+          <Directory Id="CONFIGINSTALLDIR" Name="Config" />
           <Directory Id="SERVICE1INSTALLDIR" Name="$(var.Service1DisplayName)" />
           <Directory Id="SERVICE2INSTALLDIR" Name="$(var.Service2DisplayName)" />
         </Directory>
       </Directory>
     </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ConfigurationComponents" Directory="CONFIGINSTALLDIR">
+      <ComponentGroupRef Id="Config.Generated" />
+    </ComponentGroup>
   </Fragment>
 
   <Fragment>
@@ -98,7 +108,6 @@
   
   <Fragment>
     <Binary Id="ActionsBinary" SourceFile="$(var.Microsoft.InnerEye.Listener.Wix.Actions.TargetDir)$(var.Microsoft.InnerEye.Listener.Wix.Actions.TargetName).CA.dll"/>
-    <CustomAction Id="PreUninstallAction" BinaryKey="ActionsBinary" DllEntry="PreUninstall" Return="check" />
     <CustomAction Id="SetCustomActionDataValue" Return="check" Property="ValidateProductKeyAction" Value="UILevel=[UILevel];" />
     <CustomAction Id="ValidateProductKeyAction" BinaryKey="ActionsBinary" DllEntry="ValidateProductKey" Return="check" Execute="deferred" Impersonate="no" />
   </Fragment>

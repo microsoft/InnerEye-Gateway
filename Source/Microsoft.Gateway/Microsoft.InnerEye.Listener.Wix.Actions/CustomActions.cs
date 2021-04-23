@@ -5,13 +5,12 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
     using System.Diagnostics;
 #endif
     using System.IO;
-    using System.Net.Http;
+    using System.Net;
+    using System.Security.Authentication;
     using System.Threading.Tasks;
     using System.Windows.Forms;
 
     using Microsoft.Deployment.WindowsInstaller;
-    using Microsoft.InnerEye.Azure.Segmentation.Client;
-    using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.Common.Providers;
 
     /// <summary>
@@ -33,12 +32,12 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
         private static string InstallPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft InnerEye Gateway");
 
         /// <summary>
-        /// Gets the processor settings path.
+        /// Gets the config folder path.
         /// </summary>
         /// <value>
-        /// The processor settings path.
+        /// The config folder path.
         /// </value>
-        private static string ProcessorInstallDirectory => Path.Combine(InstallPath, "Microsoft InnerEye Gateway Processor");
+        private static string ConfigInstallDirectory => Path.Combine(InstallPath, "Config");
 
         /// <summary>
         /// The pre-install custom action.
@@ -53,88 +52,82 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
             Debugger.Launch();
 #endif
 
+            // Make sure that the applications are run as services.
+            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
+                null,
+                ConfigInstallDirectory);
+            gatewayProcessorConfigProvider.SetRunAsConsole(false);
+
+            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
+                null,
+                ConfigInstallDirectory);
+            gatewayReceiveConfigProvider.SetRunAsConsole(false);
+
             // Check if the installer is running unattended - lets skip the UI if true
             if (session.CustomActionData[UILevelCustomActionKey] == "2")
             {
                 return ActionResult.Success;
             }
 
-            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
-                null,
-                ProcessorInstallDirectory);
-
-            var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
+            // In the context of the installer, this may have a different SecurityProtocol to the application.
+            // In testing it was: SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls
+            // but it may vary. In order to value the uri and license key, we need TLS 1.2
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
             // First time install so lets display a form to grab the license key.
-            DialogResult licenseKeyDialogResult = DialogResult.No;
-            // TODO FIX INSTALLER
-            using (var form = new LicenseKeyForm(processorSettings))
+            using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
             {
-                licenseKeyDialogResult = form.ShowDialog();
+                var licenseKeyDialogResult = form.ShowDialog();
+
+                switch (licenseKeyDialogResult)
+                {
+                    case DialogResult.Cancel:
+                        return ActionResult.UserExit;
+                    case DialogResult.No:
+                        return ActionResult.NotExecuted;
+                    default:
+                        return ActionResult.Success;
+                }
             }
-
-            switch (licenseKeyDialogResult)
-            {
-                case DialogResult.Cancel:
-                    return ActionResult.UserExit;
-                case DialogResult.No:
-                    return ActionResult.NotExecuted;
-                default:
-                    return ActionResult.Success;
-            }
-        }
-
-        /// <summary>
-        /// The pre-uninstall custom action.
-        /// </summary>
-        /// <param name="session">The WiX session.</param>
-        /// <returns>The action result.</returns>
-        [CustomAction]
-        public static ActionResult PreUninstall(Session session)
-        {
-            // Note: this method runs with Admin privileges. To debug Visual Studio must be running as Admin.
-#if DEBUG
-            Debugger.Launch();
-#endif
-
-            return ActionResult.Success;
         }
 
         /// <summary>
         /// Validates the license key using the InnerEye segmentation client.
         /// </summary>
-        /// <param name="processorSettings">Processor settings.</param>
+        /// <param name="gatewayProcessorConfigProvider">Gateway processor config provider.</param>
         /// <param name="licenseKey">The license key to validate.</param>
+        /// <param name="inferenceUri">Inference Uri to validate.</param>
         /// <returns>If valid and text to display with the validation result.</returns>
-        internal static async Task<(bool Result, string ValidationText)> ValidateLicenseKeyAsync(ProcessorSettings processorSettings, string licenseKey)
+        internal static async Task<(bool Result, string ValidationText)> ValidateLicenseKeyAsync(GatewayProcessorConfigProvider gatewayProcessorConfigProvider, string licenseKey, Uri inferenceUri)
         {
             var validationText = string.Empty;
-            var existingLicenseKey = Environment.GetEnvironmentVariable(processorSettings.LicenseKeyEnvVar);
+            var processorSettings = gatewayProcessorConfigProvider.ProcessorSettings();
+            var existingInferenceUri = processorSettings.InferenceUri;
+            var existingLicenseKey = processorSettings.LicenseKey;
 
             try
             {
                 // Update the settings for the Gateway.
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey);
+                gatewayProcessorConfigProvider.SetProcessorSettings(inferenceUri, licenseKey);
 
-                using (var segmentationClient = new InnerEyeSegmentationClient(processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar))
+                using (var segmentationClient = gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
                     await segmentationClient.PingAsync();
                 }
 
                 return (true, validationText);
             }
-            catch (HttpRequestException)
+            catch (AuthenticationException)
             {
-                validationText = "Failed to connect to the internet";
-                // Restore the previous environment variable
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey);
+                validationText = "Invalid product key";
             }
             catch (Exception)
             {
-                validationText = "Invalid product key";
-                // Restore the previous environment variable
-                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, existingLicenseKey);
+                validationText = "Unable to connect to inference service uri";
             }
+
+            // Restore the previous config
+            gatewayProcessorConfigProvider.SetProcessorSettings(existingInferenceUri, existingLicenseKey);
 
             return (false, validationText);
         }
