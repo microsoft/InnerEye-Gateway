@@ -50,7 +50,7 @@
 
         public Exception SegmentationResultException { get; set; }
 
-        public bool RealSegmentation { get; set; } = true;
+        public bool RealSegmentation { get; set; }
 
         public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocol;
 

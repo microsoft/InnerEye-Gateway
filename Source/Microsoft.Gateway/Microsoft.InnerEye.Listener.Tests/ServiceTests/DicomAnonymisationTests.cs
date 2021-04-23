@@ -31,7 +31,6 @@
             var tempFolder = CreateTemporaryDirectory();
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var configType = AETConfigType.ModelWithResultDryRun;
             var dryRunFolder = DryRunFolders.GetFolder(configType);

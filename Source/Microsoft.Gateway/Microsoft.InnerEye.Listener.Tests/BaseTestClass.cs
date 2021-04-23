@@ -587,7 +587,6 @@
             var dicomFiles = new DirectoryInfo(filesPath).GetFiles().Select(x => DicomFile.Open(x.FullName)).ToArray();
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
 

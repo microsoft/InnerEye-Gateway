@@ -22,7 +22,6 @@
         public void StrangeConfigUploadServiceTest()
         {
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
             var newTestAETConfigModel = testAETConfigModel.With(
@@ -96,7 +95,6 @@
             }
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             using (var deleteService = CreateDeleteService())
             using (var downloadService = CreateDownloadService(segmentationClient))
@@ -158,7 +156,6 @@
             }
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
             var newTestAETConfigModel = testAETConfigModel.With(

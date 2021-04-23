@@ -107,7 +107,6 @@
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
-            mockSegmentationClient.RealSegmentation = false;
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -159,7 +158,6 @@
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationResultException = new Exception();
-            mockSegmentationClient.RealSegmentation = false;
 
             var resultsDirectory = CreateTemporaryDirectory();
 
@@ -216,7 +214,6 @@
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
-            mockSegmentationClient.RealSegmentation = false;
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -311,7 +308,6 @@
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 144, "127.0.0.1");
 
             var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-            mockSegmentationClient.RealSegmentation = false;
 
             // Fake a no response when getting progress
             mockSegmentationClient.SegmentationResultException = new HttpRequestException();

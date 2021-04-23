@@ -31,7 +31,6 @@
             }
 
             var client = GetMockInnerEyeSegmentationClient();
-            client.RealSegmentation = false;
 
             var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
@@ -135,7 +134,6 @@
 
             // Change this to real client to run a live pipeline
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var resultDirectory = CreateTemporaryDirectory();
 
@@ -208,6 +206,7 @@
             var receivePort = 141;
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
+
             var testAETConfigModel = GetTestAETConfigModel();
 
             using (var deleteService = CreateDeleteService())

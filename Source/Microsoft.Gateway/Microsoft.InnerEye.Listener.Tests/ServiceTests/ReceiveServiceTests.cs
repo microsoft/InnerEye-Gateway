@@ -23,6 +23,8 @@
             var callingAet = "ProstateRTMl";
 
             var client = GetMockInnerEyeSegmentationClient();
+
+
             var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
             var configurationServiceConfig1 = new ConfigurationServiceConfig(
