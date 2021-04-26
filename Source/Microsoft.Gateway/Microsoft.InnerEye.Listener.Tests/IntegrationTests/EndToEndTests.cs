@@ -2,12 +2,12 @@
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Dicom;
+    using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
@@ -24,13 +24,13 @@
         public const int IntegrationTestTimeout = 20 * 60 * 1000;
 
         [TestCategory("IntegrationTests")]
-        [Timeout(IntegrationTestTimeout)]
+        // [Timeout(IntegrationTestTimeout)]
         // [Ignore("Integration test, relies on live API")]
         [Description("Pushes an entire DICOM Image Series.")]
         [TestMethod]
         public async Task IntegrationTestEndToEnd()
         {
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
+            var segmentationClient = (IInnerEyeSegmentationClient)null;// GetMockInnerEyeSegmentationClient();
 
             var sourceDirectory = new DirectoryInfo(@"Images\Temp");// CreateTemporaryDirectory();
             if (!sourceDirectory.Exists)
@@ -76,7 +76,6 @@
                 {
                     folderPath = e.FolderPath;
                     eventCount.AddOrUpdate(e.ProgressCode, 1, (k, v) => v + 1);
-                    Debug.WriteLine(string.Format("****** {0}", e.ProgressCode));
                 };
 
                 StartDicomDataReceiver(dicomDataReceiver, testAETConfigModel.AETConfig.Destination.Port);
@@ -207,6 +206,19 @@
             }
         }
 
+        private enum DicomPatientSexCodeString { M, F, O };
+
+        /// <summary>
+        /// Func to create a random DicomCodeString.
+        /// </summary>
+        private static DicomItem RandomDicomCodeString<T>(DicomTag tag, Random random) =>
+            new DicomCodeString(tag, ConfigurationProviderTests.RandomEnum<T>(random).ToString());
+
+        /// <summary>
+        /// Func to create a random PatientSex DicomCodeString.
+        /// </summary>
+        private static Func<DicomTag, Random, DicomItem> RandomDicomPatientSexCodeString = RandomDicomCodeString<DicomPatientSexCodeString>;
+
         /// <summary>
         /// Func to create a random RandomDicomDate.
         /// </summary>
@@ -300,6 +312,8 @@
             Tuple.Create(DicomTag.StudyTime, RandomDicomTime),
             Tuple.Create(DicomTag.SeriesTime, RandomDicomTime),
             Tuple.Create(DicomTag.SeriesTime, RandomDicomTime),
+
+            Tuple.Create(DicomTag.PatientSex, RandomDicomPatientSexCodeString),
         };
     }
 }
