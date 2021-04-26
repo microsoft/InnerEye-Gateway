@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -35,6 +36,11 @@
     [TestClass]
     public class BaseTestClass
     {
+        /// <summary>
+        /// List of chars to use for random string generation.
+        /// </summary>
+        private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
@@ -661,5 +667,92 @@
                 }
             }
         }
+
+        /// <summary>
+        /// Generate a random bool.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <returns>Random bool.</returns>
+        public static bool RandomBool(Random random) => random.Next(2) == 1;
+
+        /// <summary>
+        /// Generate a random enum.
+        /// </summary>
+        /// <typeparam name="T">Enum type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <returns>Random element of enum T.</returns>
+        public static T RandomEnum<T>(Random random)
+        {
+            var values = Enum.GetValues(typeof(T));
+
+            return (T)values.GetValue(random.Next(values.Length));
+        }
+
+        /// <summary>
+        /// Generate a random string of target length.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="length">Target string length.</param>
+        /// <returns>Random string.</returns>
+        public static string RandomString(Random random, int length = 6)
+        {
+            var s = new StringBuilder(length);
+
+            for (var i = 0; i < length; i++)
+            {
+                s.Append(chars[random.Next(chars.Length)]);
+            }
+
+            return s.ToString();
+        }
+
+        /// <summary>
+        /// Generate a random string of target length or an empty string.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="length">Target string length.</param>
+        /// <returns>Random string, may be empty.</returns>
+        public static string RandomStringOrEmpty(Random random, int length = 6) =>
+            RandomBool(random) ? RandomString(random, length) : string.Empty;
+
+        /// <summary>
+        /// Generate a random unsigned short.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <returns>Random unsigned short.</returns>
+        public static ushort RandomUShort(Random random) =>
+            (ushort)random.Next(0, 65535);
+
+        /// <summary>
+        /// Generate random list of <see cref="T"/>.
+        /// </summary>
+        /// <typeparam name="T">Array type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <param name="maxDepth">Limit nesting on group tags.</param>
+        /// <param name="count">Count of models to create.</param>
+        /// <param name="createRandomT">Callback to creat</param>
+        /// <returns>New list of ModelConstraintsConfig.</returns>
+        public static T[] RandomArray<T>(Random random, int maxDepth, int count, Func<Random, int, T> createRandomT)
+        {
+            var list = new T[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                list[i] = createRandomT(random, maxDepth);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Pick a random function from a list and invoke it.
+        /// </summary>
+        /// <typeparam name="T">Return type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <param name="maxDepth">Limit nesting on group tags.</param>
+        /// <param name="createRandomTs">List of functions taking Random, returning T.</param>
+        /// <returns>New random T.</returns>
+        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs) =>
+            createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
     }
 }

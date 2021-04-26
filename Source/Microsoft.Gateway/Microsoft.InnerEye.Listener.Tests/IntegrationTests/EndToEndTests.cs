@@ -11,7 +11,6 @@
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
-    using Microsoft.InnerEye.Listener.Tests.Models;
     using Microsoft.InnerEye.Listener.Tests.ServiceTests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -32,11 +31,7 @@
         {
             var segmentationClient = (IInnerEyeSegmentationClient)null;// GetMockInnerEyeSegmentationClient();
 
-            var sourceDirectory = new DirectoryInfo(@"Images\Temp");// CreateTemporaryDirectory();
-            if (!sourceDirectory.Exists)
-            {
-                sourceDirectory.Create();
-            }
+            var sourceDirectory = CreateTemporaryDirectory();
 
             var sampleSourceDicomFile = (DicomFile)null;
 
@@ -48,14 +43,12 @@
 
                 sampleSourceDicomFile = sampleSourceDicomFile ?? dicomFile;
 
-                var destinationImageFile = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
+                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
 
-                await dicomFile.SaveAsync(destinationImageFile);
+                await dicomFile.SaveAsync(sourceImageFilePath);
             }
 
             var testAETConfigModel = GetTestAETConfigModel();
-
-            var aetConfigProvider = new MockAETConfigProvider(testAETConfigModel);
 
             var resultDirectory = CreateTemporaryDirectory();
 
@@ -63,9 +56,9 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultDirectory.FullName)))
             using (var deleteService = CreateDeleteService())
-            using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
+            using (var pushService = CreatePushService())
             using (var downloadService = CreateDownloadService(segmentationClient))
-            using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
+            using (var uploadService = CreateUploadService(segmentationClient))
             using (var receiveService = CreateReceiveService(receivePort))
             {
                 // Start a DICOM receiver for the final DICOM-RT file
@@ -212,7 +205,7 @@
         /// Func to create a random DicomCodeString.
         /// </summary>
         private static DicomItem RandomDicomCodeString<T>(DicomTag tag, Random random) =>
-            new DicomCodeString(tag, ConfigurationProviderTests.RandomEnum<T>(random).ToString());
+            new DicomCodeString(tag, RandomEnum<T>(random).ToString());
 
         /// <summary>
         /// Func to create a random PatientSex DicomCodeString.
@@ -235,31 +228,36 @@
         /// Func to create a random DicomPersonName.
         /// </summary>
         private static readonly Func<DicomTag, Random, DicomItem> RandomDicomPersonName = (tag, random) =>
-            new DicomPersonName(tag, ConfigurationProviderTests.RandomString(random, 9));
+            new DicomPersonName(tag,
+                RandomString(random, 9), // Last
+                RandomStringOrEmpty(random, 8), // First
+                RandomStringOrEmpty(random, 7), // Middle
+                RandomStringOrEmpty(random, 6), // Prefix
+                RandomStringOrEmpty(random, 3)); // Suffix
 
         /// <summary>
         /// Func to create a random RandomDicomShortString.
         /// </summary>
         private static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortString = (tag, random) =>
-            new DicomShortString(tag, ConfigurationProviderTests.RandomString(random, 12));
+            new DicomShortString(tag, RandomString(random, 12));
 
         /// <summary>
         /// Func to create a random RandomDicomShortText.
         /// </summary>
         private static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortText = (tag, random) =>
-            new DicomShortText(tag, ConfigurationProviderTests.RandomString(random, 33));
+            new DicomShortText(tag, RandomString(random, 33));
 
         /// <summary>
         /// Func to create a random RandomDicomLongString.
         /// </summary>
         private static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongString = (tag, random) =>
-            new DicomLongString(tag, ConfigurationProviderTests.RandomString(random, 18));
+            new DicomLongString(tag, RandomString(random, 18));
 
         /// <summary>
         /// Func to create a random RandomDicomLongText.
         /// </summary>
         private static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongText = (tag, random) =>
-            new DicomLongText(tag, ConfigurationProviderTests.RandomString(random, 65));
+            new DicomLongText(tag, RandomString(random, 65));
 
         /// <summary>
         /// Func to create a random RandomDicomTime.
