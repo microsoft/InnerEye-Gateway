@@ -564,7 +564,7 @@
 
             var deanonymizedOriginalFile = innerEyeSegmentationClient.DeanonymizeDicomFile(
                 anonymizedFile,
-                new[] { anonymizedFile },
+                new[] { originalDicomFile },
                 innerEyeSegmentationClient.TopLevelReplacements,
                 Array.Empty<TagReplacement>(),
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
