@@ -754,5 +754,75 @@
         /// <returns>New random T.</returns>
         public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs) =>
             createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+
+        /// <summary>
+        /// Acceptable Dicom PatientSex codes.s
+        /// </summary>
+        private enum DicomPatientSexCodeString { M, F, O };
+
+        /// <summary>
+        /// Func to create a random DicomCodeString.
+        /// </summary>
+        public static DicomItem RandomDicomCodeString<T>(DicomTag tag, Random random) =>
+            new DicomCodeString(tag, RandomEnum<T>(random).ToString());
+
+        /// <summary>
+        /// Func to create a random PatientSex DicomCodeString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomPatientSexCodeString =
+            RandomDicomCodeString<DicomPatientSexCodeString>;
+
+        /// <summary>
+        /// Func to create a random RandomDicomDate.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomDate = (tag, random) =>
+            new DicomDate(tag, DateTime.UtcNow.AddDays(random.NextDouble() * 1000.0));
+
+        /// <summary>
+        /// Func to create a random DicomAgeString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomAgeString = (tag, random) =>
+            new DicomAgeString(tag, string.Format("{0:D3}Y", random.Next(18, 100)));
+
+        /// <summary>
+        /// Func to create a random DicomPersonName.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomPersonName = (tag, random) =>
+            new DicomPersonName(tag,
+                RandomString(random, 9), // Last
+                RandomStringOrEmpty(random, 8), // First
+                RandomStringOrEmpty(random, 7), // Middle
+                RandomStringOrEmpty(random, 6), // Prefix
+                RandomStringOrEmpty(random, 3)); // Suffix
+
+        /// <summary>
+        /// Func to create a random RandomDicomShortString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortString = (tag, random) =>
+            new DicomShortString(tag, RandomString(random, 12));
+
+        /// <summary>
+        /// Func to create a random RandomDicomShortText.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortText = (tag, random) =>
+            new DicomShortText(tag, RandomString(random, 33));
+
+        /// <summary>
+        /// Func to create a random RandomDicomLongString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongString = (tag, random) =>
+            new DicomLongString(tag, RandomString(random, 18));
+
+        /// <summary>
+        /// Func to create a random RandomDicomLongText.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongText = (tag, random) =>
+            new DicomLongText(tag, RandomString(random, 65));
+
+        /// <summary>
+        /// Func to create a random RandomDicomTime.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
+            new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
     }
 }

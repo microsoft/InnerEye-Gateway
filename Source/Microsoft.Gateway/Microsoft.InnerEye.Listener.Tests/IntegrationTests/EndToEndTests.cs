@@ -35,11 +35,13 @@
 
             var sampleSourceDicomFile = (DicomFile)null;
 
+            var random = new Random();
+
             foreach (var sourceImageFileInfo in new DirectoryInfo(@"Images\HN").GetFiles())
             {
-                var dicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName);
+                var dicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
 
-                AddRandomTags(dicomFile);
+                AddRandomTags(random, dicomFile);
 
                 sampleSourceDicomFile = sampleSourceDicomFile ?? dicomFile;
 
@@ -187,131 +189,180 @@
         /// <summary>
         /// Add some random tags.
         /// </summary>
+        /// <param name="random">Random.</param>
         /// <param name="dicomFile">Dicom file to update.</param>
-        public static void AddRandomTags(DicomFile dicomFile)
+        public static void AddRandomTags(Random random, DicomFile dicomFile)
         {
-            var random = new Random();
             var dataSet = dicomFile.Dataset;
 
-            foreach (var dicomTagRandomiser in DicomTagRandomisers)
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
             {
-                dataSet.AddOrUpdate(dicomTagRandomiser.Item2.Invoke(dicomTagRandomiser.Item1, random));
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    dataSet.AddOrUpdate(dicomTagRandomiserPair.Item2.Invoke(dicomTag, random));
+                }
             }
         }
 
-        private enum DicomPatientSexCodeString { M, F, O };
+        [TestCategory("IntegrationTests")]
+        [Description("Check data sets can be randomised.")]
+        [TestMethod]
+        public async Task IntegrationTestDataSetRandomise()
+        {
+            var sourceDirectory = CreateTemporaryDirectory();
+            var random = new Random();
+
+            foreach (var sourceImageFileInfo in new DirectoryInfo(@"Images\HN").GetFiles())
+            {
+                var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
+                var originalDataset = originalDicomFile.Dataset.Clone();
+
+                AddRandomTags(random, originalDicomFile);
+                var sourceDataset = originalDicomFile.Dataset;
+
+                foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+                {
+                    foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                    {
+                        var originalValue = originalDataset.GetSingleValueOrDefault<string>(dicomTag, string.Empty);
+                        var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+
+                        Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                        Assert.AreNotEqual(originalValue, sourceValue);
+                    }
+                }
+
+                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
+                await originalDicomFile.SaveAsync(sourceImageFilePath);
+
+                var reloadedDicomFile = await DicomFile.OpenAsync(sourceImageFilePath, FileReadOption.ReadAll);
+                var reloadDataSet = reloadedDicomFile.Dataset;
+
+                foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+                {
+                    foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                    {
+                        var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+                        var reloadedValue = reloadDataSet.GetSingleValue<string>(dicomTag);
+
+                        Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                        Assert.AreEqual(sourceValue, reloadedValue);
+                    }
+                }
+            }
+        }
 
         /// <summary>
-        /// Func to create a random DicomCodeString.
+        /// List of DicomTags to randomise with RandomDicomAgeString.
         /// </summary>
-        private static DicomItem RandomDicomCodeString<T>(DicomTag tag, Random random) =>
-            new DicomCodeString(tag, RandomEnum<T>(random).ToString());
+        private static readonly DicomTag[] DicomAgeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientAge,
+        };
 
         /// <summary>
-        /// Func to create a random PatientSex DicomCodeString.
+        /// List of DicomTags to randomise with RandomDicomPersonName.
         /// </summary>
-        private static Func<DicomTag, Random, DicomItem> RandomDicomPatientSexCodeString = RandomDicomCodeString<DicomPatientSexCodeString>;
+        private static readonly DicomTag[] DicomPersonNameTagRandomisers = new[]
+        {
+            DicomTag.OperatorsName,
+            DicomTag.PatientName,
+            DicomTag.PerformingPhysicianName,
+            DicomTag.PhysiciansOfRecord,
+            DicomTag.ReferringPhysicianName,
+        };
 
         /// <summary>
-        /// Func to create a random RandomDicomDate.
+        /// List of DicomTags to randomise with RandomDicomShortString.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomDate = (tag, random) =>
-            new DicomDate(tag, DateTime.UtcNow.AddDays(random.NextDouble() * 1000.0));
+        private static readonly DicomTag[] DicomShortStringTagRandomisers = new[]
+        {
+            //DicomTag.ImplementationVersionName,
+            DicomTag.AccessionNumber,
+            DicomTag.StationName,
+            DicomTag.StudyID,
+        };
 
         /// <summary>
-        /// Func to create a random DicomAgeString.
+        /// List of DicomTags to randomise with RandomDicomLongString.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomAgeString = (tag, random) =>
-            new DicomAgeString(tag, string.Format("{0:D3}Y", random.Next(18, 100)));
+        private static readonly DicomTag[] DicomLongStringTagRandomisers = new[]
+        {
+            DicomTag.Manufacturer,
+            DicomTag.InstitutionName,
+            DicomTag.StudyDescription,
+            DicomTag.SeriesDescription,
+            DicomTag.InstitutionalDepartmentName,
+            DicomTag.ManufacturerModelName,
+            DicomTag.PatientID,
+            DicomTag.IssuerOfPatientID,
+            DicomTag.PatientAddress,
+            DicomTag.SoftwareVersions,
+        };
 
         /// <summary>
-        /// Func to create a random DicomPersonName.
+        /// List of DicomTags to randomise with RandomDicomShortText.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomPersonName = (tag, random) =>
-            new DicomPersonName(tag,
-                RandomString(random, 9), // Last
-                RandomStringOrEmpty(random, 8), // First
-                RandomStringOrEmpty(random, 7), // Middle
-                RandomStringOrEmpty(random, 6), // Prefix
-                RandomStringOrEmpty(random, 3)); // Suffix
+        private static readonly DicomTag[] DicomShortTextTagRandomisers = new[]
+        {
+            DicomTag.InstitutionAddress,
+        };
 
         /// <summary>
-        /// Func to create a random RandomDicomShortString.
+        /// List of DicomTags to randomise with RandomDicomLongText.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortString = (tag, random) =>
-            new DicomShortString(tag, RandomString(random, 12));
+        private static readonly DicomTag[] DicomLongTextTagRandomisers = new[]
+        {
+            DicomTag.AdditionalPatientHistory,
+            DicomTag.PatientComments,
+        };
 
         /// <summary>
-        /// Func to create a random RandomDicomShortText.
+        /// List of DicomTags to randomise with RandomDicomDate.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortText = (tag, random) =>
-            new DicomShortText(tag, RandomString(random, 33));
+        private static readonly DicomTag[] DicomDateTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationDate,
+            DicomTag.StudyDate,
+            DicomTag.SeriesDate,
+            DicomTag.AcquisitionDate,
+            DicomTag.ContentDate,
+            DicomTag.PatientBirthDate,
+        };
 
         /// <summary>
-        /// Func to create a random RandomDicomLongString.
+        /// List of DicomTags to randomise with RandomDicomTime.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongString = (tag, random) =>
-            new DicomLongString(tag, RandomString(random, 18));
+        private static readonly DicomTag[] DicomTimeTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationTime,
+            DicomTag.StudyTime,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesTime,
+        };
 
         /// <summary>
-        /// Func to create a random RandomDicomLongText.
+        /// List of DicomTags to randomise with RandomDicomPatientSexCodeString.
         /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongText = (tag, random) =>
-            new DicomLongText(tag, RandomString(random, 65));
-
-        /// <summary>
-        /// Func to create a random RandomDicomTime.
-        /// </summary>
-        private static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
-            new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
+        private static readonly DicomTag[] DicomSexCodeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientSex,
+        };
 
         /// <summary>
         /// List of DicomTags to randomise and a function to use to do the randomisation.
         /// </summary>
-        private static readonly Tuple<DicomTag, Func<DicomTag, Random, DicomItem>>[] DicomTagRandomisers = new[]
+        public static readonly Tuple<DicomTag[], Func<DicomTag, Random, DicomItem>>[] DicomTagRandomisers = new[]
         {
-            Tuple.Create(DicomTag.PatientAge, RandomDicomAgeString),
-
-            Tuple.Create(DicomTag.OperatorsName, RandomDicomPersonName),
-            Tuple.Create(DicomTag.PatientName, RandomDicomPersonName),
-            Tuple.Create(DicomTag.PerformingPhysicianName, RandomDicomPersonName),
-            Tuple.Create(DicomTag.PhysiciansOfRecord, RandomDicomPersonName),
-            Tuple.Create(DicomTag.ReferringPhysicianName, RandomDicomPersonName),
-
-            //Tuple.Create(DicomTag.ImplementationVersionName, RandomDicomShortString),
-            Tuple.Create(DicomTag.AccessionNumber, RandomDicomShortString),
-            Tuple.Create(DicomTag.StationName, RandomDicomShortString),
-            Tuple.Create(DicomTag.StudyID, RandomDicomShortString),
-
-            Tuple.Create(DicomTag.Manufacturer, RandomDicomLongString),
-            Tuple.Create(DicomTag.InstitutionName, RandomDicomLongString),
-            Tuple.Create(DicomTag.StudyDescription, RandomDicomLongString),
-            Tuple.Create(DicomTag.SeriesDescription, RandomDicomLongString),
-            Tuple.Create(DicomTag.InstitutionalDepartmentName, RandomDicomLongString),
-            Tuple.Create(DicomTag.ManufacturerModelName, RandomDicomLongString),
-            Tuple.Create(DicomTag.PatientID, RandomDicomLongString),
-            Tuple.Create(DicomTag.IssuerOfPatientID, RandomDicomLongString),
-            Tuple.Create(DicomTag.PatientAddress, RandomDicomLongString),
-            Tuple.Create(DicomTag.SoftwareVersions, RandomDicomLongString),
-
-            Tuple.Create(DicomTag.InstitutionAddress, RandomDicomShortText),
-
-            Tuple.Create(DicomTag.AdditionalPatientHistory, RandomDicomLongText),
-            Tuple.Create(DicomTag.PatientComments, RandomDicomLongText),
-
-            Tuple.Create(DicomTag.InstanceCreationDate, RandomDicomDate),
-            Tuple.Create(DicomTag.StudyDate, RandomDicomDate),
-            Tuple.Create(DicomTag.SeriesDate, RandomDicomDate),
-            Tuple.Create(DicomTag.AcquisitionDate, RandomDicomDate),
-            Tuple.Create(DicomTag.ContentDate, RandomDicomDate),
-            Tuple.Create(DicomTag.PatientBirthDate, RandomDicomDate),
-
-            Tuple.Create(DicomTag.InstanceCreationTime, RandomDicomTime),
-            Tuple.Create(DicomTag.StudyTime, RandomDicomTime),
-            Tuple.Create(DicomTag.SeriesTime, RandomDicomTime),
-            Tuple.Create(DicomTag.SeriesTime, RandomDicomTime),
-
-            Tuple.Create(DicomTag.PatientSex, RandomDicomPatientSexCodeString),
+            Tuple.Create(DicomAgeStringTagRandomisers, RandomDicomAgeString),
+            Tuple.Create(DicomPersonNameTagRandomisers, RandomDicomPersonName),
+            Tuple.Create(DicomShortStringTagRandomisers, RandomDicomShortString),
+            Tuple.Create(DicomLongStringTagRandomisers, RandomDicomLongString),
+            Tuple.Create(DicomShortTextTagRandomisers, RandomDicomShortText),
+            Tuple.Create(DicomLongTextTagRandomisers, RandomDicomLongText),
+            Tuple.Create(DicomDateTagRandomisers, RandomDicomDate),
+            Tuple.Create(DicomTimeTagRandomisers, RandomDicomTime),
+            Tuple.Create(DicomSexCodeStringTagRandomisers, RandomDicomPatientSexCodeString),
         };
     }
 }
