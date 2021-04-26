@@ -307,7 +307,7 @@
 
         protected MockInnerEyeSegmentationClient GetMockInnerEyeSegmentationClient()
         {
-            var realClient = (InnerEyeSegmentationClient)TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke();
+            var realClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke();
             return new MockInnerEyeSegmentationClient(realClient);
         }
 

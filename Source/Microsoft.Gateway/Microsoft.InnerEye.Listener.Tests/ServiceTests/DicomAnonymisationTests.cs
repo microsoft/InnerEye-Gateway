@@ -356,5 +356,230 @@
                 Assert.IsTrue(acceptedTags.Contains(item), $"The Dicom file contained the Tag: {item.DictionaryEntry.Name}");
             }
         }
+
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomAgeString.
+        /// </summary>
+        private static readonly DicomTag[] DicomAgeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientAge,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomPersonName.
+        /// </summary>
+        private static readonly DicomTag[] DicomPersonNameTagRandomisers = new[]
+        {
+            DicomTag.OperatorsName,
+            DicomTag.PatientName,
+            DicomTag.PerformingPhysicianName,
+            DicomTag.PhysiciansOfRecord,
+            DicomTag.ReferringPhysicianName,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomShortString.
+        /// </summary>
+        private static readonly DicomTag[] DicomShortStringTagRandomisers = new[]
+        {
+            //DicomTag.ImplementationVersionName,
+            DicomTag.AccessionNumber,
+            DicomTag.StationName,
+            DicomTag.StudyID,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomLongString.
+        /// </summary>
+        private static readonly DicomTag[] DicomLongStringTagRandomisers = new[]
+        {
+            DicomTag.Manufacturer,
+            DicomTag.InstitutionName,
+            DicomTag.StudyDescription,
+            DicomTag.SeriesDescription,
+            DicomTag.InstitutionalDepartmentName,
+            DicomTag.ManufacturerModelName,
+            DicomTag.PatientID,
+            DicomTag.IssuerOfPatientID,
+            DicomTag.PatientAddress,
+            DicomTag.SoftwareVersions,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomShortText.
+        /// </summary>
+        private static readonly DicomTag[] DicomShortTextTagRandomisers = new[]
+        {
+            DicomTag.InstitutionAddress,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomLongText.
+        /// </summary>
+        private static readonly DicomTag[] DicomLongTextTagRandomisers = new[]
+        {
+            DicomTag.AdditionalPatientHistory,
+            DicomTag.PatientComments,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomDate.
+        /// </summary>
+        private static readonly DicomTag[] DicomDateTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationDate,
+            DicomTag.StudyDate,
+            DicomTag.SeriesDate,
+            DicomTag.AcquisitionDate,
+            DicomTag.ContentDate,
+            DicomTag.PatientBirthDate,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomTime.
+        /// </summary>
+        private static readonly DicomTag[] DicomTimeTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationTime,
+            DicomTag.StudyTime,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesTime,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomPatientSexCodeString.
+        /// </summary>
+        private static readonly DicomTag[] DicomSexCodeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientSex,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise and a function to use to do the randomisation.
+        /// </summary>
+        public static readonly Tuple<DicomTag[], Func<DicomTag, Random, DicomItem>>[] DicomTagRandomisers = new[]
+        {
+            Tuple.Create(DicomAgeStringTagRandomisers, RandomDicomAgeString),
+            Tuple.Create(DicomPersonNameTagRandomisers, RandomDicomPersonName),
+            Tuple.Create(DicomShortStringTagRandomisers, RandomDicomShortString),
+            Tuple.Create(DicomLongStringTagRandomisers, RandomDicomLongString),
+            Tuple.Create(DicomShortTextTagRandomisers, RandomDicomShortText),
+            Tuple.Create(DicomLongTextTagRandomisers, RandomDicomLongText),
+            Tuple.Create(DicomDateTagRandomisers, RandomDicomDate),
+            Tuple.Create(DicomTimeTagRandomisers, RandomDicomTime),
+            Tuple.Create(DicomSexCodeStringTagRandomisers, RandomDicomPatientSexCodeString),
+        };
+
+        /// <summary>
+        /// Add some random tags.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="dicomFile">Dicom file to update.</param>
+        public static void AddRandomTags(Random random, DicomFile dicomFile)
+        {
+            var dataSet = dicomFile.Dataset;
+
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    dataSet.AddOrUpdate(dicomTagRandomiserPair.Item2.Invoke(dicomTag, random));
+                }
+            }
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be randomised.")]
+        [TestMethod]
+        public async Task TestDataSetRandomise()
+        {
+            var sourceDirectory = CreateTemporaryDirectory();
+            var random = new Random();
+
+            var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
+
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
+            var originalDataset = originalDicomFile.Dataset.Clone();
+
+            AddRandomTags(random, originalDicomFile);
+            var sourceDataset = originalDicomFile.Dataset;
+
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    var originalValue = originalDataset.GetSingleValueOrDefault(dicomTag, string.Empty);
+                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+
+                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                    Assert.AreNotEqual(originalValue, sourceValue);
+                }
+            }
+
+            var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
+            await originalDicomFile.SaveAsync(sourceImageFilePath);
+
+            var reloadedDicomFile = await DicomFile.OpenAsync(sourceImageFilePath, FileReadOption.ReadAll);
+            var reloadDataSet = reloadedDicomFile.Dataset;
+
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+                    var reloadedValue = reloadDataSet.GetSingleValue<string>(dicomTag);
+
+                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                    Assert.AreEqual(sourceValue, reloadedValue);
+
+                    /*
+                    var sourceItemValue = sourceDataset.GetSingleValue<DicomItem>(dicomTag);
+                    var reloadedItemValue = reloadDataSet.GetSingleValue<DicomItem>(dicomTag);
+
+                    Assert.IsNotNull(sourceItemValue);
+                    Assert.AreEqual(sourceItemValue, reloadedItemValue);
+                    */
+                }
+            }
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymised/de-anonymised, just the top level replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
+        {
+            var random = new Random();
+
+            var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
+
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
+            var originalDataset = originalDicomFile.Dataset;
+
+            AddRandomTags(random, originalDicomFile);
+
+            var innerEyeSegmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()();
+
+            var anonymizedFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+
+            var deanonymizedOriginalFile = innerEyeSegmentationClient.DeanonymizeDicomFile(
+                anonymizedFile,
+                new[] { anonymizedFile },
+                innerEyeSegmentationClient.TopLevelReplacements,
+                Array.Empty<TagReplacement>(),
+                innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
+                innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+
+            var deanonymizedDataset = deanonymizedOriginalFile.Dataset;
+
+            foreach (var dicomTag in innerEyeSegmentationClient.TopLevelReplacements)
+            {
+                var sourceValue = originalDataset.GetSingleValue<string>(dicomTag);
+                var reloadedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+
+                Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                Assert.AreEqual(sourceValue, reloadedValue);
+            }
+        }
     }
 }
