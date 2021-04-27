@@ -490,61 +490,6 @@
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be randomised.")]
-        [TestMethod]
-        public async Task TestDataSetRandomise()
-        {
-            var sourceDirectory = CreateTemporaryDirectory();
-            var random = new Random();
-
-            var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
-
-            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
-            var originalDataset = originalDicomFile.Dataset.Clone();
-
-            AddRandomTags(random, originalDicomFile);
-            var sourceDataset = originalDicomFile.Dataset;
-
-            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
-            {
-                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
-                {
-                    var originalValue = originalDataset.GetSingleValueOrDefault(dicomTag, string.Empty);
-                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
-
-                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
-                    Assert.AreNotEqual(originalValue, sourceValue);
-                }
-            }
-
-            var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
-            await originalDicomFile.SaveAsync(sourceImageFilePath);
-
-            var reloadedDicomFile = await DicomFile.OpenAsync(sourceImageFilePath, FileReadOption.ReadAll);
-            var reloadDataSet = reloadedDicomFile.Dataset;
-
-            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
-            {
-                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
-                {
-                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
-                    var reloadedValue = reloadDataSet.GetSingleValue<string>(dicomTag);
-
-                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
-                    Assert.AreEqual(sourceValue, reloadedValue);
-
-                    /*
-                    var sourceItemValue = sourceDataset.GetSingleValue<DicomItem>(dicomTag);
-                    var reloadedItemValue = reloadDataSet.GetSingleValue<DicomItem>(dicomTag);
-
-                    Assert.IsNotNull(sourceItemValue);
-                    Assert.AreEqual(sourceItemValue, reloadedItemValue);
-                    */
-                }
-            }
-        }
-
-        [TestCategory("DicomAnonymisationDCMTK")]
         [Description("Check data sets can be anonymised/de-anonymised, just the top level replacements.")]
         [TestMethod]
         public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
@@ -554,31 +499,76 @@
             var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
 
             var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
-            var originalDataset = originalDicomFile.Dataset;
+            // Make a copy of the existing DicomDataset
+            var originalDataset = originalDicomFile.Dataset.Clone();
 
             AddRandomTags(random, originalDicomFile);
+            var sourceDataset = originalDicomFile.Dataset;
+
+            // Check that the randomisation of the DicomDataset has actually changed the tags
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    // Value may not even exist in the original dataset
+                    var originalValue = originalDataset.GetSingleValueOrDefault(dicomTag, string.Empty);
+                    // But should always exist after randomisation
+                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+
+                    // Check they are different, as strings.
+                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                    Assert.AreNotEqual(originalValue, sourceValue);
+                }
+            }
 
             var innerEyeSegmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()();
 
-            var anonymizedFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+            // Anonymize the original DICOM file
+            var anonymizedDicomFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
 
-            var deanonymizedOriginalFile = innerEyeSegmentationClient.DeanonymizeDicomFile(
-                anonymizedFile,
+            anonymizedDicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions, "Microsoft InnerEye Gateway:");
+
+            // Check it has been anonymized
+            AssertDicomFileIsAnonymised(anonymizedDicomFile);
+
+            // And then deanonymize it using the original
+            var deanonymizedDicomFile = innerEyeSegmentationClient.DeanonymizeDicomFile(
+                anonymizedDicomFile,
                 new[] { originalDicomFile },
                 innerEyeSegmentationClient.TopLevelReplacements,
                 Array.Empty<TagReplacement>(),
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
 
-            var deanonymizedDataset = deanonymizedOriginalFile.Dataset;
+            var deanonymizedDataset = deanonymizedDicomFile.Dataset;
 
+            // Check the TopLevelReplacements have been copied.
             foreach (var dicomTag in innerEyeSegmentationClient.TopLevelReplacements)
             {
-                var sourceValue = originalDataset.GetSingleValue<string>(dicomTag);
-                var reloadedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+                var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+                var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
 
                 Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
-                Assert.AreEqual(sourceValue, reloadedValue);
+                Assert.AreEqual(sourceValue, deanonymizedValue);
+            }
+
+            // Check the other tags are preserved
+            foreach (var dicomTagAnonymization in innerEyeSegmentationClient.SegmentationAnonymisationProtocol)
+            {
+                var dicomTag = dicomTagAnonymization.DicomTagIndex.DicomTag;
+
+                if (sourceDataset.Contains(dicomTag))
+                {
+                    var valueCount = sourceDataset.GetValueCount(dicomTag);
+                    for (var i = 0; i < valueCount; i++)
+                    {
+                        var sourceValue = sourceDataset.GetValue<string>(dicomTag, i);
+                        var deanonymizedValue = deanonymizedDataset.GetValue<string>(dicomTag, i);
+
+                        Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                        Assert.AreEqual(sourceValue, deanonymizedValue);
+                    }
+                }
             }
         }
     }

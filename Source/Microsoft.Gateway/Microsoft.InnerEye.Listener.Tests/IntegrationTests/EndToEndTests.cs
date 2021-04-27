@@ -23,8 +23,8 @@
         public const int IntegrationTestTimeout = 20 * 60 * 1000;
 
         [TestCategory("IntegrationTests")]
-        // [Timeout(IntegrationTestTimeout)]
-        // [Ignore("Integration test, relies on live API")]
+        [Timeout(IntegrationTestTimeout)]
+        [Ignore("Integration test, relies on live API")]
         [Description("Pushes an entire DICOM Image Series.")]
         [TestMethod]
         public async Task IntegrationTestEndToEnd()
