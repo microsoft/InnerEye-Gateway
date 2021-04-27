@@ -31,7 +31,7 @@
         Guid SegmentationAnonymisationProtocolId { get; }
 
         /// <summary>
-        /// Gets the list of tags that are copied directly from reference to de-anonymised output.
+        /// Gets the list of tags that are copied directly from reference to deanonymised output.
         /// </summary>
         IEnumerable<DicomTag> TopLevelReplacements { get; }
 

@@ -490,7 +490,7 @@
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be anonymised/de-anonymised, just the top level replacements.")]
+        [Description("Check data sets can be anonymised/deanonymised, just the top level replacements.")]
         [TestMethod]
         public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
         {

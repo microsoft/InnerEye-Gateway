@@ -109,17 +109,17 @@
             }
         }
 
-        /// <inheritdoc />
         public DicomFile AnonymizeDicomFile(DicomFile dicomFile, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol)
         {
             return _InnerEyeSegmentationClient.AnonymizeDicomFile(dicomFile, anonymisationProtocolId, anonymisationProtocol);
         }
 
         /// <inheritdoc />
-        public IEnumerable<DicomFile> AnonymizeDicomFiles(IEnumerable<DicomFile> dicomFiles, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol)
-        {
-            return _InnerEyeSegmentationClient.AnonymizeDicomFiles(dicomFiles, anonymisationProtocolId, anonymisationProtocol);
-        }
+        public IEnumerable<DicomFile> AnonymizeDicomFiles(
+            IEnumerable<DicomFile> dicomFiles,
+            Guid anonymisationProtocolId,
+            IEnumerable<DicomTagAnonymisation> anonymisationProtocol) =>
+                _InnerEyeSegmentationClient.AnonymizeDicomFiles(dicomFiles, anonymisationProtocolId, anonymisationProtocol);
 
         private async Task DelayAndThrowExceptionIfNotNull(Exception e)
         {

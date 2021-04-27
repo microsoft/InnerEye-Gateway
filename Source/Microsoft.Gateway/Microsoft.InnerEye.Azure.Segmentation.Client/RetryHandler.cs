@@ -58,7 +58,7 @@
                 }
                 catch (Exception e)
                 {
-                    Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, swith exception {e}");
+                    Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, with exception {e}");
                 }
 
                 if (i >= MaxRetries)

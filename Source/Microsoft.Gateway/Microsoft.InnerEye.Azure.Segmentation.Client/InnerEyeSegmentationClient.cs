@@ -23,26 +23,6 @@
     /// <seealso cref="IInnerEyeSegmentationClient" />
     public sealed class InnerEyeSegmentationClient : IInnerEyeSegmentationClient
     {
-        /// <summary>
-        /// Default value for the StructureSetLabel DICOM tag in segmentation results
-        /// </summary>
-        public const string InnerEye = "InnerEye";
-
-        /// <summary>
-        /// Default value for the SeriesDescription and StructureSetName DICOM tags in segmentation results
-        /// </summary>
-        public const string NotForClinicalUse = "NOT FOR CLINICAL USE";
-
-        /// <summary>
-        /// Default value for the Manufacturer DICOM tags in segmentation results
-        /// </summary>
-        public const string MicrosoftCorp = "Microsoft Corporation";
-
-        /// <summary>
-        /// Progress value defining if a segmentation task is complete
-        /// </summary>
-        public const int ProgressCompleted = 100;
-
         private const string AuthTokenHeaderName = "API_AUTH_SECRET";
 
         /// <summary>
