@@ -489,13 +489,14 @@
             }
         }
 
-        [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be anonymised/deanonymised, just the top level replacements.")]
-        [TestMethod]
-        public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
+        /// <summary>
+        /// Test anonymisation/deanonymisation preserves some of the tags, replaces some others and drops the rest.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="tagReplacements">Tag replacements.</param>
+        /// <returns>Awaitable task.</returns>
+        public async Task TestDataSetAnonymiseDeanonymize(Random random, IEnumerable<TagReplacement> tagReplacements)
         {
-            var random = new Random();
-
             var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
 
             var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
@@ -536,11 +537,13 @@
                 anonymizedDicomFile,
                 new[] { originalDicomFile },
                 innerEyeSegmentationClient.TopLevelReplacements,
-                Array.Empty<TagReplacement>(),
+                tagReplacements,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
 
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
+
+            var replacementTags = tagReplacements.Select(r => r.DicomTagIndex.DicomTag).ToList();
 
             var sourceDicomTags = sourceDataset.Select(x => x.Tag).ToList();
             var deanonymizedDicomTags = deanonymizedDataset.Select(x => x.Tag).ToList();
@@ -548,7 +551,10 @@
             // SoftwareVersion has been rewritten, so exclude from the test.
             sourceDicomTags.Remove(DicomTag.SoftwareVersions);
 
-            foreach (var dicomTag in sourceDicomTags)
+            // Replacement tags will be different... they are checked separately
+            var sourceDicomTagsExceptReplacements = sourceDicomTags.Except(replacementTags).ToList();
+
+            foreach (var dicomTag in sourceDicomTagsExceptReplacements)
             {
                 // TopLevelReplacements must be copied, others are optional, depending on innerEyeSegmentationClient.SegmentationAnonymisationProtocol
                 if (innerEyeSegmentationClient.TopLevelReplacements.Contains(dicomTag) ||
@@ -577,6 +583,71 @@
             {
                 Assert.IsTrue(sourceDicomTags.Contains(dicomTag));
             }
+
+            foreach (var tagReplacement in tagReplacements)
+            {
+                var dicomTag = tagReplacement.DicomTagIndex.DicomTag;
+
+                if (deanonymizedDicomTags.Contains(dicomTag))
+                {
+                    if (tagReplacement.Operation == TagReplacementOperation.AppendIfExists)
+                    {
+                        var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+                        var expectedValue = sourceValue + tagReplacement.Value;
+                        var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+
+                        Assert.AreEqual(expectedValue, deanonymizedValue);
+                    }
+                    else if (tagReplacement.Operation == TagReplacementOperation.UpdateIfExists)
+                    {
+                        var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+
+                        Assert.AreEqual(tagReplacement.Value, deanonymizedValue);
+                    }
+                }
+            }
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymised/deanonymised, just the top level replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
+        {
+            var random = new Random();
+
+            await TestDataSetAnonymiseDeanonymize(random, Array.Empty<TagReplacement>());
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymised/deanonymised, with append if exists replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymiseDeanonymizeAppendIfExistsReplacements()
+        {
+            var random = new Random();
+
+            var tagReplacements = DicomLongStringTagRandomisers.Select(
+                dicomTag => new TagReplacement(
+                    TagReplacementOperation.AppendIfExists,
+                    new DicomConstraints.DicomTagIndex(dicomTag),
+                    RandomString(random, 8))).ToList();
+
+            await TestDataSetAnonymiseDeanonymize(random, tagReplacements);
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymised/deanonymised, with update if exists replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymiseDeanonymizeUpdateIfExistsReplacements()
+        {
+            var random = new Random();
+
+            var tagReplacements = DicomLongStringTagRandomisers.Select(
+                dicomTag => new TagReplacement(
+                    TagReplacementOperation.UpdateIfExists,
+                    new DicomConstraints.DicomTagIndex(dicomTag),
+                    RandomString(random, 8))).ToList();
+
+            await TestDataSetAnonymiseDeanonymize(random, tagReplacements);
         }
     }
 }
