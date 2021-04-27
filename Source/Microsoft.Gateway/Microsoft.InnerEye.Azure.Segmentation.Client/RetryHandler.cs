@@ -58,7 +58,7 @@
                 }
                 catch (Exception e)
                 {
-                    Trace.TraceWarning($"Request failed {request} with exception {e}");
+                    Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, swith exception {e}");
                 }
 
                 if (i >= MaxRetries)
@@ -67,7 +67,7 @@
                 }
 
                 i++;
-                Trace.TraceWarning($"Retrying {request} retry count = {i}");
+                Trace.TraceWarning($"Retrying Method: {request.Method}, RequestUri: {request.RequestUri}, retry count = {i}");
 
                 await Task.Delay(RetryDelayInMilliseconds);
             }
