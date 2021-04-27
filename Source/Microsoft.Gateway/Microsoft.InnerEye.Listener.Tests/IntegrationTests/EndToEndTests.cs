@@ -7,7 +7,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Dicom;
-    using Microsoft.InnerEye.Azure.Segmentation.Client;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
@@ -23,36 +23,49 @@
         public const int IntegrationTestTimeout = 20 * 60 * 1000;
 
         [TestCategory("IntegrationTests")]
-        [Timeout(IntegrationTestTimeout)]
-        [Ignore("Integration test, relies on live API")]
+        //[Timeout(IntegrationTestTimeout)]
+        //[Ignore("Integration test, relies on live API")]
         [Description("Pushes an entire DICOM Image Series.")]
         [TestMethod]
         public async Task IntegrationTestEndToEnd()
         {
+#if false
             var segmentationClient = (IInnerEyeSegmentationClient)null;// GetMockInnerEyeSegmentationClient();
-
             var sourceDirectory = CreateTemporaryDirectory();
+            var resultDirectory = CreateTemporaryDirectory();
+#else
+            var segmentationClient = GetMockInnerEyeSegmentationClient();
 
-            var sampleSourceDicomFile = (DicomFile)null;
+            var sourceDirectory = new DirectoryInfo(@"Images\KeepHN");
+            if (!sourceDirectory.Exists)
+            {
+                sourceDirectory.Create();
+            }
+
+            var resultDirectory = new DirectoryInfo(@"Images\KeepHNResults");
+            if (!resultDirectory.Exists)
+            {
+                resultDirectory.Create();
+            }
+#endif
 
             var random = new Random();
 
-            foreach (var sourceImageFileInfo in new DirectoryInfo(@"Images\HN").GetFiles())
+            // Copy all files from Images\HN because the tags are going to be randomised
+            foreach (var fileInfo in new DirectoryInfo(@"Images\HN").GetFiles())
             {
-                var dicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
+                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, fileInfo.Name);
 
-                DicomAnonymisationTests.AddRandomTags(random, dicomFile);
-
-                sampleSourceDicomFile = sampleSourceDicomFile ?? dicomFile;
-
-                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourceImageFileInfo.Name);
-
-                await dicomFile.SaveAsync(sourceImageFilePath);
+                File.Copy(fileInfo.FullName, sourceImageFilePath, true);
             }
 
-            var testAETConfigModel = GetTestAETConfigModel();
+            var sourceDicomFiles = sourceDirectory.GetFiles().Select(f => DicomFile.Open(f.FullName, FileReadOption.ReadAll)).ToArray();
 
-            var resultDirectory = CreateTemporaryDirectory();
+            DicomAnonymisationTests.AddRandomTags(random, sourceDicomFiles);
+
+            var originalSlice = sourceDicomFiles.First();
+
+            var testAETConfigModel = GetTestAETConfigModel();
 
             var receivePort = 160;
 
@@ -117,10 +130,6 @@
 
                 Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
 
-                var originalSlice = sampleSourceDicomFile;
-
-                Assert.IsNotNull(originalSlice);
-
                 var receivedFiles = new DirectoryInfo(folderPath).GetFiles();
                 Assert.AreEqual(1, receivedFiles.Length);
 
@@ -130,48 +139,7 @@
 
                 Assert.IsNotNull(dicomFile);
 
-                var constantStrings = new[]
-                {
-                    DicomTag.StudyDate,
-                    DicomTag.AccessionNumber,
-                    DicomTag.ReferringPhysicianName,
-                    DicomTag.PatientName,
-                    DicomTag.PatientID,
-                    DicomTag.PatientBirthDate,
-                    DicomTag.StudyInstanceUID,
-                    DicomTag.StudyID
-                };
-
-                foreach (var constantString in constantStrings)
-                {
-                    //Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(constantString), dicomFile.Dataset.GetSingleValue<string>(constantString));
-                }
-
-                var constantOptionalStrings = new[]
-                {
-                    DicomTag.StudyDescription,
-                };
-
-                foreach (var constantOptionalString in constantOptionalStrings)
-                {
-                    //Assert.AreEqual(originalSlice.Dataset.GetSingleValueOrDefault(constantOptionalString, string.Empty), dicomFile.Dataset.GetSingleValueOrDefault(constantOptionalString, string.Empty));
-                }
-
-                var expectedStrings = new[]
-                {
-                    Tuple.Create("RTSTRUCT", DicomTag.Modality),
-                    Tuple.Create("Microsoft Corporation", DicomTag.Manufacturer),
-                    Tuple.Create("NOT FOR CLINICAL USE", DicomTag.SeriesDescription),
-                    Tuple.Create("ANONYM", DicomTag.OperatorsName),
-                    Tuple.Create("511091532", DicomTag.SeriesNumber),
-                    Tuple.Create("1.2.840.10008.5.1.4.1.1.481.3", DicomTag.SOPClassUID),
-                };
-
-                foreach (var expectedString in expectedStrings)
-                {
-                    Assert.AreEqual(expectedString.Item1, dicomFile.Dataset.GetSingleValue<string>(expectedString.Item2));
-                }
-
+                /*
                 Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
                 Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:"));
                 Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:"));
@@ -181,8 +149,17 @@
                 Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
                 Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
                 Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
+                */
 
-                DicomAnonymisationTests.VerifyDicomFile(receivedFilePath);
+                //DicomAnonymisationTests.VerifyDicomFile(receivedFilePath);
+
+                var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, sourceDicomFiles);
+
+                DicomAnonymisationTests.AssertDeanonymizedFile(
+                    originalSlice,
+                    dicomFile,
+                    segmentationClient,
+                    matchedModel.Result.TagReplacements);
             }
         }
     }

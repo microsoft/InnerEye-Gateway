@@ -50,6 +50,8 @@
 
             try
             {
+                // Note that Visual Studio must be running as Administrator in order to set the environment variable,
+                // otherwise there will be a SecurityException.
                 TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: Guid.NewGuid().ToString());
 
                 using (var configurationService = CreateConfigurationService(

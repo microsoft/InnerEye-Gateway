@@ -11,6 +11,7 @@
     using Dicom;
 
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
+    using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Listener.Common;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
     using Microsoft.InnerEye.Listener.Tests.Models;
@@ -475,16 +476,19 @@
         /// Add some random tags.
         /// </summary>
         /// <param name="random">Random.</param>
-        /// <param name="dicomFile">Dicom file to update.</param>
-        public static void AddRandomTags(Random random, DicomFile dicomFile)
+        /// <param name="dicomFiles">DicomFiles to update.</param>
+        public static void AddRandomTags(Random random, IEnumerable<DicomFile> dicomFiles)
         {
-            var dataSet = dicomFile.Dataset;
-
             foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
             {
                 foreach (var dicomTag in dicomTagRandomiserPair.Item1)
                 {
-                    dataSet.AddOrUpdate(dicomTagRandomiserPair.Item2.Invoke(dicomTag, random));
+                    var dicomItem = dicomTagRandomiserPair.Item2.Invoke(dicomTag, random);
+
+                    foreach (var dicomFile in dicomFiles)
+                    {
+                        dicomFile.Dataset.AddOrUpdate(dicomItem);
+                    }
                 }
             }
         }
@@ -503,7 +507,7 @@
             // Make a copy of the existing DicomDataset
             var originalDataset = originalDicomFile.Dataset.Clone();
 
-            AddRandomTags(random, originalDicomFile);
+            AddRandomTags(random, new[] { originalDicomFile });
             var sourceDataset = originalDicomFile.Dataset;
 
             // Check that the randomisation of the DicomDataset has actually changed the tags
@@ -541,6 +545,23 @@
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
 
+            AssertDeanonymizedFile(originalDicomFile, deanonymizedDicomFile, innerEyeSegmentationClient, tagReplacements);
+        }
+
+        /// <summary>
+        /// Check that a deanonymized DicomFile has the correct tags for a source DicomFile.
+        /// </summary>
+        /// <param name="originalDicomFile">Source DicomFile.</param>
+        /// <param name="deanonymizedDicomFile">Deanonymized DicomFile.</param>
+        /// <param name="innerEyeSegmentationClient">Segmentation client for list of top level replacements.</param>
+        /// <param name="tagReplacements">List of tag replacements.</param>
+        public static void AssertDeanonymizedFile(
+            DicomFile originalDicomFile,
+            DicomFile deanonymizedDicomFile,
+            IInnerEyeSegmentationClient innerEyeSegmentationClient,
+            IEnumerable<TagReplacement> tagReplacements)
+        {
+            var sourceDataset = originalDicomFile.Dataset;
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
 
             var replacementTags = tagReplacements.Select(r => r.DicomTagIndex.DicomTag).ToList();
@@ -584,6 +605,8 @@
                 Assert.IsTrue(sourceDicomTags.Contains(dicomTag));
             }
 
+            var tagReplacementCheckCount = 0;
+
             foreach (var tagReplacement in tagReplacements)
             {
                 var dicomTag = tagReplacement.DicomTagIndex.DicomTag;
@@ -597,14 +620,24 @@
                         var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
 
                         Assert.AreEqual(expectedValue, deanonymizedValue);
+
+                        tagReplacementCheckCount++;
                     }
                     else if (tagReplacement.Operation == TagReplacementOperation.UpdateIfExists)
                     {
                         var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
 
                         Assert.AreEqual(tagReplacement.Value, deanonymizedValue);
+
+                        tagReplacementCheckCount++;
                     }
                 }
+            }
+
+            // If there are some tag replacements, check that checks have happened
+            if (tagReplacements.Any())
+            {
+                Assert.IsTrue(tagReplacementCheckCount > 0);
             }
         }
 
