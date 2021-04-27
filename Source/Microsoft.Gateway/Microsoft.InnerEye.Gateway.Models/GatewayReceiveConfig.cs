@@ -39,6 +39,22 @@
             ConfigurationServiceConfig = configurationServiceConfig;
         }
 
+        /// <summary>
+        /// Clone this into a new instance of the <see cref="GatewayReceiveConfig"/> class, optionally replacing some properties.
+        /// </summary>
+        /// <param name="serviceSettings">Optional new service settings.</param>
+        /// <param name="receiveServiceConfig">Optional new receive service config.</param>
+        /// <param name="configurationServiceConfig">Optional new configuration service config.</param>
+        /// <returns>New GatewayReceiveConfig.</returns>
+        public GatewayReceiveConfig With(
+            ServiceSettings serviceSettings = null,
+            ReceiveServiceConfig receiveServiceConfig = null,
+            ConfigurationServiceConfig configurationServiceConfig = null) =>
+                new GatewayReceiveConfig(
+                    serviceSettings ?? ServiceSettings,
+                    receiveServiceConfig ?? ReceiveServiceConfig,
+                    configurationServiceConfig ?? ConfigurationServiceConfig);
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {

@@ -19,8 +19,6 @@
         /// </summary>
         public static void Main()
         {
-            var configurationsPathRoot = "../../../../../SampleConfigurations";
-
             // Create the loggerFactory as Console + Log4Net.
             using (var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -29,6 +27,13 @@
                 builder.AddLog4Net();
             }))
             {
+                var relativePaths = new[] {
+                    "../Config",
+                    "../../../../../SampleConfigurations"
+                };
+
+                var configurationsPathRoot = ConfigurationService.FindRelativeDirectory(relativePaths, loggerFactory.CreateLogger("Main"));
+
                 var aetConfigurationProvider = new AETConfigProvider(
                     loggerFactory.CreateLogger("ModelSettings"),
                     configurationsPathRoot);
@@ -37,17 +42,19 @@
                     loggerFactory.CreateLogger("ProcessorSettings"),
                     configurationsPathRoot);
 
+                var segmentationClientLogger = loggerFactory.CreateLogger("SegmentationClient");
+
                 // The ProjectInstaller.cs uses the service name to install the service.
                 // If you change it please update the ProjectInstaller.cs
                 ServiceHelpers.RunServices(
                 ServiceName,
                 gatewayProcessorConfigProvider.ServiceSettings(),
                 new ConfigurationService(
-                    gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
+                    gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
                     gatewayProcessorConfigProvider.ConfigurationServiceConfig,
                     loggerFactory.CreateLogger("ConfigurationService"),
                     new UploadService(
-                        gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
+                        gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
                         aetConfigurationProvider.GetAETConfigs,
                         GatewayMessageQueue.UploadQueuePath,
                         GatewayMessageQueue.DownloadQueuePath,
@@ -56,7 +63,7 @@
                         loggerFactory.CreateLogger("UploadService"),
                         instances: 2),
                     new DownloadService(
-                        gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
+                        gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
                         GatewayMessageQueue.DownloadQueuePath,
                         GatewayMessageQueue.PushQueuePath,
                         GatewayMessageQueue.DeleteQueuePath,

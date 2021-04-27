@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// ProcessorSettings class
@@ -22,6 +23,19 @@
         }
 
         /// <summary>
+        /// Clone this into a new instance of the <see cref="ProcessorSettings"/> class, optionally replacing some properties.
+        /// </summary>
+        /// <param name="licenseKeyEnvVar">Optional new license key environment variable.</param>
+        /// <param name="InferenceUri">Optional new inference API Uri.</param>
+        /// <returns>New ProcessorSettings.</returns>
+        public ProcessorSettings With(
+            string licenseKeyEnvVar = null,
+            Uri inferenceUri = null) =>
+                new ProcessorSettings(
+                    !string.IsNullOrWhiteSpace(licenseKeyEnvVar) ? licenseKeyEnvVar : LicenseKeyEnvVar,
+                    inferenceUri ?? InferenceUri);
+
+        /// <summary>
         /// Gets the license key environment variable.
         /// </summary>
         public string LicenseKeyEnvVar { get; }
@@ -30,6 +44,13 @@
         /// Gets the inference API Uri.
         /// </summary>
         public Uri InferenceUri { get; }
+
+        /// <summary>
+        /// Get the license key based on the environment variable.
+        /// </summary>
+        [JsonIgnore]
+        public string LicenseKey =>
+            Environment.GetEnvironmentVariable(LicenseKeyEnvVar, EnvironmentVariableTarget.Machine) ?? string.Empty;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

@@ -3,7 +3,9 @@ namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Security.Authentication;
     using System.Threading;
     using System.Threading.Tasks;
@@ -42,6 +44,36 @@ namespace Microsoft.InnerEye.Listener.Common.Services
         /// The current configuration service configuration.
         /// </summary>
         private ConfigurationServiceConfig _configurationServiceConfig;
+
+        /// <summary>
+        /// Given a set of possible relative paths, find one that is a directory.
+        /// </summary>
+        /// <param name="relativePaths">List of relative paths to test.</param>
+        /// <param name="logger">Logger.</param>
+        /// <returns>Full path to existing directory or Empty if none exist.</returns>
+        public static string FindRelativeDirectory(IEnumerable<string> relativePaths, ILogger logger)
+        {
+            var parentDirectory = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
+
+            foreach (var relativePath in relativePaths)
+            {
+                var configurationPath = Path.GetFullPath(Path.Combine(parentDirectory, relativePath));
+
+                if (Directory.Exists(configurationPath))
+                {
+                    var logEntry = LogEntry.Create(ServiceStatus.Starting,
+                        string.Format("Settings location: {0}", configurationPath));
+                    logEntry.Log(logger, LogLevel.Information);
+
+                    return configurationPath;
+                }
+            }
+
+            var logEntry2 = LogEntry.Create(ServiceStatus.Starting);
+            logEntry2.Log(logger, LogLevel.Error, new Exception("Cannot find configuration directory."));
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationService"/> class.

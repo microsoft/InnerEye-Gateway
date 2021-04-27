@@ -1,9 +1,11 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
+    using Microsoft.InnerEye.Gateway.Logging;
     using Microsoft.InnerEye.Gateway.Models;
 
     /// <summary>
@@ -36,6 +38,43 @@
         {
             Load();
             return _t;
+        }
+
+        /// <summary>
+        /// Update GatewayProcessorConfig file, according to an update callback function.
+        /// </summary>
+        /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
+        public void Update(Func<GatewayProcessorConfig, GatewayProcessorConfig> updater) =>
+            UpdateFile(updater, EqualityComparer<GatewayProcessorConfig>.Default);
+
+        /// <summary>
+        /// Set ServiceSettings.RunAsConsole.
+        /// </summary>
+        /// <param name="runAsConsole">If we should run the service as a console application.</param>
+        public void SetRunAsConsole(bool runAsConsole) =>
+            Update(gatewayProcessorConfig => gatewayProcessorConfig.With(new ServiceSettings(runAsConsole)));
+
+        /// <summary>
+        /// Update ProcessorSettings.
+        /// </summary>
+        /// <param name="inferenceUri">Optional new inference API Uri.</param>
+        /// <param name="licenseKey">Optional new license key.</param>
+        public void SetProcessorSettings(Uri inferenceUri = null, string licenseKey = null)
+        {
+            if (inferenceUri != null)
+            {
+                Update(gatewayProcessorConfig =>
+                    gatewayProcessorConfig.With(
+                        processorSettings: gatewayProcessorConfig.ProcessorSettings.With(
+                            inferenceUri: inferenceUri)));
+            }
+
+            if (licenseKey != null)
+            {
+                var processorSettings = ProcessorSettings();
+
+                Environment.SetEnvironmentVariable(processorSettings.LicenseKeyEnvVar, licenseKey, EnvironmentVariableTarget.Machine);
+            }
         }
 
         /// <summary>
@@ -76,14 +115,24 @@
         /// <summary>
         /// Create a new segmentation client based on settings in JSON file.
         /// </summary>
-        /// <param name="licenseKeyEnvVar">Optional override license key env var for testing.</param>
+        /// <param name="logger">Optional logger for client.</param>
         /// <returns>New IInnerEyeSegmentationClient.</returns>
-        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(string licenseKeyEnvVar = null) =>
+        public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(ILogger logger = null) =>
             () =>
             {
-                var settings = ProcessorSettings();
+                var processorSettings = ProcessorSettings();
 
-                return new InnerEyeSegmentationClient(settings.InferenceUri, licenseKeyEnvVar ?? settings.LicenseKeyEnvVar);
+                var licenseKey = processorSettings.LicenseKey;
+
+                if (string.IsNullOrEmpty(licenseKey))
+                {
+                    var message = string.Format("License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
+                        processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar);
+                    var logEntry = LogEntry.Create(ServiceStatus.Starting);
+                    logEntry.Log(logger, Microsoft.Extensions.Logging.LogLevel.Error, new Exception(message));
+                }
+
+                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);
             };
     }
 }
