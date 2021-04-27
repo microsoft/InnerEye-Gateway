@@ -542,22 +542,17 @@
 
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
 
-            // Check the TopLevelReplacements have been copied.
-            foreach (var dicomTag in innerEyeSegmentationClient.TopLevelReplacements)
+            var sourceDicomTags = sourceDataset.Select(x => x.Tag).ToList();
+            var deanonymizedDicomTags = deanonymizedDataset.Select(x => x.Tag).ToList();
+
+            // SoftwareVersion has been rewritten, so exclude from the test.
+            sourceDicomTags.Remove(DicomTag.SoftwareVersions);
+
+            foreach (var dicomTag in sourceDicomTags)
             {
-                var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
-                var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
-
-                Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
-                Assert.AreEqual(sourceValue, deanonymizedValue);
-            }
-
-            // Check the other tags are preserved
-            foreach (var dicomTagAnonymization in innerEyeSegmentationClient.SegmentationAnonymisationProtocol)
-            {
-                var dicomTag = dicomTagAnonymization.DicomTagIndex.DicomTag;
-
-                if (sourceDataset.Contains(dicomTag))
+                // TopLevelReplacements must be copied, others are optional, depending on innerEyeSegmentationClient.SegmentationAnonymisationProtocol
+                if (innerEyeSegmentationClient.TopLevelReplacements.Contains(dicomTag) ||
+                    deanonymizedDicomTags.Contains(dicomTag))
                 {
                     var valueCount = sourceDataset.GetValueCount(dicomTag);
                     for (var i = 0; i < valueCount; i++)
@@ -569,6 +564,18 @@
                         Assert.AreEqual(sourceValue, deanonymizedValue);
                     }
                 }
+            }
+
+            // SoftwareVersion has been rewritten, so exclude from the test.
+            deanonymizedDicomTags.Remove(DicomTag.SoftwareVersions);
+            // These tags are added by anonymisation.
+            deanonymizedDicomTags.Remove(DicomTag.DeidentificationMethod);
+            deanonymizedDicomTags.Remove(DicomTag.PatientIdentityRemoved);
+            deanonymizedDicomTags.Remove(DicomTag.LongitudinalTemporalInformationModified);
+
+            foreach (var dicomTag in deanonymizedDicomTags)
+            {
+                Assert.IsTrue(sourceDicomTags.Contains(dicomTag));
             }
         }
     }

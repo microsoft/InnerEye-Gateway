@@ -31,7 +31,7 @@
         Guid SegmentationAnonymisationProtocolId { get; }
 
         /// <summary>
-        /// Gets the list of tags that are copied directly from reference to deanonymised output.
+        /// Gets the list of DicomTags that are copied directly from the reference DicomFile to the deanonymised output DicomFile.
         /// </summary>
         IEnumerable<DicomTag> TopLevelReplacements { get; }
 
@@ -51,14 +51,14 @@
         DicomFile AnonymizeDicomFile(DicomFile dicomFile, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol);
 
         /// <summary>
-        /// Anonymizes the input Dicom files.
+        /// Anonymizes the input DicomFiles.
         /// </summary>
         /// <param name="dicomFiles">The Dicom files to anonymize.</param>
         /// <param name="anonymisationProtocolId">The anonymisation protocol unqiue identifier.</param>
         /// <param name="anonymisationProtocol">The anonymisation protocol.</param>
-        /// <returns>The anonymized Dicom files.</returns>
-        /// <exception cref="ArgumentNullException">If the Dicom files are null.</exception>
-        /// <exception cref="ArgumentException">If any of the Dicom files in the collection are null.</exception>
+        /// <returns>The anonymized DicomFiles.</returns>
+        /// <exception cref="ArgumentNullException">If the DicomFiles are null.</exception>
+        /// <exception cref="ArgumentException">If any of the DicomFiles in the collection are null.</exception>
         IEnumerable<DicomFile> AnonymizeDicomFiles(IEnumerable<DicomFile> dicomFiles, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol);
 
         /// <summary>
@@ -86,19 +86,18 @@
             IEnumerable<ChannelData> channelIdsAndDicomFiles);
 
         /// <summary>
-        /// Deanonymizes a DicomFile and applies user replacements.
-        /// The replacements are done in this order:
+        /// Deanonymizes a DicomFile and applies replacements in the following order:
         /// 1 - topLevelReplacements
         /// 2 - hashed Dicom tags
         /// 3 - userReplacements
         /// </summary>
-        /// <param name="dicomFile">DICOM file to be deanonymized.</param>
-        /// <param name="referenceDicomFiles">Reference DICOM files with patient data. At least one file required.</param>
+        /// <param name="dicomFile">DicomFile to be deanonymized.</param>
+        /// <param name="referenceDicomFiles">Reference DicomFiles with patient data. At least one file required.</param>
         /// <param name="topLevelReplacements">Top level patient and study data replacements.</param>
         /// <param name="userReplacements">User replacements.</param>
         /// <param name="anonymisationProtocolId">Anonymisation protocol unqiue identifier.</param>
         /// <param name="anonymisationProtocol">Anonymisation protocol.</param>
-        /// <returns>De-anonymized DICOM file.</returns>
+        /// <returns>Deanonymized DicomFile.</returns>
         DicomFile DeanonymizeDicomFile(
             DicomFile dicomFile,
             IEnumerable<DicomFile> referenceDicomFiles,
