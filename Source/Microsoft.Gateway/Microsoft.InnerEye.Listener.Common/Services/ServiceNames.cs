@@ -8,11 +8,11 @@
         /// <summary>
         /// The service name.
         /// </summary>
-        public const string ProcessorServiceName = "GatewayProcessorService";
+        public const string ProcessorServiceName = "GatewayProcessorService2";
 
         /// <summary>
         /// The service name.
         /// </summary>
-        public const string ReceiveServiceName = "GatewayReceiveService";
+        public const string ReceiveServiceName = "GatewayReceiveService2";
     }
 }

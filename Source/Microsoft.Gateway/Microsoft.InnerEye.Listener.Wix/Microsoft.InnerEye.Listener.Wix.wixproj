@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProductVersion>3.10</ProductVersion>
-    <ProjectGuid>10b27116-9b19-4f19-83c0-19af5aeaf6d3</ProjectGuid>
+    <ProjectGuid>6B6F923B-BD61-4A8B-849F-04BDF7C730CF</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>Microsoft.InnerEye.Gateway</OutputName>
     <OutputType>Package</OutputType>

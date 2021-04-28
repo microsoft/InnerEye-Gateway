@@ -8,7 +8,7 @@
       "Port": 111,
       "Ip": "localhost"
     },
-    "RootDicomFolder": "C:\\InnerEyeGateway\\",
+    "RootDicomFolder": "C:\\InnerEyeGateway2\\",
     "AcceptedSopClassesAndTransferSyntaxesUIDs": {
       "1.2.840.10008.1.1": [
         "1.2.840.10008.1.2.1",

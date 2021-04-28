@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?define Service1Name = "GatewayProcessorService" ?>
+<?define Service1Name = "GatewayProcessorService2" ?>
 <?define Service1DisplayName = "Microsoft InnerEye Gateway Processor" ?>
 <?define Service1Description = "Processes all incoming Dicom files and exports the results as Dicom RT files" ?>
 
-<?define Service2Name = "GatewayReceiveService" ?>
+<?define Service2Name = "GatewayReceiveService2" ?>
 <?define Service2DisplayName = "Microsoft InnerEye Gateway Receiver" ?>
 <?define Service2Description = "Receives all incoming Dicom files and passes them to the processor service" ?>
 
 <?define Manufacturer = "Microsoft Corporation" ?>
   
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-  <Product Id="*" Name="$(var.PRODUCTNAME)" Language="1033" Version="!(bind.FileVersion.Service1MainExecutable)" Manufacturer="$(var.Manufacturer)" UpgradeCode="5b0d1312-348e-492c-9447-de720c151cd8">
+  <Product Id="*" Name="$(var.PRODUCTNAME)" Language="1033" Version="!(bind.FileVersion.Service1MainExecutable)" Manufacturer="$(var.Manufacturer)" UpgradeCode="DC9B0D4A-71EA-43EF-9231-1EA078229FB1">
     
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
     
@@ -68,7 +68,7 @@
 
   <Fragment>
     <ComponentGroup Id="Service1Components" Directory="SERVICE1INSTALLDIR">
-      <Component Id="$(var.SERVICE1EXE)" Guid="{1240E0CD-B3D2-44A7-B064-11B3C0709D70}">
+      <Component Id="$(var.SERVICE1EXE)" Guid="{E14C3EE6-95A2-4270-AF45-7A2E37001A93}">
         <File Id="Service1MainExecutable" Source="$(var.SERVICE1BINFOLDER)\$(var.SERVICE1EXE)" KeyPath="yes" />
         <RemoveFile Id="SERVICE1ALLFILES" Name="*.*" On="both" />
         <ServiceInstall Id="Service1Installer" Type="ownProcess" Name="$(var.Service1Name)" DisplayName="$(var.Service1DisplayName)" Description="$(var.Service1Description)" Start="auto" ErrorControl="normal" />
@@ -88,7 +88,7 @@
 
   <Fragment>
     <ComponentGroup Id="Service2Components" Directory="SERVICE2INSTALLDIR">
-      <Component Id="$(var.SERVICE2EXE)" Guid="{1240E0CD-B3D2-44A7-B064-11B3C0709D71}">
+      <Component Id="$(var.SERVICE2EXE)" Guid="{F398B84B-91C0-4FD0-A335-A179B7F1458D}">
         <File Id="Service2MainExecutable" Source="$(var.SERVICE2BINFOLDER)\$(var.SERVICE2EXE)" KeyPath="yes" />
         <RemoveFile Id="SERVICE2ALLFILES" Name="*.*" On="both" />
         <ServiceInstall Id="Service2Installer" Type="ownProcess" Name="$(var.Service2Name)" DisplayName="$(var.Service2DisplayName)" Description="$(var.Service2Description)" Start="auto" ErrorControl="normal" />
