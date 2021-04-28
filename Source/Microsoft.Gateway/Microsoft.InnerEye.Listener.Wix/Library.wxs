@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?define Service1Name = "GatewayProcessorService2" ?>
+<?define Service1Name = "InnerEyeGatewayProcessorService" ?>
 <?define Service1DisplayName = "Microsoft InnerEye Gateway Processor" ?>
 <?define Service1Description = "Processes all incoming Dicom files and exports the results as Dicom RT files" ?>
 
-<?define Service2Name = "GatewayReceiveService2" ?>
+<?define Service2Name = "InnerEyeGatewayReceiveService" ?>
 <?define Service2DisplayName = "Microsoft InnerEye Gateway Receiver" ?>
 <?define Service2Description = "Receives all incoming Dicom files and passes them to the processor service" ?>
 

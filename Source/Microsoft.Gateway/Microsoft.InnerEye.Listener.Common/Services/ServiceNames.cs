@@ -8,11 +8,11 @@
         /// <summary>
         /// The service name.
         /// </summary>
-        public const string ProcessorServiceName = "GatewayProcessorService2";
+        public const string ProcessorServiceName = "InnerEyeGatewayProcessorService";
 
         /// <summary>
         /// The service name.
         /// </summary>
-        public const string ReceiveServiceName = "GatewayReceiveService2";
+        public const string ReceiveServiceName = "InnerEyeGatewayReceiveService";
     }
 }
