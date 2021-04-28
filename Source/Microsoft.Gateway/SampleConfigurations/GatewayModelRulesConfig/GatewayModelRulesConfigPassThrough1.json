@@ -7,7 +7,7 @@
         "AETConfigType": "Model",
         "ModelsConfig": [
           {
-            "ModelId": "PassThroughModel:3",
+            "ModelId": "PassThroughModel:4",
             "ChannelConstraints": [
               {
                 "ChannelID": "ct",
