@@ -472,6 +472,38 @@
             Tuple.Create(DicomSexCodeStringTagRandomisers, RandomDicomPatientSexCodeString),
         };
 
+        public static readonly DicomTag[] DicomTagsAddedByAnonymization = new[]
+        {
+            DicomTag.DeidentificationMethod,
+            DicomTag.PatientIdentityRemoved,
+            DicomTag.LongitudinalTemporalInformationModified,
+        };
+
+        public static readonly DicomTag[] DicomTagsDistinctBetweenModalities = new[]
+        {
+            DicomTag.SOPClassUID,
+            DicomTag.SOPInstanceUID,
+            DicomTag.SeriesDate,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesNumber,
+            DicomTag.Modality,
+            DicomTag.OperatorsName,
+            DicomTag.SeriesInstanceUID,
+        };
+
+        public static readonly DicomTag[] DicomTagsDistinctForDICOMRT = new[]
+        {
+            DicomTag.StructureSetLabel,
+            DicomTag.StructureSetName,
+            DicomTag.StructureSetDescription,
+            DicomTag.StructureSetDate,
+            DicomTag.StructureSetTime,
+            DicomTag.StructureSetROISequence,
+            DicomTag.ReferencedFrameOfReferenceSequence,
+            DicomTag.ROIContourSequence,
+            DicomTag.RTROIObservationsSequence,
+        };
+
         /// <summary>
         /// Add some random tags.
         /// </summary>
@@ -571,6 +603,8 @@
 
             // SoftwareVersion has been rewritten, so exclude from the test.
             sourceDicomTags.Remove(DicomTag.SoftwareVersions);
+            // Exclude the tags that are different because different modalities
+            sourceDicomTags = sourceDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
 
             // Replacement tags will be different... they are checked separately
             var sourceDicomTagsExceptReplacements = sourceDicomTags.Except(replacementTags).ToList();
@@ -595,10 +629,12 @@
 
             // SoftwareVersion has been rewritten, so exclude from the test.
             deanonymizedDicomTags.Remove(DicomTag.SoftwareVersions);
-            // These tags are added by anonymisation.
-            deanonymizedDicomTags.Remove(DicomTag.DeidentificationMethod);
-            deanonymizedDicomTags.Remove(DicomTag.PatientIdentityRemoved);
-            deanonymizedDicomTags.Remove(DicomTag.LongitudinalTemporalInformationModified);
+            // Exclude the tags are added by anonymisation.
+            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsAddedByAnonymization).ToList();
+            // Exclude the tags that are different because different modalities
+            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+            // Exclude the tags that are specific to DICOM-RT
+            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctForDICOMRT).ToList();
 
             foreach (var dicomTag in deanonymizedDicomTags)
             {
@@ -651,6 +687,19 @@
             await TestDataSetAnonymiseDeanonymize(random, Array.Empty<TagReplacement>());
         }
 
+        /// <summary>
+        /// Create a test set of TagReplacements.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="tagReplacementOperation">Tag replacement operation.</param>
+        /// <returns>List of TagReplacements.</returns>
+        public static IEnumerable<TagReplacement> CreateTestTagReplacements(Random random, TagReplacementOperation tagReplacementOperation) =>
+            DicomLongStringTagRandomisers.Select(
+                dicomTag => new TagReplacement(
+                    tagReplacementOperation,
+                    new DicomConstraints.DicomTagIndex(dicomTag),
+                    RandomString(random, 8))).ToList();
+
         [TestCategory("DicomAnonymisationDCMTK")]
         [Description("Check data sets can be anonymised/deanonymised, with append if exists replacements.")]
         [TestMethod]
@@ -658,13 +707,9 @@
         {
             var random = new Random();
 
-            var tagReplacements = DicomLongStringTagRandomisers.Select(
-                dicomTag => new TagReplacement(
-                    TagReplacementOperation.AppendIfExists,
-                    new DicomConstraints.DicomTagIndex(dicomTag),
-                    RandomString(random, 8))).ToList();
-
-            await TestDataSetAnonymiseDeanonymize(random, tagReplacements);
+            await TestDataSetAnonymiseDeanonymize(
+                random,
+                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
@@ -674,13 +719,9 @@
         {
             var random = new Random();
 
-            var tagReplacements = DicomLongStringTagRandomisers.Select(
-                dicomTag => new TagReplacement(
-                    TagReplacementOperation.UpdateIfExists,
-                    new DicomConstraints.DicomTagIndex(dicomTag),
-                    RandomString(random, 8))).ToList();
-
-            await TestDataSetAnonymiseDeanonymize(random, tagReplacements);
+            await TestDataSetAnonymiseDeanonymize(
+                random,
+                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
         }
     }
 }
