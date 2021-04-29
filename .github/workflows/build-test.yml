@@ -10,7 +10,6 @@ env:
   solution: './Source/Microsoft.Gateway/Microsoft.Gateway.sln'
   buildPlatform: x64
   buildConfiguration: Release
-  INNEREYE_INFERENCE_DEV_KEY: ${{ secrets.INNEREYE_INFERENCE_DEV_KEY }}
 
 jobs:
   build-test:
@@ -63,3 +62,5 @@ jobs:
         
         vstest.console.exe $TestArgs
         exit $lastexitcode
+      env:
+        INNEREYE_INFERENCE_DEV_KEY: ${{ secrets.INNEREYE_INFERENCE_DEV_KEY }}
