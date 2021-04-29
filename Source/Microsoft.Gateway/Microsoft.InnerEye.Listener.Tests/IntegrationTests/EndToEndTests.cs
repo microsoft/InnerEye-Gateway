@@ -18,36 +18,24 @@
     public class EndToEndTests : BaseTestClass
     {
         /// <summary>
-        /// 20 minute timeout for end-to-end test.
+        /// 40 minute timeout for end-to-end test.
         /// </summary>
-        public const int IntegrationTestTimeout = 20 * 60 * 1000;
+        public const int IntegrationTestTimeout = 40 * 60 * 1000;
+
+        /// <summary>
+        /// Default list of class names used by the PassthroughModel.
+        /// </summary>
+        public static readonly string[] PassthroughModelDisplayNames = new[] { "SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus" };
 
         [TestCategory("IntegrationTests")]
-        //[Timeout(IntegrationTestTimeout)]
+        [Timeout(IntegrationTestTimeout)]
         //[Ignore("Integration test, relies on live API")]
         [Description("Pushes an entire DICOM Image Series.")]
         [TestMethod]
         public async Task IntegrationTestEndToEnd()
         {
-#if false
-            var segmentationClient = (IInnerEyeSegmentationClient)null;// GetMockInnerEyeSegmentationClient();
             var sourceDirectory = CreateTemporaryDirectory();
             var resultDirectory = CreateTemporaryDirectory();
-#else
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
-            var sourceDirectory = new DirectoryInfo(@"Images\KeepHN");
-            if (!sourceDirectory.Exists)
-            {
-                sourceDirectory.Create();
-            }
-
-            var resultDirectory = new DirectoryInfo(@"Images\KeepHNResults");
-            if (!resultDirectory.Exists)
-            {
-                resultDirectory.Create();
-            }
-#endif
 
             var random = new Random();
 
@@ -72,8 +60,8 @@
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultDirectory.FullName)))
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService())
-            using (var downloadService = CreateDownloadService(segmentationClient))
-            using (var uploadService = CreateUploadService(segmentationClient))
+            using (var downloadService = CreateDownloadService())
+            using (var uploadService = CreateUploadService())
             using (var receiveService = CreateReceiveService(receivePort))
             {
                 // Start a DICOM receiver for the final DICOM-RT file
@@ -128,8 +116,6 @@
                 Assert.IsTrue(eventCount[DicomReceiveProgressCode.AssociationReleased] == 1);
                 Assert.IsTrue(eventCount[DicomReceiveProgressCode.ConnectionClosed] == 1);
 
-                Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
-
                 var receivedFiles = new DirectoryInfo(folderPath).GetFiles();
                 Assert.AreEqual(1, receivedFiles.Length);
 
@@ -139,27 +125,74 @@
 
                 Assert.IsNotNull(dicomFile);
 
-                /*
-                Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
-                Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:"));
-                Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:"));
-                Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 3).StartsWith("InnerEye Model Created:"));
-                Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 4).StartsWith("InnerEye Version:"));
-
-                Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
-                Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
-                Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
-                */
-
-                //DicomAnonymisationTests.VerifyDicomFile(receivedFilePath);
-
                 var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, sourceDicomFiles);
+
+                var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke();
 
                 DicomAnonymisationTests.AssertDeanonymizedFile(
                     originalSlice,
                     dicomFile,
-                    segmentationClient,
-                    matchedModel.Result.TagReplacements);
+                    segmentationClient.TopLevelReplacements,
+                    matchedModel.Result.TagReplacements,
+                    false);
+
+                AssertIsDicomRtFile(DateTime.UtcNow, dicomFile, matchedModel.Result.ModelId);
+            }
+        }
+
+        /// <summary>
+        /// Assert that DicomFile is a DICOM-RT file.
+        /// </summary>
+        /// <param name="testDateTime">Time of test.</param>
+        /// <param name="dicomFile">DicomFile to test.</param>
+        /// <param name="modelId">Expected modelId.</param>
+        public static void AssertIsDicomRtFile(DateTime testDateTime, DicomFile dicomFile, string modelId)
+        {
+            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.FileMetaInfo.MediaStorageSOPClassUID);
+            var sopInstanceUID = dicomFile.FileMetaInfo.MediaStorageSOPInstanceUID;
+            Assert.AreEqual(DicomTransferSyntax.ImplicitVRLittleEndian, dicomFile.FileMetaInfo.TransferSyntax);
+
+            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<Dicom.DicomUID>(DicomTag.SOPClassUID));
+            Assert.AreEqual(sopInstanceUID, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPInstanceUID));
+
+            var expectedDate = $"{testDateTime.Year}{testDateTime.Month.ToString("D2")}{testDateTime.Day.ToString("D2")}";
+            Assert.AreEqual(expectedDate, dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
+            Assert.AreEqual("RTSTRUCT", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Modality));
+            Assert.AreEqual("Microsoft Corporation", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Manufacturer));
+            Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDescription));
+            Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.OperatorsName, string.Empty));
+
+            Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
+            Assert.AreEqual(modelId, dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1));
+
+            Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesNumber, string.Empty));
+
+            Assert.AreEqual("InnerEye", dicomFile.Dataset.GetSingleValue<string>(DicomTag.StructureSetLabel));
+            Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValue<string>(DicomTag.StructureSetName));
+            Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValue<string>(DicomTag.StructureSetDescription));
+            Assert.AreEqual(expectedDate, dicomFile.Dataset.GetSingleValue<string>(DicomTag.StructureSetDate));
+
+            var structureSetROISequences = dicomFile.Dataset.GetSequence(DicomTag.StructureSetROISequence);
+            Assert.AreEqual(PassthroughModelDisplayNames.Length, structureSetROISequences.Items.Count);
+
+            var roiContourSequences = dicomFile.Dataset.GetSequence(DicomTag.ROIContourSequence);
+            Assert.AreEqual(PassthroughModelDisplayNames.Length, roiContourSequences.Items.Count);
+
+            var rtRoiObservationsSequence = dicomFile.Dataset.GetSequence(DicomTag.RTROIObservationsSequence);
+            Assert.AreEqual(PassthroughModelDisplayNames.Length, rtRoiObservationsSequence.Items.Count);
+
+            for (var i = 0; i < PassthroughModelDisplayNames.Length; i++)
+            {
+                Assert.AreEqual(i + 1, structureSetROISequences.Items[i].GetSingleValue<int>(DicomTag.ROINumber));
+
+                var expectedName = PassthroughModelDisplayNames[i] + " NOT FOR CLINICAL USE";
+                Assert.AreEqual(expectedName, structureSetROISequences.Items[i].GetSingleValue<string>(DicomTag.ROIName));
+
+                Assert.AreEqual(i + 1, roiContourSequences.Items[i].GetSingleValue<int>(DicomTag.ReferencedROINumber));
+
+                Assert.AreEqual(i, rtRoiObservationsSequence.Items[i].GetSingleValue<int>(DicomTag.ObservationNumber));
+                Assert.AreEqual(i + 1, rtRoiObservationsSequence.Items[i].GetSingleValue<int>(DicomTag.ReferencedROINumber));
+                Assert.AreEqual("ORGAN", rtRoiObservationsSequence.Items[i].GetSingleValue<string>(DicomTag.RTROIInterpretedType));
             }
         }
     }

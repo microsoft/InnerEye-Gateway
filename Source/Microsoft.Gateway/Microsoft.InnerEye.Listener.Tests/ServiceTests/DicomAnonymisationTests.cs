@@ -11,7 +11,6 @@
     using Dicom;
 
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
-    using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Listener.Common;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
     using Microsoft.InnerEye.Listener.Tests.Models;
@@ -472,38 +471,6 @@
             Tuple.Create(DicomSexCodeStringTagRandomisers, RandomDicomPatientSexCodeString),
         };
 
-        public static readonly DicomTag[] DicomTagsAddedByAnonymization = new[]
-        {
-            DicomTag.DeidentificationMethod,
-            DicomTag.PatientIdentityRemoved,
-            DicomTag.LongitudinalTemporalInformationModified,
-        };
-
-        public static readonly DicomTag[] DicomTagsDistinctBetweenModalities = new[]
-        {
-            DicomTag.SOPClassUID,
-            DicomTag.SOPInstanceUID,
-            DicomTag.SeriesDate,
-            DicomTag.SeriesTime,
-            DicomTag.SeriesNumber,
-            DicomTag.Modality,
-            DicomTag.OperatorsName,
-            DicomTag.SeriesInstanceUID,
-        };
-
-        public static readonly DicomTag[] DicomTagsDistinctForDICOMRT = new[]
-        {
-            DicomTag.StructureSetLabel,
-            DicomTag.StructureSetName,
-            DicomTag.StructureSetDescription,
-            DicomTag.StructureSetDate,
-            DicomTag.StructureSetTime,
-            DicomTag.StructureSetROISequence,
-            DicomTag.ReferencedFrameOfReferenceSequence,
-            DicomTag.ROIContourSequence,
-            DicomTag.RTROIObservationsSequence,
-        };
-
         /// <summary>
         /// Add some random tags.
         /// </summary>
@@ -526,16 +493,59 @@
         }
 
         /// <summary>
+        /// List of DicomTags that will be added by anonymization.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsAddedByAnonymization = new[]
+        {
+            DicomTag.PatientIdentityRemoved,
+            DicomTag.DeidentificationMethod,
+            DicomTag.LongitudinalTemporalInformationModified,
+        };
+
+        /// <summary>
+        /// List of DicomTags that are not expected to be the same between DICOM-RT and other modalities.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsDistinctBetweenModalities = new[]
+        {
+            DicomTag.SOPClassUID,
+            DicomTag.SOPInstanceUID,
+            DicomTag.SeriesDate,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesNumber,
+            DicomTag.Modality,
+            DicomTag.OperatorsName,
+            DicomTag.SeriesInstanceUID,
+        };
+
+        /// <summary>
+        /// List of DicomTags that are only expected to be present for DICOM-RT files.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsDistinctForDICOMRT = new[]
+        {
+            DicomTag.StructureSetLabel,
+            DicomTag.StructureSetName,
+            DicomTag.StructureSetDescription,
+            DicomTag.StructureSetDate,
+            DicomTag.StructureSetTime,
+            DicomTag.ReferencedFrameOfReferenceSequence,
+            DicomTag.StructureSetROISequence,
+            DicomTag.ROIContourSequence,
+            DicomTag.RTROIObservationsSequence,
+        };
+
+        /// <summary>
         /// Test anonymisation/deanonymisation preserves some of the tags, replaces some others and drops the rest.
         /// </summary>
         /// <param name="random">Random.</param>
+        /// <param name="sourceImageFileName">Source file name.</param>
         /// <param name="tagReplacements">Tag replacements.</param>
         /// <returns>Awaitable task.</returns>
-        public async Task TestDataSetAnonymiseDeanonymize(Random random, IEnumerable<TagReplacement> tagReplacements)
+        public async Task TestDataSetAnonymiseDeanonymize(
+            Random random,
+            string sourceImageFileName,
+            IEnumerable<TagReplacement> tagReplacements)
         {
-            var sourceImageFileInfo = new DirectoryInfo(@"Images\HN").GetFiles().First();
-
-            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileInfo.FullName, FileReadOption.ReadAll);
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll);
             // Make a copy of the existing DicomDataset
             var originalDataset = originalDicomFile.Dataset.Clone();
 
@@ -577,7 +587,7 @@
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
 
-            AssertDeanonymizedFile(originalDicomFile, deanonymizedDicomFile, innerEyeSegmentationClient, tagReplacements);
+            AssertDeanonymizedFile(originalDicomFile, deanonymizedDicomFile, innerEyeSegmentationClient.TopLevelReplacements, tagReplacements, true);
         }
 
         /// <summary>
@@ -585,13 +595,15 @@
         /// </summary>
         /// <param name="originalDicomFile">Source DicomFile.</param>
         /// <param name="deanonymizedDicomFile">Deanonymized DicomFile.</param>
-        /// <param name="innerEyeSegmentationClient">Segmentation client for list of top level replacements.</param>
+        /// <param name="topLevelReplacements">Top level replacements.</param>
         /// <param name="tagReplacements">List of tag replacements.</param>
+        /// <param name="sameModalities">True if both CT, false if original is CT and deanonymized is DICOMRT.</param>
         public static void AssertDeanonymizedFile(
             DicomFile originalDicomFile,
             DicomFile deanonymizedDicomFile,
-            IInnerEyeSegmentationClient innerEyeSegmentationClient,
-            IEnumerable<TagReplacement> tagReplacements)
+            IEnumerable<DicomTag> topLevelReplacements,
+            IEnumerable<TagReplacement> tagReplacements,
+            bool sameModalities)
         {
             var sourceDataset = originalDicomFile.Dataset;
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
@@ -603,8 +615,12 @@
 
             // SoftwareVersion has been rewritten, so exclude from the test.
             sourceDicomTags.Remove(DicomTag.SoftwareVersions);
-            // Exclude the tags that are different because different modalities
-            sourceDicomTags = sourceDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+
+            if (!sameModalities)
+            {
+                // Exclude the tags that are different because different modalities
+                sourceDicomTags = sourceDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+            }
 
             // Replacement tags will be different... they are checked separately
             var sourceDicomTagsExceptReplacements = sourceDicomTags.Except(replacementTags).ToList();
@@ -612,7 +628,7 @@
             foreach (var dicomTag in sourceDicomTagsExceptReplacements)
             {
                 // TopLevelReplacements must be copied, others are optional, depending on innerEyeSegmentationClient.SegmentationAnonymisationProtocol
-                if (innerEyeSegmentationClient.TopLevelReplacements.Contains(dicomTag) ||
+                if (topLevelReplacements.Contains(dicomTag) ||
                     deanonymizedDicomTags.Contains(dicomTag))
                 {
                     var valueCount = sourceDataset.GetValueCount(dicomTag);
@@ -631,10 +647,14 @@
             deanonymizedDicomTags.Remove(DicomTag.SoftwareVersions);
             // Exclude the tags are added by anonymisation.
             deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsAddedByAnonymization).ToList();
-            // Exclude the tags that are different because different modalities
-            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
-            // Exclude the tags that are specific to DICOM-RT
-            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctForDICOMRT).ToList();
+
+            if (!sameModalities)
+            {
+                // Exclude the tags that are different because different modalities
+                deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+                // Exclude the tags that are specific to DICOM-RT
+                deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctForDICOMRT).ToList();
+            }
 
             foreach (var dicomTag in deanonymizedDicomTags)
             {
@@ -683,8 +703,9 @@
         public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
         {
             var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
-            await TestDataSetAnonymiseDeanonymize(random, Array.Empty<TagReplacement>());
+            await TestDataSetAnonymiseDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
         }
 
         /// <summary>
@@ -706,9 +727,11 @@
         public async Task TestDataSetAnonymiseDeanonymizeAppendIfExistsReplacements()
         {
             var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
             await TestDataSetAnonymiseDeanonymize(
                 random,
+                sourceImageFileName,
                 CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
         }
 
@@ -718,9 +741,11 @@
         public async Task TestDataSetAnonymiseDeanonymizeUpdateIfExistsReplacements()
         {
             var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
             await TestDataSetAnonymiseDeanonymize(
                 random,
+                sourceImageFileName,
                 CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
         }
     }
