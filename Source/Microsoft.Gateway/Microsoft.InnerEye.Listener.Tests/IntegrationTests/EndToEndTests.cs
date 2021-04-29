@@ -39,18 +39,24 @@
 
             var random = new Random();
 
-            // Copy all files from Images\HN because the tags are going to be randomised
-            foreach (var fileInfo in new DirectoryInfo(@"Images\HN").GetFiles())
-            {
-                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, fileInfo.Name);
+            // Get file names for all in directory
+            var sourceDicomFileNames = new DirectoryInfo(@"Images\HN").GetFiles().ToArray();
+            // Load all DICOM files
+            var sourceDicomFiles = sourceDicomFileNames.Select(f => DicomFile.Open(f.FullName, FileReadOption.ReadAll)).ToArray();
 
-                File.Copy(fileInfo.FullName, sourceImageFilePath, true);
-            }
-
-            var sourceDicomFiles = sourceDirectory.GetFiles().Select(f => DicomFile.Open(f.FullName, FileReadOption.ReadAll)).ToArray();
-
+            // Add/Update random tags for the source DICOM files.
             DicomAnonymisationTests.AddRandomTags(random, sourceDicomFiles);
 
+            // Save them all to the sourceDirectory.
+            var sourcePairs = sourceDicomFileNames.Zip(sourceDicomFiles, (f, d) => Tuple.Create(f, d)).ToArray();
+            foreach (var sourcePair in sourcePairs)
+            {
+                var sourceImageFilePath = Path.Combine(sourceDirectory.FullName, sourcePair.Item1.Name);
+
+                sourcePair.Item2.Save(sourceImageFilePath);
+            }
+
+            // Keep the first as a reference for deanonymization later.
             var originalSlice = sourceDicomFiles.First();
 
             var testAETConfigModel = GetTestAETConfigModel();
