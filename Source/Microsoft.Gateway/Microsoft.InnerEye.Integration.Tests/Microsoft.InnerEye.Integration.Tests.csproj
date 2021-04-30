@@ -34,14 +34,17 @@
     <ProjectReference Include="..\Microsoft.InnerEye.Listener.Tests\Microsoft.InnerEye.Listener.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayModelRulesConfig\GatewayModelRulesConfig.json">
+    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayModelRulesConfig\GatewayModelRulesConfig.json" Link="TestConfigurations\GatewayModelRulesConfig\GatewayModelRulesConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayProcessorConfig.json">
+    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayProcessorConfig.json" Link="TestConfigurations\GatewayProcessorConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayReceiveConfig.json">
+    <Content Include="..\Microsoft.InnerEye.Listener.Tests\TestConfigurations\GatewayReceiveConfig.json" Link="TestConfigurations\GatewayReceiveConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestConfigurations\GatewayModelRulesConfig\" />
   </ItemGroup>
 </Project>
