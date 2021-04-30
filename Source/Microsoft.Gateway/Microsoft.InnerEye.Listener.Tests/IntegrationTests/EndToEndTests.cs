@@ -35,11 +35,6 @@
         [TestMethod]
         public async Task IntegrationTestLicenseKey()
         {
-            var processorSettings = TestGatewayProcessorConfigProvider.ProcessorSettings();
-            var licenseKey = processorSettings.LicenseKey;
-            var formatLicenseKey = string.IsNullOrWhiteSpace(licenseKey) ? "N/A" : licenseKey.Substring(0, 4) + new string('*', licenseKey.Length - 4);
-            TestContext.WriteLine("IntegrationTest: InferenceUri: {0}, LicenseKey: {1}", processorSettings.InferenceUri, formatLicenseKey);
-
             try
             {
                 using (var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
