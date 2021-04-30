@@ -1,4 +1,4 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.IntegrationTests
+﻿namespace Microsoft.InnerEye.Integration.Tests
 {
     using System;
     using System.Collections.Concurrent;
@@ -11,6 +11,7 @@
     using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
+    using Microsoft.InnerEye.Listener.Tests;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
     using Microsoft.InnerEye.Listener.Tests.ServiceTests;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
