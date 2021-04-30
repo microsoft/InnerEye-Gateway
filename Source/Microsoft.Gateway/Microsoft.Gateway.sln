@@ -82,6 +82,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GatewayModelRulesConfig", "
 		SampleConfigurations\GatewayModelRulesConfig\GatewayModelRulesConfigPelvis.json = SampleConfigurations\GatewayModelRulesConfig\GatewayModelRulesConfigPelvis.json
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.InnerEye.Integration.Tests", "Microsoft.InnerEye.Integration.Tests\Microsoft.InnerEye.Integration.Tests.csproj", "{716CD837-056A-4820-B02B-64D55A9847F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -115,6 +117,7 @@ Global
 		{10B27116-9B19-4F19-83C0-19AF5AEAF6D3}.Debug|x64.ActiveCfg = Debug|x64
 		{10B27116-9B19-4F19-83C0-19AF5AEAF6D3}.Debug|x64.Build.0 = Debug|x64
 		{10B27116-9B19-4F19-83C0-19AF5AEAF6D3}.Release|x64.ActiveCfg = Release|x64
+		{10B27116-9B19-4F19-83C0-19AF5AEAF6D3}.Release|x64.Build.0 = Release|x64
 		{001C5475-43FA-4348-B218-8F12771B56EE}.Debug|x64.ActiveCfg = Debug|x64
 		{001C5475-43FA-4348-B218-8F12771B56EE}.Debug|x64.Build.0 = Debug|x64
 		{001C5475-43FA-4348-B218-8F12771B56EE}.Release|x64.ActiveCfg = Release|x64
@@ -159,6 +162,10 @@ Global
 		{5B0B84B4-C38C-4F39-B7C2-7F99FDCE8961}.Debug|x64.Build.0 = Debug|x64
 		{5B0B84B4-C38C-4F39-B7C2-7F99FDCE8961}.Release|x64.ActiveCfg = Release|x64
 		{5B0B84B4-C38C-4F39-B7C2-7F99FDCE8961}.Release|x64.Build.0 = Release|x64
+		{716CD837-056A-4820-B02B-64D55A9847F8}.Debug|x64.ActiveCfg = Debug|x64
+		{716CD837-056A-4820-B02B-64D55A9847F8}.Debug|x64.Build.0 = Debug|x64
+		{716CD837-056A-4820-B02B-64D55A9847F8}.Release|x64.ActiveCfg = Release|x64
+		{716CD837-056A-4820-B02B-64D55A9847F8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -183,6 +190,7 @@ Global
 		{9496C679-2A70-4763-BD9B-54FCEA4E35AD} = {98DA538C-6CCE-4FE9-84C6-15ADA17DD4A1}
 		{5B0B84B4-C38C-4F39-B7C2-7F99FDCE8961} = {C788D40D-857D-4CBE-95DA-CAFD6829318B}
 		{A12EB7AA-47A1-4232-9C88-ED87F243928D} = {F6C3CF4D-C247-4022-A3A0-5D3239840C2D}
+		{716CD837-056A-4820-B02B-64D55A9847F8} = {C8A127EE-E168-41E9-B9B8-11A3D6FF6FBC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2DF01C6-EB7F-4CA3-B99E-D2546D29E707}
