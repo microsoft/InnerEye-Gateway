@@ -57,7 +57,17 @@ jobs:
       run: |
         $erroractionpreference = "stop"
 
-        $TestFiles = $(Get-ChildItem $PATH -include *tests*.dll -exclude "*TestAdapter*","*TestPlatform*","*MSTest*" -recurse | where {$_.FullName -notlike "*obj*"}).fullname
+        $TestFiles = $(Get-ChildItem $PATH -include *tests*.dll -exclude "*TestAdapter*","*TestPlatform*","*MSTest*","*Integration.Tests*" -recurse | where {$_.FullName -notlike "*obj*"}).fullname
+        $TestArgs = $TestFiles + "/Platform:x64"
+
+        vstest.console.exe $TestArgs
+
+    - name: Test Integration
+      shell: Powershell
+      run: |
+        $erroractionpreference = "stop"
+
+        $TestFiles = $(Get-ChildItem $PATH -include *Integration.Tests*.dll -exclude "*TestAdapter*","*TestPlatform*","*MSTest*" -recurse | where {$_.FullName -notlike "*obj*"}).fullname
         $TestArgs = $TestFiles + "/Platform:x64"
         
         setx INNEREYE_INFERENCE_DEV_KEY ${{ secrets.INNEREYE_INFERENCE_DEV_KEY }} /M

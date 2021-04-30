@@ -7,7 +7,7 @@
     <Authors>Microsoft InnerEye (innereyedev@microsoft.com)</Authors>
     <Company>Microsoft Corporation</Company>
     <Product>Microsoft InnerEye Gateway</Product>
-    <Description>Tests for Processor and Receiver for Microsoft InnerEye Gateway.</Description>
+    <Description>Integration Tests for Microsoft InnerEye Gateway.</Description>
     <Copyright>� Microsoft Corporation</Copyright>
     <PackageProjectUrl>https://github.com/microsoft/InnerEye-Gateway</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/InnerEye-Gateway</RepositoryUrl>
@@ -27,5 +27,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.InnerEye.Listener.Tests\Microsoft.InnerEye.Listener.Tests.csproj" />
   </ItemGroup>
-
 </Project>
