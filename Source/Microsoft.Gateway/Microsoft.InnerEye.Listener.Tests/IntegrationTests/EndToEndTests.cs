@@ -4,6 +4,7 @@
     using System.Collections.Concurrent;
     using System.IO;
     using System.Linq;
+    using System.Security.Authentication;
     using System.Threading;
     using System.Threading.Tasks;
     using Dicom;
@@ -30,6 +31,30 @@
         [TestCategory("IntegrationTests")]
         [Timeout(IntegrationTestTimeout)]
         //[Ignore("Integration test, relies on live API")]
+        [Description("Tests test configuration of inference service URI and license key.")]
+        [TestMethod]
+        public async Task IntegrationTestLicenseKey()
+        {
+            try
+            {
+                using (var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
+                {
+                    await segmentationClient.PingAsync();
+                }
+            }
+            catch (AuthenticationException)
+            {
+                Assert.Fail("Invalid product key");
+            }
+            catch (Exception)
+            {
+                Assert.Fail("Unable to connect to inference service uri");
+            }
+        }
+
+        [TestCategory("IntegrationTests")]
+        [Timeout(IntegrationTestTimeout)]
+        [Ignore("Integration test, relies on live API")]
         [Description("Pushes an entire DICOM Image Series.")]
         [TestMethod]
         public async Task IntegrationTestEndToEnd()
