@@ -25,9 +25,9 @@
         public const int IntegrationTestTimeout = 40 * 60 * 1000;
 
         /// <summary>
-        /// Default list of class names used by the PassthroughModel.
+        /// Default list of class names used by the PassThroughModel.
         /// </summary>
-        public static readonly string[] PassthroughModelDisplayNames = new[] { "SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus" };
+        public static readonly string[] PassThroughModelDisplayNames = new[] { "SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus" };
 
         [TestCategory("IntegrationTests")]
         [Timeout(IntegrationTestTimeout)]
@@ -44,11 +44,11 @@
             }
             catch (AuthenticationException)
             {
-                Assert.Fail("Invalid product key");
+                Assert.Fail("Invalid product key. Check ProcessorSettings.LicenseKeyEnvVar in TestConfigurations/GatewayProcessorConfig.json and the corresponding system environment variable.");
             }
             catch (Exception)
             {
-                Assert.Fail("Unable to connect to inference service uri");
+                Assert.Fail("Unable to connect to inference service uri. Check ProcessorSettings.InferenceUri in TestConfigurations/GatewayProcessorConfig.json.");
             }
         }
 
@@ -203,19 +203,19 @@
             Assert.AreEqual(expectedDate, dicomFile.Dataset.GetSingleValue<string>(DicomTag.StructureSetDate));
 
             var structureSetROISequences = dicomFile.Dataset.GetSequence(DicomTag.StructureSetROISequence);
-            Assert.AreEqual(PassthroughModelDisplayNames.Length, structureSetROISequences.Items.Count);
+            Assert.AreEqual(PassThroughModelDisplayNames.Length, structureSetROISequences.Items.Count);
 
             var roiContourSequences = dicomFile.Dataset.GetSequence(DicomTag.ROIContourSequence);
-            Assert.AreEqual(PassthroughModelDisplayNames.Length, roiContourSequences.Items.Count);
+            Assert.AreEqual(PassThroughModelDisplayNames.Length, roiContourSequences.Items.Count);
 
             var rtRoiObservationsSequence = dicomFile.Dataset.GetSequence(DicomTag.RTROIObservationsSequence);
-            Assert.AreEqual(PassthroughModelDisplayNames.Length, rtRoiObservationsSequence.Items.Count);
+            Assert.AreEqual(PassThroughModelDisplayNames.Length, rtRoiObservationsSequence.Items.Count);
 
-            for (var i = 0; i < PassthroughModelDisplayNames.Length; i++)
+            for (var i = 0; i < PassThroughModelDisplayNames.Length; i++)
             {
                 Assert.AreEqual(i + 1, structureSetROISequences.Items[i].GetSingleValue<int>(DicomTag.ROINumber));
 
-                var expectedName = PassthroughModelDisplayNames[i] + " NOT FOR CLINICAL USE";
+                var expectedName = PassThroughModelDisplayNames[i] + " NOT FOR CLINICAL USE";
                 Assert.AreEqual(expectedName, structureSetROISequences.Items[i].GetSingleValue<string>(DicomTag.ROIName));
 
                 Assert.AreEqual(i + 1, roiContourSequences.Items[i].GetSingleValue<int>(DicomTag.ReferencedROINumber));
