@@ -33,23 +33,24 @@
 
                 var configurationsPathRoot = ConfigurationService.FindRelativeDirectory(relativePaths, loggerFactory.CreateLogger("Main"));
 
-                var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
+                using (var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
                     loggerFactory.CreateLogger("ProcessorSettings"),
-                    configurationsPathRoot);
-
-                // The ProjectInstaller.cs uses the service name to install the service.
-                // If you change it please update the ProjectInstaller.cs
-                ServiceHelpers.RunServices(
-                    ServiceName,
-                    gatewayReceiveConfigProvider.ServiceSettings(),
-                    new ConfigurationService(
-                        null,
-                        gatewayReceiveConfigProvider.ConfigurationServiceConfig,
-                        loggerFactory.CreateLogger("ConfigurationService"),
-                        new ReceiveService(
-                            gatewayReceiveConfigProvider.ReceiveServiceConfig,
-                            GatewayMessageQueue.UploadQueuePath,
-                            loggerFactory.CreateLogger("ReceiveService"))));
+                    configurationsPathRoot))
+                {
+                    // The ProjectInstaller.cs uses the service name to install the service.
+                    // If you change it please update the ProjectInstaller.cs
+                    ServiceHelpers.RunServices(
+                        ServiceName,
+                        gatewayReceiveConfigProvider.ServiceSettings(),
+                        new ConfigurationService(
+                            null,
+                            gatewayReceiveConfigProvider.ConfigurationServiceConfig,
+                            loggerFactory.CreateLogger("ConfigurationService"),
+                            new ReceiveService(
+                                gatewayReceiveConfigProvider.ReceiveServiceConfig,
+                                GatewayMessageQueue.UploadQueuePath,
+                                loggerFactory.CreateLogger("ReceiveService"))));
+                }
             }
         }
     }

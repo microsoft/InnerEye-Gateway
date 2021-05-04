@@ -12,7 +12,7 @@
     /// Class that monitors a JSON settings file or folder.
     /// </summary>
     /// <typeparam name="T">Data type underlying the JSON settings.</typeparam>
-    public class BaseConfigProvider<T>
+    public class BaseConfigProvider<T> : IDisposable
     {
         /// <summary>
         /// Logger for errors loading or parsing JSON.
@@ -25,6 +25,13 @@
         private readonly string _settingsFileOrFolderName;
 
         /// <summary>
+        /// File system watcher to monitor changes to file or folder.
+        /// </summary>
+        private readonly FileSystemWatcher _fileSystemWatcher;
+
+        private bool disposedValue;
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="BaseConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -35,6 +42,34 @@
         {
             _logger = logger;
             _settingsFileOrFolderName = settingsFileOrFolderName;
+
+            _fileSystemWatcher = new FileSystemWatcher()
+            {
+                NotifyFilter = NotifyFilters.LastWrite,
+                EnableRaisingEvents = true
+            };
+
+            _fileSystemWatcher.Changed += new FileSystemEventHandler(OnChanged);
+
+            if (File.Exists(_settingsFileOrFolderName))
+            {
+                _fileSystemWatcher.Filter = _settingsFileOrFolderName;
+
+            }
+            else if (Directory.Exists(_settingsFileOrFolderName))
+            {
+                _fileSystemWatcher.Path = _settingsFileOrFolderName;
+                _fileSystemWatcher.Filter = "*.json";
+            }
+        }
+
+        private static void OnChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.ChangeType != WatcherChangeTypes.Changed)
+            {
+                return;
+            }
+            Console.WriteLine($"Changed: {e.FullPath}");
         }
 
         /// <summary>
@@ -142,6 +177,34 @@
 
             var jsonText = JsonConvert.SerializeObject(t, serializerSettings);
             File.WriteAllText(path, jsonText);
+        }
+
+        /// <summary>
+        /// Disposes of all managed resources.
+        /// </summary>
+        /// <param name="disposing">If we are disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _fileSystemWatcher.Dispose();
+            }
+
+            disposedValue = true;
+        }
+
+        /// <summary>
+        /// Implements the disposable pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

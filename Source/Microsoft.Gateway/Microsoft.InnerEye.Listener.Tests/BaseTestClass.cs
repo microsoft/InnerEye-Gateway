@@ -34,7 +34,7 @@
     /// The base test class.
     /// </summary>
     [TestClass]
-    public class BaseTestClass
+    public class BaseTestClass : IDisposable
     {
         /// <summary>
         /// Logger for common use.
@@ -131,6 +131,8 @@
         /// GatewayReceiveConfigProvider as loaded from _basePathConfigs.
         /// </summary>
         protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
+
+        private bool disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseTestClass"/> class.
@@ -687,6 +689,36 @@
                     TestContext.WriteLine($"Failed to kill process {process.Id}, {process.ProcessName} with exception {e}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Disposes of all managed resources.
+        /// </summary>
+        /// <param name="disposing">If we are disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _testAETConfigProvider.Dispose();
+                TestGatewayProcessorConfigProvider.Dispose();
+                TestGatewayReceiveConfigProvider.Dispose();
+            }
+
+            disposedValue = true;
+        }
+
+        /// <summary>
+        /// Implements the disposable pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
