@@ -272,7 +272,7 @@
             }
         }
 
-        public static void VerifyDicomFile(string path)
+        private void VerifyDicomFile(string path)
         {
             var verifierPath = Path.Combine("Assets", "dicom3tools", "dciodvfy.exe");
             Assert.IsNotNull(verifierPath, "DICOM verifier executable (dciodvfy.exe) not found on system PATH");
@@ -296,7 +296,7 @@
             Assert.IsFalse(output.Contains("error"));
         }
 
-        public static void AssertDicomFileIsAnonymised(DicomFile dicomFile)
+        private void AssertDicomFileIsAnonymised(DicomFile dicomFile)
         {
             // Check the software version gets added
             var softwareVersion = dicomFile.Dataset.GetString(DicomTag.SoftwareVersions);
@@ -356,7 +356,6 @@
                 Assert.IsTrue(acceptedTags.Contains(item), $"The Dicom file contained the Tag: {item.DictionaryEntry.Name}");
             }
         }
-
 
         /// <summary>
         /// List of DicomTags to randomise with RandomDicomAgeString.
@@ -534,13 +533,13 @@
         };
 
         /// <summary>
-        /// Test anonymisation/deanonymisation preserves some of the tags, replaces some others and drops the rest.
+        /// Test anonymization/deanonymization preserves some of the tags, replaces some others and drops the rest.
         /// </summary>
         /// <param name="random">Random.</param>
         /// <param name="sourceImageFileName">Source file name.</param>
         /// <param name="tagReplacements">Tag replacements.</param>
         /// <returns>Awaitable task.</returns>
-        public async Task TestDataSetAnonymiseDeanonymize(
+        public async Task TestDataSetAnonymizeDeanonymize(
             Random random,
             string sourceImageFileName,
             IEnumerable<TagReplacement> tagReplacements)
@@ -697,17 +696,6 @@
             }
         }
 
-        [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be anonymised/deanonymised, just the top level replacements.")]
-        [TestMethod]
-        public async Task TestDataSetAnonymiseDeanonymizeTopLevelReplacements()
-        {
-            var random = new Random();
-            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
-
-            await TestDataSetAnonymiseDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
-        }
-
         /// <summary>
         /// Create a test set of TagReplacements.
         /// </summary>
@@ -722,28 +710,39 @@
                     RandomString(random, 8))).ToList();
 
         [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be anonymised/deanonymised, with append if exists replacements.")]
+        [Description("Check data sets can be anonymized/deanonymized, just the top level replacements.")]
         [TestMethod]
-        public async Task TestDataSetAnonymiseDeanonymizeAppendIfExistsReplacements()
+        public async Task TestDataSetAnonymizeDeanonymizeTopLevelReplacements()
         {
             var random = new Random();
             var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
-            await TestDataSetAnonymiseDeanonymize(
+            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymized/deanonymized, with append if exists replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymizeDeanonymizeAppendIfExistsReplacements()
+        {
+            var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
+
+            await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
                 CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
-        [Description("Check data sets can be anonymised/deanonymised, with update if exists replacements.")]
+        [Description("Check data sets can be anonymized/deanonymized, with update if exists replacements.")]
         [TestMethod]
-        public async Task TestDataSetAnonymiseDeanonymizeUpdateIfExistsReplacements()
+        public async Task TestDataSetAnonymizeDeanonymizeUpdateIfExistsReplacements()
         {
             var random = new Random();
             var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
-            await TestDataSetAnonymiseDeanonymize(
+            await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
                 CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
