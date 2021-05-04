@@ -19,6 +19,11 @@
         public static readonly string GatewayProcessorConfigFileName = "GatewayProcessorConfig.json";
 
         /// <summary>
+        /// GatewayProcessorConfig last loaded from a JSON file.
+        /// </summary>
+        public GatewayProcessorConfig GatewayProcessorConfig { get; private set; }
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="GatewayProcessorConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -28,24 +33,32 @@
             string configurationsPathRoot) : base(logger,
                 Path.Combine(configurationsPathRoot, GatewayProcessorConfigFileName))
         {
+            Reload();
         }
 
-        /// <summary>
-        /// Load GatewayProcessorConfig from a JSON file.
-        /// </summary>
-        /// <returns>Loaded GatewayProcessorConfig.</returns>
-        public GatewayProcessorConfig GatewayProcessorConfig()
+        public void Reload()
         {
-            Load();
-            return _t;
+            var (t, loaded, _) = Load();
+
+            if (loaded)
+            {
+                GatewayProcessorConfig = t;
+            }
         }
 
         /// <summary>
         /// Update GatewayProcessorConfig file, according to an update callback function.
         /// </summary>
         /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
-        public void Update(Func<GatewayProcessorConfig, GatewayProcessorConfig> updater) =>
-            UpdateFile(updater, EqualityComparer<GatewayProcessorConfig>.Default);
+        public void Update(Func<GatewayProcessorConfig, GatewayProcessorConfig> updater)
+        {
+            var (newt, updated) = UpdateFile(updater, EqualityComparer<GatewayProcessorConfig>.Default);
+
+            if (updated)
+            {
+                GatewayProcessorConfig = newt;
+            }
+        }
 
         /// <summary>
         /// Set ServiceSettings.RunAsConsole.
@@ -82,35 +95,39 @@
         /// </summary>
         /// <returns>Loaded ServiceSettings.</returns>
         public ServiceSettings ServiceSettings() =>
-            GatewayProcessorConfig().ServiceSettings;
+            GatewayProcessorConfig.ServiceSettings;
 
         /// <summary>
         /// Load ProcessorSettings from a JSON file.
         /// </summary>
         /// <returns>Loaded ProcessorSettings.</returns>
         public ProcessorSettings ProcessorSettings() =>
-            GatewayProcessorConfig().ProcessorSettings;
+            GatewayProcessorConfig.ProcessorSettings;
 
         /// <summary>
         /// Load DequeueServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded DequeueServiceConfig.</returns>
         public DequeueServiceConfig DequeueServiceConfig() =>
-            GatewayProcessorConfig().DequeueServiceConfig;
+            GatewayProcessorConfig.DequeueServiceConfig;
 
         /// <summary>
         /// Load DownloadServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded DownloadServiceConfig.</returns>
         public DownloadServiceConfig DownloadServiceConfig() =>
-            GatewayProcessorConfig().DownloadServiceConfig;
+            GatewayProcessorConfig.DownloadServiceConfig;
 
         /// <summary>
         /// Load ConfigurationServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ConfigurationServiceConfig.</returns>
-        public ConfigurationServiceConfig ConfigurationServiceConfig() =>
-            GatewayProcessorConfig().ConfigurationServiceConfig;
+        public ConfigurationServiceConfig ConfigurationServiceConfig()
+        {
+            Reload();
+
+            return GatewayProcessorConfig.ConfigurationServiceConfig;
+        }
 
         /// <summary>
         /// Create a new segmentation client based on settings in JSON file.

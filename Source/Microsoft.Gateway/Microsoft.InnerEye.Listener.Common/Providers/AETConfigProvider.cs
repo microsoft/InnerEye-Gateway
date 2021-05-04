@@ -21,6 +21,11 @@
         public static readonly string AETConfigFolderName = "GatewayModelRulesConfig";
 
         /// <summary>
+        /// AETConfigModels last loaded from JSON files.
+        /// </summary>
+        public IEnumerable<AETConfigModel> AETConfigModels { get; private set; }
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="AETConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -32,23 +37,22 @@
             bool useFile = false) : base(logger,
             Path.Combine(configurationsPathRoot, useFile ? AETConfigFileName : AETConfigFolderName))
         {
+            Reload();
+        }
+
+        public void Reload()
+        {
+            var (t, loaded, ts) = Load();
+
+            AETConfigModels = ts != null ? MergeModels(ts) : loaded ? t : null;
         }
 
         /// <summary>
         /// Lookup list of AETConfigModels from a JSON file.
         /// </summary>
         /// <returns>List of AETConfigModels.</returns>
-        public IEnumerable<AETConfigModel> GetAETConfigs()
-        {
-            Load();
-
-            _t = _ts != null ? MergeModels(_ts) : _t;
-
-            // no need to keep two copies of all the config data.
-            _ts = null;
-
-            return _t;
-        }
+        public IEnumerable<AETConfigModel> GetAETConfigs() =>
+            AETConfigModels;
 
         /// <summary>
         /// Merge a list of lists of AET config models into one list.

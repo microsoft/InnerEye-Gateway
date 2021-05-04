@@ -597,9 +597,35 @@
             Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
 
             var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_baseTestLogger, configurationDirectory);
-            var actualGatewayReceiveConfig = gatewayReceiveConfigProvider.GatewayReceiveConfig();
+            var actualGatewayReceiveConfig = gatewayReceiveConfigProvider.GatewayReceiveConfig;
 
             Assert.AreEqual(expectedGatewayReceiveConfig, actualGatewayReceiveConfig);
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway receive config, saves it, and checks it loads correctly. Then does it all again.")]
+        [TestMethod]
+        public void TestReloadGatewayReceiveConfig()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
+            Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+
+            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_baseTestLogger, configurationDirectory);
+            var actualGatewayReceiveConfig = gatewayReceiveConfigProvider.GatewayReceiveConfig;
+
+            Assert.AreEqual(expectedGatewayReceiveConfig, actualGatewayReceiveConfig);
+
+            var expectedGatewayReceiveConfig2 = RandomGatewayReceiveConfig(random);
+            Serialise(expectedGatewayReceiveConfig2, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+
+            var config = gatewayReceiveConfigProvider.ConfigurationServiceConfig();
+
+            var actualGatewayReceiveConfig2 = gatewayReceiveConfigProvider.GatewayReceiveConfig;
+
+            Assert.AreEqual(expectedGatewayReceiveConfig2, actualGatewayReceiveConfig2);
         }
 
         [TestCategory("ConfigurationProvider")]
@@ -614,9 +640,36 @@
             Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
             var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_baseTestLogger, configurationDirectory);
-            var actualGatewayProcessorConfig = gatewayProcessorConfigProvider.GatewayProcessorConfig();
+            var actualGatewayProcessorConfig = gatewayProcessorConfigProvider.GatewayProcessorConfig;
 
             Assert.AreEqual(expectedGatewayProcessorConfig, actualGatewayProcessorConfig);
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway processor config, saves it, and checks it loads correctly. Then does it all again")]
+        [TestMethod]
+        public void TestReloadGatewayProcessorConfig()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_baseTestLogger, configurationDirectory);
+            var actualGatewayProcessorConfig = gatewayProcessorConfigProvider.GatewayProcessorConfig;
+
+            Assert.AreEqual(expectedGatewayProcessorConfig, actualGatewayProcessorConfig);
+
+            var expectedGatewayProcessorConfig2 = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig2, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            var config = gatewayProcessorConfigProvider.ConfigurationServiceConfig();
+
+            var actualGatewayProcessorConfig2 = gatewayProcessorConfigProvider.GatewayProcessorConfig;
+
+            Assert.AreEqual(expectedGatewayProcessorConfig2, actualGatewayProcessorConfig2);
+
         }
 
         /// <summary>

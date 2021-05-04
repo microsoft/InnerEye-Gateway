@@ -25,16 +25,6 @@
         private readonly string _settingsFileOrFolderName;
 
         /// <summary>
-        /// Cached copy of data as last loaded from JSON file.
-        /// </summary>
-        protected T _t;
-
-        /// <summary>
-        /// Cached copy of data as last loaded from folder of JSON files.
-        /// </summary>
-        protected IEnumerable<T> _ts;
-
-        /// <summary>
         /// Initialize a new instance of the <see cref="BaseConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -50,17 +40,17 @@
         /// <summary>
         /// Load T or Ts from a JSON file or folder.
         /// </summary>
-        protected void Load()
+        /// <returns>Tuple of: T, if loading a single file, bool if single file loaded successfully, Ts if loading a folder.</returns>
+        protected (T, bool, IEnumerable<T>) Load()
         {
             if (File.Exists(_settingsFileOrFolderName))
             {
-                _ts = null;
+                var (t, loaded) = LoadFile(_settingsFileOrFolderName);
 
-                (_t, _) = LoadFile(_settingsFileOrFolderName);
+                return (t, loaded, null);
             }
             else if (Directory.Exists(_settingsFileOrFolderName))
             {
-                _t = default(T);
                 var ts = new List<T>();
 
                 foreach (var file in Directory.EnumerateFiles(_settingsFileOrFolderName, "*.json"))
@@ -72,13 +62,15 @@
                     }
                 }
 
-                _ts = ts.ToArray();
+                return (default(T), false, ts.ToArray());
             }
             else
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
                     string.Format("Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
                 logEntry.Log(_logger, LogLevel.Error);
+
+                return (default(T), false, null);
             }
         }
 
@@ -87,7 +79,7 @@
         /// </summary>
         /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
         /// <param name="equalityComparer">How to compare objects.</param>
-        protected void UpdateFile(Func<T, T> updater, IEqualityComparer<T> equalityComparer)
+        protected (T, bool) UpdateFile(Func<T, T> updater, IEqualityComparer<T> equalityComparer)
         {
             if (!File.Exists(_settingsFileOrFolderName))
             {
@@ -97,16 +89,18 @@
             var (t, loaded) = LoadFile(_settingsFileOrFolderName);
             if (!loaded)
             {
-                return;
+                return (default(T), false);
             }
 
             var newt = updater.Invoke(t);
             if (equalityComparer.Equals(newt, t))
             {
-                return;
+                return (default(T), false);
             }
 
             SaveFile(newt, _settingsFileOrFolderName);
+
+            return (newt, true);
         }
 
         /// <summary>

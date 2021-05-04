@@ -17,6 +17,11 @@
         public static readonly string GatewayReceiveConfigFileName = "GatewayReceiveConfig.json";
 
         /// <summary>
+        /// GatewayReceiveConfig loaded from a JSON file.
+        /// </summary>
+        public GatewayReceiveConfig GatewayReceiveConfig { get; private set; }
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="GatewayReceiveConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -26,24 +31,32 @@
             string configurationsPathRoot) : base(logger,
                 Path.Combine(configurationsPathRoot, GatewayReceiveConfigFileName))
         {
+            Reload();
         }
 
-        /// <summary>
-        /// Load GatewayReceiveConfig from a JSON file.
-        /// </summary>
-        /// <returns>Loaded GatewayReceiveConfig.</returns>
-        public GatewayReceiveConfig GatewayReceiveConfig()
+        public void Reload()
         {
-            Load();
-            return _t;
+            var (t, loaded, _) = Load();
+
+            if (loaded)
+            {
+                GatewayReceiveConfig = t;
+            }
         }
 
         /// <summary>
         /// Update GatewayReceiveConfig file, according to an update callback function.
         /// </summary>
         /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
-        public void Update(Func<GatewayReceiveConfig, GatewayReceiveConfig> updater) =>
-            UpdateFile(updater, EqualityComparer<GatewayReceiveConfig>.Default);
+        public void Update(Func<GatewayReceiveConfig, GatewayReceiveConfig> updater)
+        {
+            var (newt, updated) = UpdateFile(updater, EqualityComparer<GatewayReceiveConfig>.Default);
+
+            if (updated)
+            {
+                GatewayReceiveConfig = newt;
+            }
+        }
 
         /// <summary>
         /// Set ServiceSettings.RunAsConsole.
@@ -57,20 +70,24 @@
         /// </summary>
         /// <returns>Loaded ServiceSettings.</returns>
         public ServiceSettings ServiceSettings() =>
-            GatewayReceiveConfig().ServiceSettings;
+            GatewayReceiveConfig.ServiceSettings;
 
         /// <summary>
         /// Load ConfigurationServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ConfigurationServiceConfig.</returns>
-        public ConfigurationServiceConfig ConfigurationServiceConfig() =>
-            GatewayReceiveConfig().ConfigurationServiceConfig;
+        public ConfigurationServiceConfig ConfigurationServiceConfig()
+        {
+            Reload();
+
+            return GatewayReceiveConfig.ConfigurationServiceConfig;
+        }
 
         /// <summary>
         /// Load ReceiveServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ReceiveServiceConfig.</returns>
         public ReceiveServiceConfig ReceiveServiceConfig() =>
-            GatewayReceiveConfig().ReceiveServiceConfig;
+            GatewayReceiveConfig.ReceiveServiceConfig;
     }
 }
