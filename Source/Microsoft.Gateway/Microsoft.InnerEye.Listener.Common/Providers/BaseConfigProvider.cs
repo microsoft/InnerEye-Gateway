@@ -100,34 +100,36 @@
         /// <param name="reload">True if reloading, false if loading.</param>
         public void Load(bool reload)
         {
-            var (t, loaded, ts) = Load();
+            var loaded = Load();
 
-            if (!loaded && ts == null)
+            if (!loaded || !reload)
             {
                 return;
             }
 
-            Config = _flatMap != null && ts != null ? _flatMap(ts) : t;
-
-            if (reload)
-            {
-                ConfigChanged?.Invoke(this, new EventArgs());
-            }
+            ConfigChanged?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
-        /// Load T or Ts from a JSON file or folder.
+        /// Load T from a JSON file or folder.
         /// </summary>
-        /// <returns>Tuple of: T, if loading a single file, bool if single file loaded successfully, Ts if loading a folder.</returns>
-        private (T, bool, IEnumerable<T>) Load()
+        /// <returns>True if new config has been loaded, false otherwise.</returns>
+        private bool Load()
         {
             if (File.Exists(_settingsFileOrFolderName))
             {
                 var (t, loaded, parsed) = LoadFile(_settingsFileOrFolderName);
 
-                return (t, loaded && parsed, null);
+                if (!loaded || !parsed)
+                {
+                    return false;
+                }
+
+                Config = t;
+
+                return true;
             }
-            else if (Directory.Exists(_settingsFileOrFolderName))
+            else if (Directory.Exists(_settingsFileOrFolderName) && _flatMap != null)
             {
                 var ts = new List<T>();
 
@@ -138,7 +140,7 @@
                     {
                         // File still in use, FileWatcher has reported file changed but
                         // the other process has not finished yet.
-                        return (default(T), false, null);
+                        return false;
                     }
 
                     if (parsed)
@@ -147,7 +149,9 @@
                     }
                 }
 
-                return (default(T), false, ts.ToArray());
+                Config = _flatMap.Invoke(ts);
+
+                return true;
             }
             else
             {
@@ -155,7 +159,7 @@
                     string.Format("Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
                 logEntry.Log(_logger, LogLevel.Error);
 
-                return (default(T), false, null);
+                return false;
             }
         }
 
