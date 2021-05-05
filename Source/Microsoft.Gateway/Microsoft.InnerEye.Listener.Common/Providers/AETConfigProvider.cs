@@ -1,6 +1,5 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -9,7 +8,7 @@
     /// <summary>
     /// Monitor a JSON file containing a list of AETConfigModels.
     /// </summary>
-    public class AETConfigProvider : BaseConfigProvider<List<AETConfigModel>>
+    public class AETConfigProvider : BaseConfigProvider<IEnumerable<AETConfigModel>>
     {
         /// <summary>
         /// File name for JSON file containing a list of AETConfigModels.
@@ -22,16 +21,6 @@
         public static readonly string AETConfigFolderName = "GatewayModelRulesConfig";
 
         /// <summary>
-        /// AETConfigModels last loaded from JSON files.
-        /// </summary>
-        public IEnumerable<AETConfigModel> AETConfigModels { get; private set; }
-
-        /// <summary>
-        /// Called when the config has changed.
-        /// </summary>
-        public event EventHandler AETConfigModelsChanged;
-
-        /// <summary>
         /// Initialize a new instance of the <see cref="AETConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -42,32 +31,9 @@
             string configurationsPathRoot,
             bool useFile = false) : base(logger,
             Path.Combine(configurationsPathRoot, useFile ? string.Empty : AETConfigFolderName),
-            useFile ? AETConfigFileName : string.Empty)
+            useFile ? AETConfigFileName : string.Empty,
+            MergeModels)
         {
-            Load(false);
-
-            ConfigChanged += (s, e) => Load(true);
-        }
-
-        /// <summary>
-        /// Load/reload config files.
-        /// </summary>
-        /// <param name="reload">True if reloading, false if loading.</param>
-        public void Load(bool reload)
-        {
-            var (t, loaded, ts) = Load();
-
-            if (!loaded && ts == null)
-            {
-                return;
-            }
-
-            AETConfigModels = ts != null ? MergeModels(ts) : t;
-
-            if (reload)
-            {
-                AETConfigModelsChanged?.Invoke(this, new EventArgs());
-            }
         }
 
         /// <summary>
@@ -75,7 +41,7 @@
         /// </summary>
         /// <returns>List of AETConfigModels.</returns>
         public IEnumerable<AETConfigModel> GetAETConfigs() =>
-            AETConfigModels;
+            Config;
 
         /// <summary>
         /// Merge a list of lists of AET config models into one list.
@@ -91,7 +57,7 @@
         /// </remarks>
         /// <param name="modelLists">List of lists of AET config models.</param>
         /// <returns>List of AET config models.</returns>
-        private static List<AETConfigModel> MergeModels(IEnumerable<List<AETConfigModel>> modelLists)
+        private static List<AETConfigModel> MergeModels(IEnumerable<IEnumerable<AETConfigModel>> modelLists)
         {
             var mergedModels = new List<AETConfigModel>();
 

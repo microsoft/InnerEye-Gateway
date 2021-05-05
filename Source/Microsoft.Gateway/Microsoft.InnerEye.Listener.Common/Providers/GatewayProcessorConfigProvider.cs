@@ -1,7 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
     using System;
-    using System.Collections.Generic;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -18,16 +17,6 @@
         public static readonly string GatewayProcessorConfigFileName = "GatewayProcessorConfig.json";
 
         /// <summary>
-        /// GatewayProcessorConfig last loaded from a JSON file.
-        /// </summary>
-        public GatewayProcessorConfig GatewayProcessorConfig { get; private set; }
-
-        /// <summary>
-        /// Called when the config has changed.
-        /// </summary>
-        public event EventHandler GatewayProcessorConfigChanged;
-
-        /// <summary>
         /// Initialize a new instance of the <see cref="GatewayProcessorConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -37,44 +26,6 @@
             string configurationsPathRoot) : base(logger,
                 configurationsPathRoot, GatewayProcessorConfigFileName)
         {
-            Load(false);
-
-            ConfigChanged += (s, e) => Load(true);
-        }
-
-        /// <summary>
-        /// Load/reload config file.
-        /// </summary>
-        /// <param name="reload">True if reloading, false if loading.</param>
-        public void Load(bool reload)
-        {
-            var (t, loaded, _) = Load();
-
-            if (!loaded)
-            {
-                return;
-            }
-
-            GatewayProcessorConfig = t;
-
-            if (reload)
-            {
-                GatewayProcessorConfigChanged?.Invoke(this, new EventArgs());
-            }
-        }
-
-        /// <summary>
-        /// Update GatewayProcessorConfig file, according to an update callback function.
-        /// </summary>
-        /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
-        public void Update(Func<GatewayProcessorConfig, GatewayProcessorConfig> updater)
-        {
-            var (newt, updated) = UpdateFile(updater, EqualityComparer<GatewayProcessorConfig>.Default);
-
-            if (updated)
-            {
-                GatewayProcessorConfig = newt;
-            }
         }
 
         /// <summary>
@@ -112,35 +63,35 @@
         /// </summary>
         /// <returns>Loaded ServiceSettings.</returns>
         public ServiceSettings ServiceSettings() =>
-            GatewayProcessorConfig.ServiceSettings;
+            Config.ServiceSettings;
 
         /// <summary>
         /// Load ProcessorSettings from a JSON file.
         /// </summary>
         /// <returns>Loaded ProcessorSettings.</returns>
         public ProcessorSettings ProcessorSettings() =>
-            GatewayProcessorConfig.ProcessorSettings;
+            Config.ProcessorSettings;
 
         /// <summary>
         /// Load DequeueServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded DequeueServiceConfig.</returns>
         public DequeueServiceConfig DequeueServiceConfig() =>
-            GatewayProcessorConfig.DequeueServiceConfig;
+            Config.DequeueServiceConfig;
 
         /// <summary>
         /// Load DownloadServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded DownloadServiceConfig.</returns>
         public DownloadServiceConfig DownloadServiceConfig() =>
-            GatewayProcessorConfig.DownloadServiceConfig;
+            Config.DownloadServiceConfig;
 
         /// <summary>
         /// Load ConfigurationServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ConfigurationServiceConfig.</returns>
         public ConfigurationServiceConfig ConfigurationServiceConfig() =>
-            GatewayProcessorConfig.ConfigurationServiceConfig;
+            Config.ConfigurationServiceConfig;
 
         /// <summary>
         /// Create a new segmentation client based on settings in JSON file.

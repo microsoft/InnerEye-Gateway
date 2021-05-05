@@ -517,13 +517,13 @@
 
             using (var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_baseTestLogger, configurationDirectory))
             {
-                Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.GatewayReceiveConfig);
+                Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.Config);
 
                 if (reload)
                 {
                     var configReloadedCount = 0;
 
-                    gatewayReceiveConfigProvider.GatewayReceiveConfigChanged += (s, e) =>
+                    gatewayReceiveConfigProvider.ConfigChanged += (s, e) =>
                     {
                         Interlocked.Increment(ref configReloadedCount);
                     };
@@ -533,7 +533,7 @@
 
                     SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
 
-                    Assert.AreEqual(expectedGatewayReceiveConfig2, gatewayReceiveConfigProvider.GatewayReceiveConfig);
+                    Assert.AreEqual(expectedGatewayReceiveConfig2, gatewayReceiveConfigProvider.Config);
                 }
             }
         }
@@ -553,13 +553,13 @@
 
             using (var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_baseTestLogger, configurationDirectory))
             {
-                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.GatewayProcessorConfig);
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
 
                 if (reload)
                 {
                     var configReloadedCount = 0;
 
-                    gatewayProcessorConfigProvider.GatewayProcessorConfigChanged += (s, e) =>
+                    gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
                     {
                         Interlocked.Increment(ref configReloadedCount);
                     };
@@ -569,7 +569,7 @@
 
                     SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
 
-                    Assert.AreEqual(expectedGatewayProcessorConfig2, gatewayProcessorConfigProvider.GatewayProcessorConfig);
+                    Assert.AreEqual(expectedGatewayProcessorConfig2, gatewayProcessorConfigProvider.Config);
                 }
             }
         }
@@ -651,13 +651,13 @@
 
             using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory, useFile))
             {
-                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.AETConfigModels);
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
 
                 if (reload)
                 {
                     var configReloadedCount = 0;
 
-                    aetConfigProvider.AETConfigModelsChanged += (s, e) =>
+                    aetConfigProvider.ConfigChanged += (s, e) =>
                     {
                         Interlocked.Increment(ref configReloadedCount);
                     };
@@ -667,7 +667,7 @@
 
                     SpinWait.SpinUntil(() => configReloadedCount > (addJunk ? 4 : 0), TimeSpan.FromSeconds(10));
 
-                    AssertAETConfigModelsEqual(expectedAETConfigModels2, aetConfigProvider.AETConfigModels);
+                    AssertAETConfigModelsEqual(expectedAETConfigModels2, aetConfigProvider.Config);
                 }
             }
         }
@@ -706,7 +706,7 @@
 
             using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory))
             {
-                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.AETConfigModels);
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
             }
         }
 
@@ -751,7 +751,7 @@
 
             using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory))
             {
-                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.AETConfigModels);
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
             }
         }
     }

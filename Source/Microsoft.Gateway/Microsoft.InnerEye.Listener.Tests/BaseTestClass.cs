@@ -314,7 +314,7 @@
         }
 
         protected AETConfigModel GetTestAETConfigModel() =>
-            _testAETConfigProvider.AETConfigModels.First();
+            _testAETConfigProvider.Config.First();
 
         /// <summary>
         /// Create ReceiveServiceConfig from test files, but overwrite the port and rootDicomFolder.
@@ -326,7 +326,7 @@
             int port,
             DirectoryInfo rootDicomFolder = null)
         {
-            var gatewayConfig = _testGatewayReceiveConfigProvider.GatewayReceiveConfig.ReceiveServiceConfig;
+            var gatewayConfig = _testGatewayReceiveConfigProvider.Config.ReceiveServiceConfig;
 
             return gatewayConfig.With(
                 new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, port, gatewayConfig.GatewayDicomEndPoint.Ip),

@@ -25,11 +25,21 @@
         private readonly string _settingsFileOrFolderName;
 
         /// <summary>
+        /// Optional flat map to handle folders.
+        /// </summary>
+        private readonly Func<IEnumerable<T>, T> _flatMap;
+
+        /// <summary>
         /// File system watcher to monitor changes to file or folder.
         /// </summary>
         private readonly FileSystemWatcher _fileSystemWatcher;
 
         private bool disposedValue;
+
+        /// <summary>
+        /// Config as last loaded from file or folder.
+        /// </summary>
+        public T Config { get; protected set; }
 
         /// <summary>
         /// Called when the config has changed.
@@ -42,14 +52,16 @@
         /// <param name="logger">Logger.</param>
         /// <param name="folderName">Settings folder name.</param>
         /// <param name="settingsFile">Optional settings file.</param>
+        /// <param name="flatMap">Optional flat map to handle folders.</param>
         public BaseConfigProvider(
             ILogger logger,
             string folderName,
-            string settingsFile)
+            string settingsFile,
+            Func<IEnumerable<T>, T> flatMap = null)
         {
             _logger = logger;
-
             _settingsFileOrFolderName = Path.Combine(folderName, settingsFile);
+            _flatMap = flatMap;
 
             _fileSystemWatcher = new FileSystemWatcher(folderName)
             {
@@ -59,6 +71,8 @@
 
             _fileSystemWatcher.Changed += OnChanged;
             _fileSystemWatcher.EnableRaisingEvents = true;
+
+            Load(false);
         }
 
         /// <summary>
@@ -77,14 +91,35 @@
                 string.Format("Settings have changed: {0}", e.FullPath));
             logEntry.Log(_logger, LogLevel.Information);
 
-            ConfigChanged?.Invoke(this, new EventArgs());
+            Load(true);
+        }
+
+        /// <summary>
+        /// Load/reload config files.
+        /// </summary>
+        /// <param name="reload">True if reloading, false if loading.</param>
+        public void Load(bool reload)
+        {
+            var (t, loaded, ts) = Load();
+
+            if (!loaded && ts == null)
+            {
+                return;
+            }
+
+            Config = _flatMap != null && ts != null ? _flatMap(ts) : t;
+
+            if (reload)
+            {
+                ConfigChanged?.Invoke(this, new EventArgs());
+            }
         }
 
         /// <summary>
         /// Load T or Ts from a JSON file or folder.
         /// </summary>
         /// <returns>Tuple of: T, if loading a single file, bool if single file loaded successfully, Ts if loading a folder.</returns>
-        protected (T, bool, IEnumerable<T>) Load()
+        private (T, bool, IEnumerable<T>) Load()
         {
             if (File.Exists(_settingsFileOrFolderName))
             {
@@ -128,8 +163,8 @@
         /// Update settings file, according to an update callback function.
         /// </summary>
         /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
-        /// <param name="equalityComparer">How to compare objects.</param>
-        protected (T, bool) UpdateFile(Func<T, T> updater, IEqualityComparer<T> equalityComparer)
+        /// <param name="equalityComparer">Optional, how to compare objects.</param>
+        public (T, bool) Update(Func<T, T> updater, IEqualityComparer<T> equalityComparer = null)
         {
             if (!File.Exists(_settingsFileOrFolderName))
             {
@@ -143,12 +178,17 @@
             }
 
             var newt = updater.Invoke(t);
+
+            equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
+
             if (equalityComparer.Equals(newt, t))
             {
                 return (default(T), false);
             }
 
             SaveFile(newt, _settingsFileOrFolderName);
+
+            Config = newt;
 
             return (newt, true);
         }
