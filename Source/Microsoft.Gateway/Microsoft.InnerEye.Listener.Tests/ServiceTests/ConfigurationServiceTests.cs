@@ -50,6 +50,8 @@
 
             try
             {
+                // Note that Visual Studio must be running as Administrator in order to set the environment variable,
+                // otherwise there will be a SecurityException.
                 TestGatewayProcessorConfigProvider.SetProcessorSettings(licenseKey: Guid.NewGuid().ToString());
 
                 using (var configurationService = CreateConfigurationService(
@@ -78,8 +80,9 @@
         public void TestBadProductKeyAfterStart()
         {
             var client = GetMockInnerEyeSegmentationClient();
+
             // Create the services with multiple instances.
-            using (var downloadService = CreateDownloadService(null, 1, instances: 3))
+            using (var downloadService = CreateDownloadService(instances: 3))
             using (var uploadService = CreateUploadService(instances: 3))
             using (var configurationService = CreateConfigurationService(
                 client,

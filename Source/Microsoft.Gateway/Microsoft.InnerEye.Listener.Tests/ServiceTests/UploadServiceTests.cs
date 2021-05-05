@@ -22,7 +22,6 @@
         public void StrangeConfigUploadServiceTest()
         {
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
             var newTestAETConfigModel = testAETConfigModel.With(
@@ -96,10 +95,9 @@
             }
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             using (var deleteService = CreateDeleteService())
-            using (var downloadService = CreateDownloadService(segmentationClient, OneMinSecs))
+            using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var uploadQueue = uploadService.UploadQueue)
@@ -158,7 +156,6 @@
             }
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
             var newTestAETConfigModel = testAETConfigModel.With(
@@ -190,17 +187,12 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                var result = dicomDataReceiver.StartServer(
-                    newTestAETConfigModel.AETConfig.Destination.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(5));
-
-                Assert.IsTrue(result);
+                StartDicomDataReceiver(dicomDataReceiver, newTestAETConfigModel.AETConfig.Destination.Port);
 
                 using (var deleteService = CreateDeleteService())
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
                 using (var uploadQueue = uploadService.UploadQueue)
-                using (var downloadService = CreateDownloadService(segmentationClient, OneMinSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
                 using (var pushQueue = pushService.PushQueue)

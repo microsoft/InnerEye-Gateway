@@ -78,10 +78,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                var started = dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(started);
-                Assert.IsTrue(dicomDataReceiver.IsListening);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var dataSender = new DicomDataSender();
                 var echoResult = await dataSender.DicomEchoAsync("RListener", applicationEntity.Title, applicationEntity.Port, applicationEntity.IpAddress);
@@ -149,10 +146,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                dicomDataReceiver.StartServer(
-                    destination.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(1));
+                StartDicomDataReceiver(dicomDataReceiver, destination.Port);
 
                 var dataSender = new DicomDataSender();
                 var echoResult = await dataSender.DicomEchoAsync(
@@ -160,8 +154,6 @@
                     destination.Title,
                     destination.Port,
                     destination.Ip);
-
-                Assert.IsTrue(dicomDataReceiver.IsListening);
 
                 // Check echo
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);

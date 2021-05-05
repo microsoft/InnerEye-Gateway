@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
     <Platforms>x64</Platforms>
@@ -24,7 +24,7 @@
       <Output TaskParameter="Include" ItemName="ImageFilesToCopy" />
     </CreateItem>
     <Copy SourceFiles="@(ImageFilesToCopy)" UseHardlinksIfPossible="true" DestinationFiles="@(ImageFilesToCopy->'$(OutputPath)\Images\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>  
+  </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />

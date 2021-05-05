@@ -78,10 +78,9 @@
             referenceDicomDataset = referenceDicomDataset ?? throw new ArgumentNullException(nameof(referenceDicomDataset));
             dicomDatasetDeAnonymized = dicomDatasetDeAnonymized ?? throw new ArgumentNullException(nameof(dicomDatasetDeAnonymized));
 
-            var referenceValue = referenceDicomDataset.GetSingleValueOrDefault<DicomItem>(addOrUpdateTag, null);
-            if (referenceValue != null)
+            if (referenceDicomDataset.Contains(addOrUpdateTag))
             {
-                dicomDatasetDeAnonymized.AddOrUpdate(referenceValue);
+                referenceDicomDataset.CopyTo(dicomDatasetDeAnonymized, addOrUpdateTag);
             }
         }
 

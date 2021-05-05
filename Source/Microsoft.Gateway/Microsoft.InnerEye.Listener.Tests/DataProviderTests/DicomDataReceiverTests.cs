@@ -27,14 +27,14 @@
 
             using (var dicomDataReceiver1 = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                Assert.IsTrue(dicomDataReceiver1.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1)));
+                StartDicomDataReceiver(dicomDataReceiver1, applicationEntity.Port);
 
                 using (var dicomDataReceiver2 = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
                 {
-                    Assert.ThrowsException<DicomNetworkException>(() => dicomDataReceiver2.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1)));
+                    Assert.ThrowsException<DicomNetworkException>(() => StartDicomDataReceiver(dicomDataReceiver2, applicationEntity.Port));
 
                     // Check you can start again and on a different port with the same AE title and IP address.
-                    Assert.IsTrue(dicomDataReceiver2.StartServer(applicationEntity.Port + 1, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1)));
+                    StartDicomDataReceiver(dicomDataReceiver2, applicationEntity.Port + 1);
                 }
             }
         }
@@ -50,7 +50,7 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                var result = dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var eventCount = 0;
                 var folderPath = string.Empty;
@@ -61,10 +61,7 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                Assert.IsTrue(result);
-                Assert.IsTrue(dicomDataReceiver.IsListening);
-
-                Assert.ThrowsException<DicomNetworkException>(() => dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1)));
+                Assert.ThrowsException<DicomNetworkException>(() => StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port));
 
                 var dataSender = new DicomDataSender();
                 var echoResult = await dataSender.DicomEchoAsync(
@@ -107,10 +104,7 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                var result = dicomDataReceiver.StartServer(
-                    applicationEntity.Port,
-                    BuildAcceptedSopClassesAndTransferSyntaxes,
-                    TimeSpan.FromSeconds(1));
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var associationsReceivedCount = 0;
                 var receivedAssociations = new string[numberOfAssociations];
@@ -123,9 +117,6 @@
                         Interlocked.Increment(ref associationsReceivedCount);
                     }
                 };
-
-                Assert.IsTrue(result);
-                Assert.IsTrue(dicomDataReceiver.IsListening);
 
                 Parallel.For(0, numberOfAssociations, i =>
                 {

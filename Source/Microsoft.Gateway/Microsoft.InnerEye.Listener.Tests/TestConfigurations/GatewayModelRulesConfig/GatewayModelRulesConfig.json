@@ -1,13 +1,13 @@
 [
   {
-    "CallingAET": "SCANNER",
     "CalledAET": "RGPelvisCT",
+    "CallingAET": "SCANNER",
     "AETConfig": {
       "Config": {
         "AETConfigType": "Model",
         "ModelsConfig": [
           {
-            "ModelId": "PassThroughModel:3",
+            "ModelId": "PassThroughModel:4",
             "ChannelConstraints": [
               {
                 "ChannelID": "ct",
@@ -69,7 +69,7 @@
             ]
           },
           {
-            "ModelId": "PassThroughModel:3",
+            "ModelId": "PassThroughModel:4",
             "ChannelConstraints": [
               {
                 "ChannelID": "ct",

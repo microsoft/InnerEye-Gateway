@@ -23,26 +23,6 @@
     /// <seealso cref="IInnerEyeSegmentationClient" />
     public sealed class InnerEyeSegmentationClient : IInnerEyeSegmentationClient
     {
-        /// <summary>
-        /// Default value for the StructureSetLabel DICOM tag in segmentation results
-        /// </summary>
-        public const string InnerEye = "InnerEye";
-
-        /// <summary>
-        /// Default value for the SeriesDescription and StructureSetName DICOM tags in segmentation results
-        /// </summary>
-        public const string NotForClinicalUse = "NOT FOR CLINICAL USE";
-
-        /// <summary>
-        /// Default value for the Manufacturer DICOM tags in segmentation results
-        /// </summary>
-        public const string MicrosoftCorp = "Microsoft Corporation";
-
-        /// <summary>
-        /// Progress value defining if a segmentation task is complete
-        /// </summary>
-        public const int ProgressCompleted = 100;
-
         private const string AuthTokenHeaderName = "API_AUTH_SECRET";
 
         /// <summary>
@@ -146,6 +126,10 @@
             DicomTag.StudyDescription,
         };
 
+        /// <inheritdoc/>
+        public IEnumerable<DicomTag> TopLevelReplacements =>
+            _deAnonymizeTryAddReplaceAtTopLevel;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InnerEyeSegmentationClient"/> class.
         /// </summary>
@@ -200,16 +184,8 @@
             return AnonymizeDicomFile(dicomFile, GetAnonymisationEngine(anonymisationProtocolId, anonymisationProtocol));
         }
 
-        /// <summary>
-        /// Anonymizes the input Dicom files.
-        /// </summary>
-        /// <param name="dicomFiles">The Dicom files to anonymize.</param>
-        /// <param name="anonymisationProtocolId">The anonymisation protocol unqiue identifier.</param>
-        /// <param name="anonymisationProtocol">The anonymisation protocol.</param>
-        /// <returns>The anonymized Dicom files.</returns>
-        /// <exception cref="ArgumentNullException">If the Dicom files are null.</exception>
-        /// <exception cref="ArgumentException">If any of the Dicom files in the collection are null.</exception>
-        private IEnumerable<DicomFile> AnonymizeDicomFiles(IEnumerable<DicomFile> dicomFiles, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol)
+        /// <inheritdoc />
+        public IEnumerable<DicomFile> AnonymizeDicomFiles(IEnumerable<DicomFile> dicomFiles, Guid anonymisationProtocolId, IEnumerable<DicomTagAnonymisation> anonymisationProtocol)
         {
             if (dicomFiles == null)
             {
@@ -232,10 +208,10 @@
             var modelResult = await SegmentationResultAsync(modelId, segmentationId);
             if (modelResult.DicomResult != null)
             {
-                var anonymizedDicomFile = DeAnonymize(
+                var anonymizedDicomFile = DeanonymizeDicomFile(
                     modelResult.DicomResult,
                     referenceDicomFiles,
-                    _deAnonymizeTryAddReplaceAtTopLevel,
+                    TopLevelReplacements,
                     userReplacements,
                     SegmentationAnonymisationProtocolId,
                     SegmentationAnonymisationProtocol);
@@ -359,21 +335,8 @@
             _httpClientHandler.Dispose();
         }
 
-        /// <summary>
-        /// DeAnonymizes an DicomFile and applies user replacements.
-        /// The replacements are done in this order:
-        /// 1 - topLevelReplacements
-        /// 2 - hashed Dicom tags
-        /// 3 - userReplacements
-        /// </summary>
-        /// <param name="dicomFile">The dicom RT file to be deanonymized</param>
-        /// <param name="referenceDicomFiles">The reference dicom files with patient data. At least one file required.</param>
-        /// <param name="topLevelReplacements">The top level patient and study data replacements</param>
-        /// <param name="userReplacements">The user replacements for result rt file</param>
-        /// <param name="anonymisationProtocolId">The anonymisation protocol unqiue identifier.</param>
-        /// <param name="anonymisationProtocol">The anonymisation protocol.</param>
-        /// <returns>The deanonymized RT file deanonymized</returns>
-        public DicomFile DeAnonymize(
+        /// <inheritdoc/>
+        public DicomFile DeanonymizeDicomFile(
             DicomFile dicomFile,
             IEnumerable<DicomFile> referenceDicomFiles,
             IEnumerable<DicomTag> topLevelReplacements,

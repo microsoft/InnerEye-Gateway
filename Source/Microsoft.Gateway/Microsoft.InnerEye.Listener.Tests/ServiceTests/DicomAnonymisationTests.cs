@@ -31,7 +31,6 @@
             var tempFolder = CreateTemporaryDirectory();
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var configType = AETConfigType.ModelWithResultDryRun;
             var dryRunFolder = DryRunFolders.GetFolder(configType);
@@ -48,16 +47,13 @@
 
             var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-            var gatewayConfig = GetTestGatewayReceiveConfig();
-            var gatewayReceiveConfig = gatewayConfig.With(
-                new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 160, gatewayConfig.GatewayDicomEndPoint.Ip),
-                tempFolder.FullName); // Save all data in the temp folder
+            var receivePort = 160;
 
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-            using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+            using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-            using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+            using (var receiveService = CreateReceiveService(receivePort, tempFolder))
             {
                 deleteService.Start();
                 pushService.Start();
@@ -67,7 +63,7 @@
 
                 DcmtkHelpers.SendFolderUsingDCMTK(
                     image,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                    receivePort,
                     ScuProfile.LEExplicitCT,
                     TestContext,
                     applicationEntityTitle: newTestAETConfigModel.CallingAET,
@@ -149,16 +145,13 @@
 
                 var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-                var gatewayConfig = GetTestGatewayReceiveConfig();
-                var gatewayReceiveConfig = gatewayConfig.With(
-                    new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 161, gatewayConfig.GatewayDicomEndPoint.Ip),
-                    tempFolder.FullName); // Save all data in the temp folder
+                var receivePort = 161;
 
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
                 {
                     deleteService.Start();
                     pushService.Start();
@@ -168,7 +161,7 @@
 
                     DcmtkHelpers.SendFolderUsingDCMTK(
                         @"Images\1ValidSmall",
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                        receivePort,
                         ScuProfile.LEExplicitCT,
                         TestContext,
                         applicationEntityTitle: newTestAETConfigModel.CallingAET,
@@ -229,16 +222,13 @@
 
                 var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
-                var gatewayConfig = GetTestGatewayReceiveConfig();
-                var gatewayReceiveConfig = gatewayConfig.With(
-                    new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, 162, gatewayConfig.GatewayDicomEndPoint.Ip),
-                    tempFolder.FullName); // Save all data in the temp folder
+                var receivePort = 162;
 
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient, OneHourSecs))
+                using (var downloadService = CreateDownloadService(segmentationClient))
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
                 {
                     deleteService.Start();
                     pushService.Start();
@@ -248,7 +238,7 @@
 
                     DcmtkHelpers.SendFolderUsingDCMTK(
                         @"Images\1ValidSmall",
-                        gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                        receivePort,
                         ScuProfile.LEExplicitRTCT,
                         TestContext,
                         applicationEntityTitle: newTestAETConfigModel.CallingAET,
@@ -365,6 +355,397 @@
                 // Check that this is an accepted tag
                 Assert.IsTrue(acceptedTags.Contains(item), $"The Dicom file contained the Tag: {item.DictionaryEntry.Name}");
             }
+        }
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomAgeString.
+        /// </summary>
+        private static readonly DicomTag[] DicomAgeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientAge,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomPersonName.
+        /// </summary>
+        private static readonly DicomTag[] DicomPersonNameTagRandomisers = new[]
+        {
+            DicomTag.OperatorsName,
+            DicomTag.PatientName,
+            DicomTag.PerformingPhysicianName,
+            DicomTag.PhysiciansOfRecord,
+            DicomTag.ReferringPhysicianName,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomShortString.
+        /// </summary>
+        private static readonly DicomTag[] DicomShortStringTagRandomisers = new[]
+        {
+            //DicomTag.ImplementationVersionName,
+            DicomTag.AccessionNumber,
+            DicomTag.StationName,
+            DicomTag.StudyID,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomLongString.
+        /// </summary>
+        private static readonly DicomTag[] DicomLongStringTagRandomisers = new[]
+        {
+            DicomTag.Manufacturer,
+            DicomTag.InstitutionName,
+            DicomTag.StudyDescription,
+            DicomTag.SeriesDescription,
+            DicomTag.InstitutionalDepartmentName,
+            DicomTag.ManufacturerModelName,
+            DicomTag.PatientID,
+            DicomTag.IssuerOfPatientID,
+            DicomTag.PatientAddress,
+            DicomTag.SoftwareVersions,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomShortText.
+        /// </summary>
+        private static readonly DicomTag[] DicomShortTextTagRandomisers = new[]
+        {
+            DicomTag.InstitutionAddress,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomLongText.
+        /// </summary>
+        private static readonly DicomTag[] DicomLongTextTagRandomisers = new[]
+        {
+            DicomTag.AdditionalPatientHistory,
+            DicomTag.PatientComments,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomDate.
+        /// </summary>
+        private static readonly DicomTag[] DicomDateTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationDate,
+            DicomTag.StudyDate,
+            DicomTag.SeriesDate,
+            DicomTag.AcquisitionDate,
+            DicomTag.ContentDate,
+            DicomTag.PatientBirthDate,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomTime.
+        /// </summary>
+        private static readonly DicomTag[] DicomTimeTagRandomisers = new[]
+        {
+            DicomTag.InstanceCreationTime,
+            DicomTag.StudyTime,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesTime,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise with RandomDicomPatientSexCodeString.
+        /// </summary>
+        private static readonly DicomTag[] DicomSexCodeStringTagRandomisers = new[]
+        {
+            DicomTag.PatientSex,
+        };
+
+        /// <summary>
+        /// List of DicomTags to randomise and a function to use to do the randomisation.
+        /// </summary>
+        public static readonly Tuple<DicomTag[], Func<DicomTag, Random, DicomItem>>[] DicomTagRandomisers = new[]
+        {
+            Tuple.Create(DicomAgeStringTagRandomisers, RandomDicomAgeString),
+            Tuple.Create(DicomPersonNameTagRandomisers, RandomDicomPersonName),
+            Tuple.Create(DicomShortStringTagRandomisers, RandomDicomShortString),
+            Tuple.Create(DicomLongStringTagRandomisers, RandomDicomLongString),
+            Tuple.Create(DicomShortTextTagRandomisers, RandomDicomShortText),
+            Tuple.Create(DicomLongTextTagRandomisers, RandomDicomLongText),
+            Tuple.Create(DicomDateTagRandomisers, RandomDicomDate),
+            Tuple.Create(DicomTimeTagRandomisers, RandomDicomTime),
+            Tuple.Create(DicomSexCodeStringTagRandomisers, RandomDicomPatientSexCodeString),
+        };
+
+        /// <summary>
+        /// Add some random tags.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="dicomFiles">DicomFiles to update.</param>
+        public static void AddRandomTags(Random random, IEnumerable<DicomFile> dicomFiles)
+        {
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    var dicomItem = dicomTagRandomiserPair.Item2.Invoke(dicomTag, random);
+
+                    foreach (var dicomFile in dicomFiles)
+                    {
+                        dicomFile.Dataset.AddOrUpdate(dicomItem);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// List of DicomTags that will be added by anonymization.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsAddedByAnonymization = new[]
+        {
+            DicomTag.PatientIdentityRemoved,
+            DicomTag.DeidentificationMethod,
+            DicomTag.LongitudinalTemporalInformationModified,
+        };
+
+        /// <summary>
+        /// List of DicomTags that are not expected to be the same between DICOM-RT and other modalities.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsDistinctBetweenModalities = new[]
+        {
+            DicomTag.SOPClassUID,
+            DicomTag.SOPInstanceUID,
+            DicomTag.SeriesDate,
+            DicomTag.SeriesTime,
+            DicomTag.SeriesNumber,
+            DicomTag.Modality,
+            DicomTag.OperatorsName,
+            DicomTag.SeriesInstanceUID,
+        };
+
+        /// <summary>
+        /// List of DicomTags that are only expected to be present for DICOM-RT files.
+        /// </summary>
+        public static readonly DicomTag[] DicomTagsDistinctForDICOMRT = new[]
+        {
+            DicomTag.StructureSetLabel,
+            DicomTag.StructureSetName,
+            DicomTag.StructureSetDescription,
+            DicomTag.StructureSetDate,
+            DicomTag.StructureSetTime,
+            DicomTag.ReferencedFrameOfReferenceSequence,
+            DicomTag.StructureSetROISequence,
+            DicomTag.ROIContourSequence,
+            DicomTag.RTROIObservationsSequence,
+        };
+
+        /// <summary>
+        /// Test anonymization/deanonymization preserves some of the tags, replaces some others and drops the rest.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="sourceImageFileName">Source file name.</param>
+        /// <param name="tagReplacements">Tag replacements.</param>
+        /// <returns>Awaitable task.</returns>
+        public async Task TestDataSetAnonymizeDeanonymize(
+            Random random,
+            string sourceImageFileName,
+            IEnumerable<TagReplacement> tagReplacements)
+        {
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll);
+            // Make a copy of the existing DicomDataset
+            var originalDataset = originalDicomFile.Dataset.Clone();
+
+            AddRandomTags(random, new[] { originalDicomFile });
+            var sourceDataset = originalDicomFile.Dataset;
+
+            // Check that the randomisation of the DicomDataset has actually changed the tags
+            foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
+            {
+                foreach (var dicomTag in dicomTagRandomiserPair.Item1)
+                {
+                    // Value may not even exist in the original dataset
+                    var originalValue = originalDataset.GetSingleValueOrDefault(dicomTag, string.Empty);
+                    // But should always exist after randomisation
+                    var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+
+                    // Check they are different, as strings.
+                    Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                    Assert.AreNotEqual(originalValue, sourceValue);
+                }
+            }
+
+            var innerEyeSegmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()();
+
+            // Anonymize the original DICOM file
+            var anonymizedDicomFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+
+            anonymizedDicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions, "Microsoft InnerEye Gateway:");
+
+            // Check it has been anonymized
+            AssertDicomFileIsAnonymised(anonymizedDicomFile);
+
+            // And then deanonymize it using the original
+            var deanonymizedDicomFile = innerEyeSegmentationClient.DeanonymizeDicomFile(
+                anonymizedDicomFile,
+                new[] { originalDicomFile },
+                innerEyeSegmentationClient.TopLevelReplacements,
+                tagReplacements,
+                innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
+                innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+
+            AssertDeanonymizedFile(originalDicomFile, deanonymizedDicomFile, innerEyeSegmentationClient.TopLevelReplacements, tagReplacements, true);
+        }
+
+        /// <summary>
+        /// Check that a deanonymized DicomFile has the correct tags for a source DicomFile.
+        /// </summary>
+        /// <param name="originalDicomFile">Source DicomFile.</param>
+        /// <param name="deanonymizedDicomFile">Deanonymized DicomFile.</param>
+        /// <param name="topLevelReplacements">Top level replacements.</param>
+        /// <param name="tagReplacements">List of tag replacements.</param>
+        /// <param name="sameModalities">True if both CT, false if original is CT and deanonymized is DICOMRT.</param>
+        public static void AssertDeanonymizedFile(
+            DicomFile originalDicomFile,
+            DicomFile deanonymizedDicomFile,
+            IEnumerable<DicomTag> topLevelReplacements,
+            IEnumerable<TagReplacement> tagReplacements,
+            bool sameModalities)
+        {
+            var sourceDataset = originalDicomFile.Dataset;
+            var deanonymizedDataset = deanonymizedDicomFile.Dataset;
+
+            var replacementTags = tagReplacements.Select(r => r.DicomTagIndex.DicomTag).ToList();
+
+            var sourceDicomTags = sourceDataset.Select(x => x.Tag).ToList();
+            var deanonymizedDicomTags = deanonymizedDataset.Select(x => x.Tag).ToList();
+
+            // SoftwareVersion has been rewritten, so exclude from the test.
+            sourceDicomTags.Remove(DicomTag.SoftwareVersions);
+
+            if (!sameModalities)
+            {
+                // Exclude the tags that are different because different modalities
+                sourceDicomTags = sourceDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+            }
+
+            // Replacement tags will be different... they are checked separately
+            var sourceDicomTagsExceptReplacements = sourceDicomTags.Except(replacementTags).ToList();
+
+            foreach (var dicomTag in sourceDicomTagsExceptReplacements)
+            {
+                // TopLevelReplacements must be copied, others are optional, depending on innerEyeSegmentationClient.SegmentationAnonymisationProtocol
+                if (topLevelReplacements.Contains(dicomTag) ||
+                    deanonymizedDicomTags.Contains(dicomTag))
+                {
+                    var valueCount = sourceDataset.GetValueCount(dicomTag);
+                    for (var i = 0; i < valueCount; i++)
+                    {
+                        var sourceValue = sourceDataset.GetValue<string>(dicomTag, i);
+                        var deanonymizedValue = deanonymizedDataset.GetValue<string>(dicomTag, i);
+
+                        Assert.IsFalse(string.IsNullOrEmpty(sourceValue));
+                        Assert.AreEqual(sourceValue, deanonymizedValue);
+                    }
+                }
+            }
+
+            // SoftwareVersion has been rewritten, so exclude from the test.
+            deanonymizedDicomTags.Remove(DicomTag.SoftwareVersions);
+            // Exclude the tags are added by anonymisation.
+            deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsAddedByAnonymization).ToList();
+
+            if (!sameModalities)
+            {
+                // Exclude the tags that are different because different modalities
+                deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctBetweenModalities).ToList();
+                // Exclude the tags that are specific to DICOM-RT
+                deanonymizedDicomTags = deanonymizedDicomTags.Except(DicomTagsDistinctForDICOMRT).ToList();
+            }
+
+            foreach (var dicomTag in deanonymizedDicomTags)
+            {
+                Assert.IsTrue(sourceDicomTags.Contains(dicomTag));
+            }
+
+            var tagReplacementCheckCount = 0;
+
+            foreach (var tagReplacement in tagReplacements)
+            {
+                var dicomTag = tagReplacement.DicomTagIndex.DicomTag;
+
+                if (deanonymizedDicomTags.Contains(dicomTag))
+                {
+                    if (tagReplacement.Operation == TagReplacementOperation.AppendIfExists)
+                    {
+                        var sourceValue = sourceDataset.GetSingleValue<string>(dicomTag);
+                        var expectedValue = sourceValue + tagReplacement.Value;
+                        var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+
+                        Assert.AreEqual(expectedValue, deanonymizedValue);
+
+                        tagReplacementCheckCount++;
+                    }
+                    else if (tagReplacement.Operation == TagReplacementOperation.UpdateIfExists)
+                    {
+                        var deanonymizedValue = deanonymizedDataset.GetSingleValue<string>(dicomTag);
+
+                        Assert.AreEqual(tagReplacement.Value, deanonymizedValue);
+
+                        tagReplacementCheckCount++;
+                    }
+                }
+            }
+
+            // If there are some tag replacements, check that checks have happened
+            if (tagReplacements.Any())
+            {
+                Assert.IsTrue(tagReplacementCheckCount > 0);
+            }
+        }
+
+        /// <summary>
+        /// Create a test set of TagReplacements.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="tagReplacementOperation">Tag replacement operation.</param>
+        /// <returns>List of TagReplacements.</returns>
+        public static IEnumerable<TagReplacement> CreateTestTagReplacements(Random random, TagReplacementOperation tagReplacementOperation) =>
+            DicomLongStringTagRandomisers.Select(
+                dicomTag => new TagReplacement(
+                    tagReplacementOperation,
+                    new DicomConstraints.DicomTagIndex(dicomTag),
+                    RandomString(random, 8))).ToList();
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymized/deanonymized, just the top level replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymizeDeanonymizeTopLevelReplacements()
+        {
+            var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
+
+            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymized/deanonymized, with append if exists replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymizeDeanonymizeAppendIfExistsReplacements()
+        {
+            var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
+
+            await TestDataSetAnonymizeDeanonymize(
+                random,
+                sourceImageFileName,
+                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
+        }
+
+        [TestCategory("DicomAnonymisationDCMTK")]
+        [Description("Check data sets can be anonymized/deanonymized, with update if exists replacements.")]
+        [TestMethod]
+        public async Task TestDataSetAnonymizeDeanonymizeUpdateIfExistsReplacements()
+        {
+            var random = new Random();
+            var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
+
+            await TestDataSetAnonymizeDeanonymize(
+                random,
+                sourceImageFileName,
+                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
         }
     }
 }
