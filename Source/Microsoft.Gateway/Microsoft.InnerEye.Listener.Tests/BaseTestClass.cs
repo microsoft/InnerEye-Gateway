@@ -355,7 +355,7 @@
         }
 
         protected AETConfigModel GetTestAETConfigModel() =>
-            _testAETConfigProvider.GetAETConfigs().First();
+            _testAETConfigProvider.AETConfigModels.First();
 
         protected ReceiveServiceConfig GetTestGatewayReceiveConfig() =>
             new ReceiveServiceConfig(

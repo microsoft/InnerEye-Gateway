@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -24,6 +23,11 @@
         public GatewayProcessorConfig GatewayProcessorConfig { get; private set; }
 
         /// <summary>
+        /// Called when the config has changed.
+        /// </summary>
+        public event EventHandler GatewayProcessorConfigChanged;
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="GatewayProcessorConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -31,18 +35,31 @@
         public GatewayProcessorConfigProvider(
             ILogger logger,
             string configurationsPathRoot) : base(logger,
-                Path.Combine(configurationsPathRoot, GatewayProcessorConfigFileName))
+                configurationsPathRoot, GatewayProcessorConfigFileName)
         {
-            Reload();
+            Load(false);
+
+            ConfigChanged += (s, e) => Load(true);
         }
 
-        public void Reload()
+        /// <summary>
+        /// Load/reload config file.
+        /// </summary>
+        /// <param name="reload">True if reloading, false if loading.</param>
+        public void Load(bool reload)
         {
             var (t, loaded, _) = Load();
 
-            if (loaded)
+            if (!loaded)
             {
-                GatewayProcessorConfig = t;
+                return;
+            }
+
+            GatewayProcessorConfig = t;
+
+            if (reload)
+            {
+                GatewayProcessorConfigChanged?.Invoke(this, new EventArgs());
             }
         }
 
@@ -122,12 +139,8 @@
         /// Load ConfigurationServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ConfigurationServiceConfig.</returns>
-        public ConfigurationServiceConfig ConfigurationServiceConfig()
-        {
-            Reload();
-
-            return GatewayProcessorConfig.ConfigurationServiceConfig;
-        }
+        public ConfigurationServiceConfig ConfigurationServiceConfig() =>
+            GatewayProcessorConfig.ConfigurationServiceConfig;
 
         /// <summary>
         /// Create a new segmentation client based on settings in JSON file.

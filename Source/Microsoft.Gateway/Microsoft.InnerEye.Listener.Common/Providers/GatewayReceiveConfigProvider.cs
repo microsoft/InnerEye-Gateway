@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Models;
 
@@ -22,6 +21,11 @@
         public GatewayReceiveConfig GatewayReceiveConfig { get; private set; }
 
         /// <summary>
+        /// Called when the config has changed.
+        /// </summary>
+        public event EventHandler GatewayReceiveConfigChanged;
+
+        /// <summary>
         /// Initialize a new instance of the <see cref="GatewayReceiveConfigProvider"/> class.
         /// </summary>
         /// <param name="logger">Logger.</param>
@@ -29,18 +33,31 @@
         public GatewayReceiveConfigProvider(
             ILogger logger,
             string configurationsPathRoot) : base(logger,
-                Path.Combine(configurationsPathRoot, GatewayReceiveConfigFileName))
+                configurationsPathRoot, GatewayReceiveConfigFileName)
         {
-            Reload();
+            Load(false);
+
+            ConfigChanged += (s, e) => Load(true);
         }
 
-        public void Reload()
+        /// <summary>
+        /// Load/reload config files.
+        /// </summary>
+        /// <param name="reload">True if reloading, false if loading.</param>
+        public void Load(bool reload)
         {
             var (t, loaded, _) = Load();
 
-            if (loaded)
+            if (!loaded)
             {
-                GatewayReceiveConfig = t;
+                return;
+            }
+
+            GatewayReceiveConfig = t;
+
+            if (reload)
+            {
+                GatewayReceiveConfigChanged?.Invoke(this, new EventArgs());
             }
         }
 
@@ -76,12 +93,8 @@
         /// Load ConfigurationServiceConfig from a JSON file.
         /// </summary>
         /// <returns>Loaded ConfigurationServiceConfig.</returns>
-        public ConfigurationServiceConfig ConfigurationServiceConfig()
-        {
-            Reload();
-
-            return GatewayReceiveConfig.ConfigurationServiceConfig;
-        }
+        public ConfigurationServiceConfig ConfigurationServiceConfig() =>
+            GatewayReceiveConfig.ConfigurationServiceConfig;
 
         /// <summary>
         /// Load ReceiveServiceConfig from a JSON file.
