@@ -32,9 +32,7 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                var started = dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(10));
-
-                Assert.IsTrue(started);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var result1 = await dataSender.DicomEchoAsync(
                     "Hello",
@@ -77,7 +75,7 @@
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultsDirectory.FullName)))
             {
-                dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var results = await dataSender.SendFilesAsync(
                     "Hello",

@@ -50,12 +50,10 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(dicomDataReceiver.IsListening);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 using (var pushService = CreatePushService())
-                using (var downloadService = CreateDownloadService(null, QuarterHourSecs))
+                using (var downloadService = CreateDownloadService())
                 using (var downloadQueue = downloadService.DownloadQueue)
                 {
                     pushService.Start();
@@ -109,7 +107,6 @@
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
-            mockSegmentationClient.RealSegmentation = false;
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -118,7 +115,7 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
-            using (var downloadService = CreateDownloadService(mockSegmentationClient, OneHourSecs))
+            using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
             {
@@ -157,12 +154,10 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var dequeueServiceConfig = GetTestDequeueServiceConfig(maximumQueueMessageAgeSeconds: 1);
             var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationResultException = new Exception();
-            mockSegmentationClient.RealSegmentation = false;
 
             var resultsDirectory = CreateTemporaryDirectory();
 
@@ -177,9 +172,8 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
-            using (var deleteService = CreateDeleteService(dequeueServiceConfig))
-            using (var deleteQueue = deleteService.DeleteQueue)
-            using (var downloadService = CreateDownloadService(mockSegmentationClient, 5, dequeueServiceConfig))
+            using (var deleteService = CreateDeleteService())
+            using (var downloadService = CreateDownloadService(mockSegmentationClient, GetTestDequeueServiceConfig(maximumQueueMessageAgeSeconds: 1)))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
                 deleteService.Start();
@@ -220,7 +214,6 @@
 
             // Set the client to always return 50%
             mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
-            mockSegmentationClient.RealSegmentation = false;
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -229,7 +222,7 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 142, "127.0.0.1");
 
-            using (var downloadService = CreateDownloadService(mockSegmentationClient, OneHourSecs))
+            using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
                 TransactionalEnqueue(
@@ -278,7 +271,7 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 143, "127.0.0.1");
 
-            using (var downloadService = CreateDownloadService(null, 1, GetTestDequeueServiceConfig(100, 1000)))
+            using (var downloadService = CreateDownloadService(dequeueServiceConfig: GetTestDequeueServiceConfig(deadLetterMoveFrequencySeconds: 1000)))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
             {
@@ -315,7 +308,6 @@
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 144, "127.0.0.1");
 
             var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-            mockSegmentationClient.RealSegmentation = false;
 
             // Fake a no response when getting progress
             mockSegmentationClient.SegmentationResultException = new HttpRequestException();
@@ -332,12 +324,10 @@
                     Interlocked.Increment(ref eventCount);
                 };
 
-                dicomDataReceiver.StartServer(applicationEntity.Port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(1));
-
-                Assert.IsTrue(dicomDataReceiver.IsListening);
+                StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 using (var pushService = CreatePushService())
-                using (var downloadService = CreateDownloadService(mockSegmentationClient, QuarterHourSecs))
+                using (var downloadService = CreateDownloadService(mockSegmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
                 {

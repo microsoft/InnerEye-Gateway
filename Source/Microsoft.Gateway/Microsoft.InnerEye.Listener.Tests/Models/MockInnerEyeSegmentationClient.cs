@@ -12,30 +12,10 @@
 
     public class MockInnerEyeSegmentationClient : IInnerEyeSegmentationClient
     {
-        /// <summary>
-        /// Top  lvl replacements for deanonymizer
-        /// </summary>
-        private readonly IEnumerable<DicomTag> _deAnonymizeTryAddReplaceAtTopLevel = new[]
-        {
-            // Patient module
-            DicomTag.PatientID,
-            DicomTag.PatientName,
-            DicomTag.PatientBirthDate,
-            DicomTag.PatientSex,
-
-            // Study module
-            DicomTag.StudyDate,
-            DicomTag.StudyTime,
-            DicomTag.ReferringPhysicianName,
-            DicomTag.StudyID,
-            DicomTag.AccessionNumber,
-            DicomTag.StudyDescription,
-        };
-
-        private readonly InnerEyeSegmentationClient _InnerEyeSegmentationClient;
+        private readonly IInnerEyeSegmentationClient _InnerEyeSegmentationClient;
         private bool disposedValue;
 
-        public MockInnerEyeSegmentationClient(InnerEyeSegmentationClient InnerEyeSegmentationClient)
+        public MockInnerEyeSegmentationClient(IInnerEyeSegmentationClient InnerEyeSegmentationClient)
         {
             _InnerEyeSegmentationClient = InnerEyeSegmentationClient;
         }
@@ -50,11 +30,15 @@
 
         public Exception SegmentationResultException { get; set; }
 
-        public bool RealSegmentation { get; set; } = true;
+        public bool RealSegmentation { get; set; }
 
         public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocol;
 
         public Guid SegmentationAnonymisationProtocolId => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocolId;
+
+        /// <inheritdoc/>
+        public IEnumerable<DicomTag> TopLevelReplacements =>
+            _InnerEyeSegmentationClient.TopLevelReplacements;
 
         public Task PingAsync()
         {
@@ -86,16 +70,32 @@
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SeriesDate,
                     $"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}");
 
-                var anonymized = _InnerEyeSegmentationClient.DeAnonymize(
+                var anonymized = DeanonymizeDicomFile(
                     dicomFile,
                     referenceDicomFiles,
-                    _deAnonymizeTryAddReplaceAtTopLevel,
+                    TopLevelReplacements,
                     userSettingsForResultRTFile,
                     SegmentationAnonymisationProtocolId,
                     SegmentationAnonymisationProtocol);
                 return new ModelResult(100, string.Empty, anonymized);
             }
         }
+
+        /// <inheritdoc/>
+        public DicomFile DeanonymizeDicomFile(
+            DicomFile dicomFile,
+            IEnumerable<DicomFile> referenceDicomFiles,
+            IEnumerable<DicomTag> topLevelReplacements,
+            IEnumerable<TagReplacement> userReplacements,
+            Guid anonymisationProtocolId,
+            IEnumerable<DicomTagAnonymisation> anonymisationProtocol) =>
+                _InnerEyeSegmentationClient.DeanonymizeDicomFile(
+                    dicomFile,
+                    referenceDicomFiles,
+                    topLevelReplacements,
+                    userReplacements,
+                    anonymisationProtocolId,
+                    anonymisationProtocol);
 
         public async Task<(string segmentationId, IEnumerable<DicomFile> postedImages)> StartSegmentationAsync(string modelId, IEnumerable<ChannelData> dicomFiles)
         {
@@ -113,6 +113,13 @@
         {
             return _InnerEyeSegmentationClient.AnonymizeDicomFile(dicomFile, anonymisationProtocolId, anonymisationProtocol);
         }
+
+        /// <inheritdoc />
+        public IEnumerable<DicomFile> AnonymizeDicomFiles(
+            IEnumerable<DicomFile> dicomFiles,
+            Guid anonymisationProtocolId,
+            IEnumerable<DicomTagAnonymisation> anonymisationProtocol) =>
+                _InnerEyeSegmentationClient.AnonymizeDicomFiles(dicomFiles, anonymisationProtocolId, anonymisationProtocol);
 
         private async Task DelayAndThrowExceptionIfNotNull(Exception e)
         {

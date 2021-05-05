@@ -6,11 +6,11 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
     using Dicom;
-
     using Markdig;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
@@ -37,39 +37,19 @@
     public class BaseTestClass : IDisposable
     {
         /// <summary>
+        /// List of chars to use for random string generation.
+        /// </summary>
+        private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        /// <summary>
+        /// LoggerFactory for creating more ILoggers.
+        /// </summary>
+        protected readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+
+        /// <summary>
         /// Logger for common use.
         /// </summary>
         protected readonly ILogger _baseTestLogger;
-
-        /// <summary>
-        /// Logger for the configuration service.
-        /// </summary>
-        private readonly ILogger _configurationLogger;
-
-        /// <summary>
-        /// Logger for the delete service.
-        /// </summary>
-        private readonly ILogger _deleteLogger;
-
-        /// <summary>
-        /// Logger for the download service.
-        /// </summary>
-        private readonly ILogger _downloadLogger;
-
-        /// <summary>
-        /// Logger for the push service.
-        /// </summary>
-        private readonly ILogger _pushLogger;
-
-        /// <summary>
-        /// Logger for the receive service.
-        /// </summary>
-        private readonly ILogger _receiveLogger;
-
-        /// <summary>
-        /// Logger for the upload service.
-        /// </summary>
-        private readonly ILogger _uploadLogger;
 
         /// <summary>
         /// Gets or sets the test context.
@@ -130,7 +110,7 @@
         /// <summary>
         /// GatewayReceiveConfigProvider as loaded from _basePathConfigs.
         /// </summary>
-        protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
+        private GatewayReceiveConfigProvider _testGatewayReceiveConfigProvider;
 
         private bool disposedValue;
 
@@ -141,21 +121,15 @@
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            _baseTestLogger = loggerFactory.CreateLogger("BaseTest");
-            _configurationLogger = loggerFactory.CreateLogger("ConfigurationService");
-            _deleteLogger = loggerFactory.CreateLogger("DeleteService");
-            _downloadLogger = loggerFactory.CreateLogger("DownloadService");
-            _pushLogger = loggerFactory.CreateLogger("PushService");
-            _receiveLogger = loggerFactory.CreateLogger("ReceiveService");
-            _uploadLogger = loggerFactory.CreateLogger("UploadService");
+            _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            _baseTestLogger = _loggerFactory.CreateLogger("BaseTest");
 
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
             Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
 
-            _testAETConfigProvider = new AETConfigProvider(loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
-            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
-            TestGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            _testAETConfigProvider = new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
+            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            _testGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
         }
 
         [TestInitialize]
@@ -207,21 +181,6 @@
             TestContext.AddResultFile(path);
             TestContext.WriteLine($"Written Dicom file to path: {path}");
         }
-
-        /// <summary>
-        /// One minute in seconds.
-        /// </summary>
-        protected const int OneMinSecs = 60;
-
-        /// <summary>
-        /// 15 minutues in seconds.
-        /// </summary>
-        protected const int QuarterHourSecs = 15 * OneMinSecs;
-
-        /// <summary>
-        /// One hour in seconds.
-        /// </summary>
-        protected const int OneHourSecs = 60 * OneMinSecs;
 
         protected DequeueServiceConfig GetTestDequeueServiceConfig(
             uint maximumQueueMessageAgeSeconds = 100,
@@ -350,18 +309,29 @@
 
         protected MockInnerEyeSegmentationClient GetMockInnerEyeSegmentationClient()
         {
-            var realClient = (InnerEyeSegmentationClient)TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke();
+            var realClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke();
             return new MockInnerEyeSegmentationClient(realClient);
         }
 
         protected AETConfigModel GetTestAETConfigModel() =>
             _testAETConfigProvider.AETConfigModels.First();
 
-        protected ReceiveServiceConfig GetTestGatewayReceiveConfig() =>
-            new ReceiveServiceConfig(
-                new DicomEndPoint("RGatewayT", 105, "127.0.0.1"),
-                CreateTemporaryDirectory().FullName,
-                BuildConfigAcceptedSopClassesAndTransferSyntaxes());
+        /// <summary>
+        /// Create ReceiveServiceConfig from test files, but overwrite the port and rootDicomFolder.
+        /// </summary>
+        /// <param name="port">New port.</param>
+        /// <param name="rootDicomFolder">Optional folder, or will default to a temporary one.</param>
+        /// <returns>New ReceiveServiceConfig.</returns>
+        protected ReceiveServiceConfig GetTestGatewayReceiveServiceConfig(
+            int port,
+            DirectoryInfo rootDicomFolder = null)
+        {
+            var gatewayConfig = _testGatewayReceiveConfigProvider.GatewayReceiveConfig.ReceiveServiceConfig;
+
+            return gatewayConfig.With(
+                new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, port, gatewayConfig.GatewayDicomEndPoint.Ip),
+                (rootDicomFolder ?? CreateTemporaryDirectory()).FullName);
+        }
 
         protected static void TransactionalEnqueue<T>(IMessageQueue InnerEyeMessageQueue, T value)
         {
@@ -436,9 +406,18 @@
             }
         }
 
-        private static Dictionary<string, string[]> BuildConfigAcceptedSopClassesAndTransferSyntaxes()
+        /// <summary>
+        /// Start Dicom data receiver on a given port and check it is listening.
+        /// </summary>
+        /// <param name="dicomDataReceiver">Dicom data receiver.</param>
+        /// <param name="port">Port.</param>
+        protected void StartDicomDataReceiver(
+            ListenerDataReceiver dicomDataReceiver,
+            int port)
         {
-            return BuildAcceptedSopClassesAndTransferSyntaxes().ToDictionary(kvp => kvp.Key.UID, kvp => kvp.Value.Select(x => x.UID.UID).ToArray());
+            var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(2));
+            Assert.IsTrue(started);
+            Assert.IsTrue(dicomDataReceiver.IsListening);
         }
 
         /// <summary>
@@ -446,7 +425,7 @@
         /// for those services. 
         /// </summary>
         /// <returns></returns>
-        protected static Dictionary<DicomUID, DicomTransferSyntax[]> BuildAcceptedSopClassesAndTransferSyntaxes()
+        private static Dictionary<DicomUID, DicomTransferSyntax[]> BuildAcceptedSopClassesAndTransferSyntaxes()
         {
             // Syntaxes we accept for the Verification SOP (aka C-Echo) class in order of preference
             DicomTransferSyntax[] acceptedVerificationSyntaxes =
@@ -503,32 +482,28 @@
                 new ConfigurationService(
                     innerEyeSegmentationClient != null ? () => innerEyeSegmentationClient : TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
                     getConfigurationServiceConfig ?? TestGatewayProcessorConfigProvider.ConfigurationServiceConfig,
-                    _configurationLogger,
+                    _loggerFactory.CreateLogger("ConfigurationService"),
                     services);
 
         /// <summary>
         /// Create a new instance of the <see cref="DeleteService"/> class.
         /// </summary>
-        /// <param name="dequeueServiceConfig">Optional dequeue service config.</param>
         /// <returns>New DeleteService.</returns>
-        protected DeleteService CreateDeleteService(
-            DequeueServiceConfig dequeueServiceConfig = null) =>
+        protected DeleteService CreateDeleteService() =>
                 new DeleteService(
                     TestDeleteQueuePath,
-                    () => dequeueServiceConfig != null ? dequeueServiceConfig : GetTestDequeueServiceConfig(),
-                    _deleteLogger);
+                    TestGatewayProcessorConfigProvider.DequeueServiceConfig,
+                    _loggerFactory.CreateLogger("DeleteService"));
 
         /// <summary>
         /// Creates a new instance of the <see cref="DownloadService"/> class.
         /// </summary>
         /// <param name="innerEyeSegmentationClient">Optional InnerEye segmentation client.</param>
-        /// <param name="downloadWaitTimeoutInSeconds">Optional download wait timeout for download service config.</param>
         /// <param name="dequeueServiceConfig">Optional dequeue service config.</param>
         /// <param name="instances">The number of concurrent execution instances we should have.</param>
         /// <returns>New DownloadService.</returns>
         protected DownloadService CreateDownloadService(
             IInnerEyeSegmentationClient innerEyeSegmentationClient = null,
-            int? downloadWaitTimeoutInSeconds = null,
             DequeueServiceConfig dequeueServiceConfig = null,
             int instances = 1) =>
                 new DownloadService(
@@ -536,9 +511,9 @@
                     TestDownloadQueuePath,
                     TestPushQueuePath,
                     TestDeleteQueuePath,
-                    () => new DownloadServiceConfig(downloadWaitTimeoutInSeconds),
-                    () => dequeueServiceConfig != null ? dequeueServiceConfig : GetTestDequeueServiceConfig(),
-                    _downloadLogger,
+                    () => new DownloadServiceConfig(),
+                    dequeueServiceConfig != null ? (Func<DequeueServiceConfig>)(() => dequeueServiceConfig) : TestGatewayProcessorConfigProvider.DequeueServiceConfig,
+                    _loggerFactory.CreateLogger("DownloadService"),
                     instances);
 
         /// <summary>
@@ -553,9 +528,9 @@
                     new DicomDataSender(),
                     TestPushQueuePath,
                     TestDeleteQueuePath,
-                    () => GetTestDequeueServiceConfig(),
-                    _pushLogger,
-                    instances: 1);
+                    TestGatewayProcessorConfigProvider.DequeueServiceConfig,
+                    _loggerFactory.CreateLogger("PushService"),
+                    1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReceiveService"/> class.
@@ -567,7 +542,12 @@
                 new ReceiveService(
                     getReceiveServiceConfig,
                     TestUploadQueuePath,
-                    _receiveLogger);
+                    _loggerFactory.CreateLogger("ReceiveService"));
+
+        protected ReceiveService CreateReceiveService(
+            int port,
+            DirectoryInfo rootDicomFolder = null) =>
+                CreateReceiveService(() => GetTestGatewayReceiveServiceConfig(port, rootDicomFolder));
 
         /// <summary>
         /// Creates a new instance of the <see cref="UploadService"/> class.
@@ -586,8 +566,8 @@
                     TestUploadQueuePath,
                     TestDownloadQueuePath,
                     TestDeleteQueuePath,
-                    () => GetTestDequeueServiceConfig(),
-                    _uploadLogger,
+                    TestGatewayProcessorConfigProvider.DequeueServiceConfig,
+                    _loggerFactory.CreateLogger("UploadService"),
                     instances);
 
         protected async Task<(string SegmentationId, string ModelId, IEnumerable<byte[]> Data)> StartRealSegmentationAsync(string filesPath)
@@ -615,7 +595,6 @@
             var dicomFiles = new DirectoryInfo(filesPath).GetFiles().Select(x => DicomFile.Open(x.FullName)).ToArray();
 
             var segmentationClient = GetMockInnerEyeSegmentationClient();
-            segmentationClient.RealSegmentation = false;
 
             var testAETConfigModel = GetTestAETConfigModel();
 
@@ -692,6 +671,44 @@
         }
 
         /// <summary>
+        /// Generate a random bool.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <returns>Random bool.</returns>
+        public static bool RandomBool(Random random) => random.Next(2) == 1;
+
+        /// <summary>
+        /// Generate a random enum.
+        /// </summary>
+        /// <typeparam name="T">Enum type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <returns>Random element of enum T.</returns>
+        public static T RandomEnum<T>(Random random)
+        {
+            var values = Enum.GetValues(typeof(T));
+
+            return (T)values.GetValue(random.Next(values.Length));
+        }
+
+        /// <summary>
+        /// Generate a random string of target length.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="length">Target string length.</param>
+        /// <returns>Random string.</returns>
+        public static string RandomString(Random random, int length = 6)
+        {
+            var s = new StringBuilder(length);
+
+            for (var i = 0; i < length; i++)
+            {
+                s.Append(chars[random.Next(chars.Length)]);
+            }
+
+            return s.ToString();
+        }
+
+        /// <summary>
         /// Disposes of all managed resources.
         /// </summary>
         /// <param name="disposing">If we are disposing.</param>
@@ -706,7 +723,7 @@
             {
                 _testAETConfigProvider.Dispose();
                 TestGatewayProcessorConfigProvider.Dispose();
-                TestGatewayReceiveConfigProvider.Dispose();
+                _testGatewayReceiveConfigProvider.Dispose();
             }
 
             disposedValue = true;
@@ -720,5 +737,124 @@
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        /// <summary>
+        /// Generate a random string of target length or an empty string.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <param name="length">Target string length.</param>
+        /// <returns>Random string, may be empty.</returns>
+        public static string RandomStringOrEmpty(Random random, int length = 6) =>
+            RandomBool(random) ? RandomString(random, length) : string.Empty;
+
+        /// <summary>
+        /// Generate a random unsigned short.
+        /// </summary>
+        /// <param name="random">Random.</param>
+        /// <returns>Random unsigned short.</returns>
+        public static ushort RandomUShort(Random random) =>
+            (ushort)random.Next(0, 65535);
+
+        /// <summary>
+        /// Generate random list of <see cref="T"/>.
+        /// </summary>
+        /// <typeparam name="T">Array type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <param name="maxDepth">Limit nesting on group tags.</param>
+        /// <param name="count">Count of models to create.</param>
+        /// <param name="createRandomT">Callback to creat</param>
+        /// <returns>New list of ModelConstraintsConfig.</returns>
+        public static T[] RandomArray<T>(Random random, int maxDepth, int count, Func<Random, int, T> createRandomT)
+        {
+            var list = new T[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                list[i] = createRandomT(random, maxDepth);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Pick a random function from a list and invoke it.
+        /// </summary>
+        /// <typeparam name="T">Return type.</typeparam>
+        /// <param name="random">Random.</param>
+        /// <param name="maxDepth">Limit nesting on group tags.</param>
+        /// <param name="createRandomTs">List of functions taking Random, returning T.</param>
+        /// <returns>New random T.</returns>
+        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs) =>
+            createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+
+        /// <summary>
+        /// Acceptable Dicom PatientSex codes.s
+        /// </summary>
+        private enum DicomPatientSexCodeString { M, F, O };
+
+        /// <summary>
+        /// Func to create a random DicomCodeString.
+        /// </summary>
+        public static DicomItem RandomDicomCodeString<T>(DicomTag tag, Random random) =>
+            new DicomCodeString(tag, RandomEnum<T>(random).ToString());
+
+        /// <summary>
+        /// Func to create a random PatientSex DicomCodeString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomPatientSexCodeString =
+            RandomDicomCodeString<DicomPatientSexCodeString>;
+
+        /// <summary>
+        /// Func to create a random RandomDicomDate.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomDate = (tag, random) =>
+            new DicomDate(tag, DateTime.UtcNow.AddDays(random.NextDouble() * 1000.0));
+
+        /// <summary>
+        /// Func to create a random DicomAgeString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomAgeString = (tag, random) =>
+            new DicomAgeString(tag, string.Format("{0:D3}Y", random.Next(18, 100)));
+
+        /// <summary>
+        /// Func to create a random DicomPersonName.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomPersonName = (tag, random) =>
+            new DicomPersonName(tag,
+                RandomString(random, 9), // Last
+                RandomStringOrEmpty(random, 8), // First
+                RandomStringOrEmpty(random, 7), // Middle
+                RandomStringOrEmpty(random, 6), // Prefix
+                RandomStringOrEmpty(random, 3)); // Suffix
+
+        /// <summary>
+        /// Func to create a random RandomDicomShortString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortString = (tag, random) =>
+            new DicomShortString(tag, RandomString(random, 12));
+
+        /// <summary>
+        /// Func to create a random RandomDicomShortText.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomShortText = (tag, random) =>
+            new DicomShortText(tag, RandomString(random, 33));
+
+        /// <summary>
+        /// Func to create a random RandomDicomLongString.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongString = (tag, random) =>
+            new DicomLongString(tag, RandomString(random, 18));
+
+        /// <summary>
+        /// Func to create a random RandomDicomLongText.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomLongText = (tag, random) =>
+            new DicomLongText(tag, RandomString(random, 65));
+
+        /// <summary>
+        /// Func to create a random RandomDicomTime.
+        /// </summary>
+        public static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
+            new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
     }
 }

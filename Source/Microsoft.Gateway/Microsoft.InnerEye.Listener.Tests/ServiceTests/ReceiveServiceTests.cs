@@ -4,8 +4,6 @@
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using Microsoft.InnerEye.Azure.Segmentation.API.Common;
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
@@ -25,10 +23,9 @@
             var callingAet = "ProstateRTMl";
 
             var client = GetMockInnerEyeSegmentationClient();
-            var resultDirectory = CreateTemporaryDirectory();
-            var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
-            var gatewayConfig = GetTestGatewayReceiveConfig();
+
+            var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
             var configurationServiceConfig1 = new ConfigurationServiceConfig(
                 configurationRefreshDelaySeconds: 1);
@@ -43,15 +40,8 @@
 
             var mockReceiverConfigurationProvider2 = new MockConfigurationProvider<ReceiveServiceConfig>();
 
-            var testReceiveServiceConfig = GetTestGatewayReceiveConfig();
-
-            var testReceiveServiceConfig1 = gatewayConfig.With(
-                new DicomEndPoint("TestAET1", 110, "127.0.0.1"),
-                resultDirectory.FullName);
-
-            var testReceiveServiceConfig2 = gatewayConfig.With(
-                new DicomEndPoint("TestAET2", 111, "127.0.0.1"),
-                resultDirectory.FullName);
+            var testReceiveServiceConfig1 = GetTestGatewayReceiveServiceConfig(110);
+            var testReceiveServiceConfig2 = GetTestGatewayReceiveServiceConfig(111);
 
             mockReceiverConfigurationProvider2.ConfigurationQueue.Clear();
             mockReceiverConfigurationProvider2.ConfigurationQueue.Enqueue(testReceiveServiceConfig1);
@@ -128,8 +118,7 @@
             var mockReceiverConfigurationProvider = new MockConfigurationProvider<ReceiveServiceConfig>();
             var client = GetMockInnerEyeSegmentationClient();
 
-            var gatewayReceiveConfig = GetTestGatewayReceiveConfig().With(
-                new DicomEndPoint("Gateway", 140, "localhost"));
+            var gatewayReceiveConfig = GetTestGatewayReceiveServiceConfig(140);
 
             mockReceiverConfigurationProvider.ConfigurationQueue.Clear();
             mockReceiverConfigurationProvider.ConfigurationQueue.Enqueue(gatewayReceiveConfig);
@@ -180,13 +169,12 @@
         [TestMethod]
         public void ReceiveServiceLiveEndToEndTest()
         {
+            var receivePort = 160;
+
             var callingAet = "ProstateRTMl";
+            var calledAet = "testname";
 
-            var config = TestGatewayReceiveConfigProvider.ReceiveServiceConfig();
-            var gatewayReceiveConfig = config.With(
-                new DicomEndPoint("testname", 160, "localhost"));
-
-            using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+            using (var receiveService = CreateReceiveService(receivePort))
             using (var uploadQueue = receiveService.UploadQueue)
             {
                 uploadQueue.Clear(); // Clear the message queue
@@ -194,17 +182,17 @@
 
                 DcmtkHelpers.SendFileUsingDCMTK(
                     @"Images\1ValidSmall\1.dcm",
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                    receivePort,
                     ScuProfile.LEExplicitCT,
                     TestContext,
                     applicationEntityTitle: callingAet,
-                    calledAETitle: gatewayReceiveConfig.GatewayDicomEndPoint.Title);
+                    calledAETitle: calledAet);
 
                 var receiveQueueItem = TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 20 * 1000);
 
                 Assert.IsNotNull(receiveQueueItem);
                 Assert.AreEqual(callingAet, receiveQueueItem.CallingApplicationEntityTitle);
-                Assert.AreEqual(gatewayReceiveConfig.GatewayDicomEndPoint.Title, receiveQueueItem.CalledApplicationEntityTitle);
+                Assert.AreEqual(calledAet, receiveQueueItem.CalledApplicationEntityTitle);
 
                 Assert.IsFalse(string.IsNullOrEmpty(receiveQueueItem.AssociationFolderPath));
 
@@ -228,11 +216,10 @@
         [TestMethod]
         public async Task ReceiveServiceEchoTest()
         {
-            var config = TestGatewayReceiveConfigProvider.ReceiveServiceConfig();
-            var gatewayReceiveConfig = config.With(
-                new DicomEndPoint("testname", 180, "localhost"));
+            var calledAet = "testname";
+            var receivePort = 180;
 
-            using (var receiveService = CreateReceiveService(() => gatewayReceiveConfig))
+            using (var receiveService = CreateReceiveService(receivePort))
             using (var uploadQueue = receiveService.UploadQueue)
             {
                 uploadQueue.Clear();
@@ -242,9 +229,9 @@
 
                 await sender.DicomEchoAsync(
                     "Hello",
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Title,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Ip);
+                    calledAet,
+                    receivePort,
+                    "127.0.0.1");
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));
@@ -252,20 +239,20 @@
                 // Now check when we send a file a message is added
                 DcmtkHelpers.SendFileUsingDCMTK(
                     @"Images\1ValidSmall\1.dcm",
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
+                    receivePort,
                     ScuProfile.LEExplicitCT,
                     TestContext,
                     applicationEntityTitle: "ProstateRTMl",
-                    calledAETitle: gatewayReceiveConfig.GatewayDicomEndPoint.Title);
+                    calledAETitle: calledAet);
 
                 Assert.IsNotNull(TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));
 
                 // Now try another Dicom echo
                 await sender.DicomEchoAsync(
                     "Hello",
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Title,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Port,
-                    gatewayReceiveConfig.GatewayDicomEndPoint.Ip);
+                    calledAet,
+                    receivePort,
+                    "127.0.0.1");
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));

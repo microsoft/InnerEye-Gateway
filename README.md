@@ -6,7 +6,7 @@ This document has instructions specially for InnerEye-Gateway [https://github.co
 
 *For InnerEye-Inference repo please visit* [*this*](https://github.com/microsoft/InnerEye-Inference) *documentation.*
 
-The InnerEye-Gateway comprises Windows services that act as a DICOM Service Class Provider. After an Association Request to C-STORE a set of DICOM image files, these will be anonymised and passed to a web service running [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference). Inference will then pass them to an instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) running on Azure to execute InnerEye-DeepLearning models. The result is downloaded, de-anonymised and passed to a configurable DICOM destination. All DICOM image files, and the model output, are automatically deleted immediately after use.
+The InnerEye-Gateway comprises Windows services that act as a DICOM Service Class Provider. After an Association Request to C-STORE a set of DICOM image files, these will be anonymised and passed to a web service running [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference). Inference will then pass them to an instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) running on Azure to execute InnerEye-DeepLearning models. The result is downloaded, deanonymised and passed to a configurable DICOM destination. All DICOM image files, and the model output, are automatically deleted immediately after use.
 
 The gateway should be installed on a machine within your DICOM network that is able to access a running instance of [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference).
 
@@ -64,6 +64,10 @@ To get started with setting up this project you will need the following pre-requ
 
 1. .Net Framework 4.6.2 [Download .Net Framework](https://dotnet.microsoft.com/download/dotnet-framework/thank-you/net462-developer-pack-offline-installer)
 
+1. To clone the repository a git client with [large file support](https://git-lfs.github.com/), e.g. [git for windows](https://gitforwindows.org/)
+
+1. Wix Toolset for building the installer [Download WixToolset](https://wixtoolset.org/releases/)
+
 1. Run the PowerShell script to download two DICOM tools required for testing the gateway: [./Source/Microsoft.Gateway/download_dcmtk.ps1](./Source/Microsoft.Gateway/download_dcmtk.ps1). Note that these tools are only required for testing but the test projects and therefore the gateway will not build without them. Note also that the default PowerShell execution policy will not allow running scripts, more information is available here: [about execution policies](https:/go.microsoft.com/fwlink/?LinkID=135170). In brief:
 
     a. Start PowerShell with the `Run as administrator` option.
@@ -94,6 +98,8 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 1. Clone the repository.
 
+1. Download the DICOM tools using the PowerShell script in [Getting Started](#getting-started).
+
 1. Open the project solution file [./Source/Microsoft.Gateway/Microsoft.Gateway.sln](./Source/Microsoft.Gateway/Microsoft.Gateway.sln) in Visual Studio 2019.
 
 1. Set the project platform to **x64**.
@@ -102,13 +108,21 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 ## To Run The Tests
 
-1. Download the DICOM tools using the PowerShell script in [Getting Started](#getting-started).
+1. [Build the gateway](#to-build-the-gateway).
 
-1. For live tests check the configuration settings for `Microsoft.InnerEye.Listener.Processor` in [./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/TestConfigurations/GatewayProcessorConfig.json](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/TestConfigurations/GatewayProcessorConfig.json). Check the following settings in `ProcessorSettings`:
+1. For end to end tests:
 
-    - `InferenceUri` is the Uri for the InnerEye-Inference web service from [Getting Started](#getting-started). See [License Keys](#license-keys) for more details.
+    - check the configuration settings for `Microsoft.InnerEye.Listener.Processor` in [./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/TestConfigurations/GatewayProcessorConfig.json](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/TestConfigurations/GatewayProcessorConfig.json). Check the following settings in `ProcessorSettings`:
 
-    - `LicenseKeyEnvVar` is the name of the environment variable which contains the license key for the InnerEye-Inference web service at `InferenceUri`. See [License Keys](#license-keys) for more details.
+        - `InferenceUri` is the Uri for the InnerEye-Inference web service from [Getting Started](#getting-started). See [License Keys](#license-keys) for more details.
+
+        - `LicenseKeyEnvVar` is the name of the environment variable which contains the license key for the InnerEye-Inference web service at `InferenceUri`. See [License Keys](#license-keys) for more details.
+
+    - check the configuration settings for the test application entity models in [./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"](./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"). The tests will use the first found application entity model so check that `ModelId` in the first `ModelsConfig` is a valid PassThrough model id for the configured InnerEye-Inference service. Note that the PassThrough model is a special model intended for testing that simply returns a hard-coded list of structures for any input DICOM image series; it will always return the structures `["SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus"]`. If this is not present in the instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) build the model by running the command:
+
+    ```cmd
+    python InnerEye/ML/runner.py --azureml=True --model=PassThroughModel
+    ```
 
 1. Make sure the testing **Default Processor Architecture** is set to **x64**. This can be checked by navigating to **Test > Test Settings > Default Process Architecture**
 
