@@ -44,12 +44,12 @@
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
-        protected readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+        private readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Logger for common use.
         /// </summary>
-        protected readonly ILogger _baseTestLogger;
+        private readonly ILogger _baseTestLogger;
 
         /// <summary>
         /// Gets or sets the test context.
@@ -112,6 +112,9 @@
         /// </summary>
         protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
 
+        /// <summary>
+        /// Disposed flag for IDisposable.
+        /// </summary>
         private bool disposedValue;
 
         /// <summary>
@@ -127,9 +130,9 @@
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
             Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
 
-            _testAETConfigProvider = new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
-            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
-            TestGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ReceiveSettings"), _basePathConfigs);
+            _testAETConfigProvider = CreateAETConfigProvider(_basePathConfigs);
+            TestGatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(_basePathConfigs);
+            TestGatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(_basePathConfigs);
         }
 
         [TestInitialize]
@@ -171,6 +174,35 @@
 
             TryKillAnyZombieProcesses();
         }
+
+        /// <summary>
+        /// Create a new <see cref="AETConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config folder.</param>
+        /// <param name="useFile">True to use config file, false to use folder of files.</param>
+        /// <returns>New <see cref="AETConfigProvider"/>.</returns>
+        protected AETConfigProvider CreateAETConfigProvider(
+            string configurationsPathRoot,
+            bool useFile = false) =>
+                new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), configurationsPathRoot, useFile);
+
+        /// <summary>
+        /// Create a new <see cref="GatewayProcessorConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config file.</param>
+        /// <returns>New <see cref="GatewayProcessorConfigProvider"/>.</returns>
+        protected GatewayProcessorConfigProvider CreateGatewayProcessorConfigProvider(
+            string configurationsPathRoot) =>
+                new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), configurationsPathRoot);
+
+        /// <summary>
+        /// Create a new <see cref="GatewayReceiveConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config file.</param>
+        /// <returns>New <see cref="GatewayReceiveConfigProvider"/>.</returns>
+        protected GatewayReceiveConfigProvider CreateGatewayReceiveConfigProvider(
+            string configurationsPathRoot) =>
+                new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ReceiveSettings"), configurationsPathRoot);
 
         protected void WriteDicomFileForBuildPackage(string fileName, DicomFile dicomFile)
         {

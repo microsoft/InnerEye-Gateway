@@ -515,7 +515,7 @@
             var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
             Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
 
-            using (var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_baseTestLogger, configurationDirectory))
+            using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
             {
                 Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.Config);
 
@@ -539,6 +539,39 @@
         }
 
         [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway receive config, saves it, and checks it loads correctly. Then toggles runAsConsole.")]
+        [TestMethod]
+        public void TestUpdateGatewayReceiveConfigRunAsConsole()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
+            Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+
+            using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayReceiveConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var runAsConsole = gatewayReceiveConfigProvider.Config.ServiceSettings.RunAsConsole;
+
+                gatewayReceiveConfigProvider.SetRunAsConsole(!runAsConsole);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // RunAsConsole should have now toggled.
+                Assert.AreEqual(!runAsConsole, gatewayReceiveConfigProvider.Config.ServiceSettings.RunAsConsole);
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
         [Description("Creates a random gateway processor config, saves it, and checks it loads correctly.")]
         [DataRow(false, DisplayName = "Load GatewayProcessorConfig")]
         [DataRow(true, DisplayName = "Reload GatewayProcessorConfig")]
@@ -551,7 +584,7 @@
             var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
             Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
-            using (var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_baseTestLogger, configurationDirectory))
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
             {
                 Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
 
@@ -571,6 +604,72 @@
 
                     Assert.AreEqual(expectedGatewayProcessorConfig2, gatewayProcessorConfigProvider.Config);
                 }
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway processor config, saves it, and checks it loads correctly. Then toggles runAsConsole.")]
+        [TestMethod]
+        public void TestUpdateGatewayProcessorConfigRunAsConsole()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var runAsConsole = gatewayProcessorConfigProvider.Config.ServiceSettings.RunAsConsole;
+
+                gatewayProcessorConfigProvider.SetRunAsConsole(!runAsConsole);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // RunAsConsole should have now toggled.
+                Assert.AreEqual(!runAsConsole, gatewayProcessorConfigProvider.Config.ServiceSettings.RunAsConsole);
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway processor config, saves it, and checks it loads correctly. Then toggles updates processor settings.")]
+        [TestMethod]
+        public void TestUpdateGatewayProcessorConfigProcessorSettings()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var processorSettings = RandomProcessorSettings(random);
+
+                gatewayProcessorConfigProvider.SetProcessorSettings(processorSettings.InferenceUri);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // InferenceUri should have now changed.
+                Assert.AreEqual(processorSettings.InferenceUri, gatewayProcessorConfigProvider.Config.ProcessorSettings.InferenceUri);
             }
         }
 
@@ -649,7 +748,7 @@
             var expectedAETConfigModels = RandomArray(random, 3, 10, RandomAETConfigModel);
             saveAETConfigModels.Invoke(random, expectedAETConfigModels);
 
-            using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory, useFile))
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory, useFile))
             {
                 AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
 
@@ -704,7 +803,7 @@
                 Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i), true);
             }
 
-            using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory))
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory))
             {
                 AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
             }
@@ -749,7 +848,7 @@
                 }
             }
 
-            using (var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory))
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory))
             {
                 AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
             }

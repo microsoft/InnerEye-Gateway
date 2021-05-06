@@ -189,8 +189,6 @@
 
             SaveFile(newt, _settingsFileOrFolderName);
 
-            Config = newt;
-
             return (newt, true);
         }
 

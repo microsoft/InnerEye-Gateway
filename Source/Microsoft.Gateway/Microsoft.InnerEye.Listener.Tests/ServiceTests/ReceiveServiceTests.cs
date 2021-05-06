@@ -34,7 +34,7 @@
 
             var client = GetMockInnerEyeSegmentationClient();
 
-            using (var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ReceiveSettings"), configurationDirectory))
+            using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
             using (var receiveService = CreateReceiveService(gatewayReceiveConfigProvider.ReceiveServiceConfig))
             using (var uploadQueue = receiveService.UploadQueue)
             using (var configurationService = CreateConfigurationService(

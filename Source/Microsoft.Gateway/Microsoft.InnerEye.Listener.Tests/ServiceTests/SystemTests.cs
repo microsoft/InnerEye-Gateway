@@ -59,7 +59,7 @@
                 using (var uploadService = CreateUploadService(client))
                 using (var uploadQueue = uploadService.UploadQueue)
                 using (var downloadService = CreateDownloadService(client))
-                using (var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), configurationDirectory))
+                using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
                 using (var configurationService = CreateConfigurationService(
                     client,
                     gatewayProcessorConfigProvider.ConfigurationServiceConfig,
