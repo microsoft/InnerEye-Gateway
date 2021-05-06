@@ -4,12 +4,12 @@
     using Microsoft.InnerEye.Gateway.Models;
 
     /// <summary>
-    /// Monitor a JSON file containing a GatewayReceiveConfig.
+    /// Monitor a JSON file containing a <see cref="GatewayReceiveConfig"/>.
     /// </summary>
     public class GatewayReceiveConfigProvider : BaseConfigProvider<GatewayReceiveConfig>
     {
         /// <summary>
-        /// File name for JSON file containing a GatewayReceiveConfig.
+        /// File name for JSON file containing a <see cref="GatewayReceiveConfig"/>.
         /// </summary>
         public static readonly string GatewayReceiveConfigFileName = "GatewayReceiveConfig.json";
 
@@ -33,23 +33,23 @@
             Update(gatewayReceiveConfig => gatewayReceiveConfig.With(new ServiceSettings(runAsConsole)));
 
         /// <summary>
-        /// Load ServiceSettings from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ServiceSettings"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ServiceSettings.</returns>
+        /// <returns>Cached <see cref="ServiceSettings"/>.</returns>
         public ServiceSettings ServiceSettings() =>
             Config.ServiceSettings;
 
         /// <summary>
-        /// Load ConfigurationServiceConfig from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ConfigurationServiceConfig"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ConfigurationServiceConfig.</returns>
+        /// <returns>Cached <see cref="ConfigurationServiceConfig"/>.</returns>
         public ConfigurationServiceConfig ConfigurationServiceConfig() =>
             Config.ConfigurationServiceConfig;
 
         /// <summary>
-        /// Load ReceiveServiceConfig from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ReceiveServiceConfig"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ReceiveServiceConfig.</returns>
+        /// <returns>Cached <see cref="ReceiveServiceConfig"/>.</returns>
         public ReceiveServiceConfig ReceiveServiceConfig() =>
             Config.ReceiveServiceConfig;
     }

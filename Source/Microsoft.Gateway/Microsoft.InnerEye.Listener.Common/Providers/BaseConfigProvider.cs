@@ -34,12 +34,15 @@
         /// </summary>
         private readonly FileSystemWatcher _fileSystemWatcher;
 
+        /// <summary>
+        /// Disposed flag for IDisposable.
+        /// </summary>
         private bool disposedValue;
 
         /// <summary>
         /// Config as last loaded from file or folder.
         /// </summary>
-        public T Config { get; protected set; }
+        public T Config { get; private set; }
 
         /// <summary>
         /// Called when the config has changed.
@@ -51,7 +54,7 @@
         /// </summary>
         /// <param name="logger">Logger.</param>
         /// <param name="folderName">Settings folder name.</param>
-        /// <param name="settingsFile">Optional settings file.</param>
+        /// <param name="settingsFile">Optional settings file, use String.Empty to monitor a folder.</param>
         /// <param name="flatMap">Optional flat map to handle folders.</param>
         public BaseConfigProvider(
             ILogger logger,
@@ -63,20 +66,25 @@
             _settingsFileOrFolderName = Path.Combine(folderName, settingsFile);
             _flatMap = flatMap;
 
+            if (string.IsNullOrWhiteSpace(settingsFile) && flatMap == null)
+            {
+                throw new ArgumentNullException(nameof(flatMap), "If monitoring a folder, flatMap must be supplied");
+            }
+
             _fileSystemWatcher = new FileSystemWatcher(folderName)
             {
-                Filter = File.Exists(_settingsFileOrFolderName) ? settingsFile : "*.json",
+                Filter = !string.IsNullOrWhiteSpace(settingsFile) ? settingsFile : "*.json",
                 NotifyFilter = NotifyFilters.LastWrite,
             };
 
             _fileSystemWatcher.Changed += OnChanged;
             _fileSystemWatcher.EnableRaisingEvents = true;
 
-            Load(false);
+            Load();
         }
 
         /// <summary>
-        /// File watcher Changed event handler. Filter the events and call ConfigChanged.
+        /// File watcher Changed event handler. Filter the events, reload the config and if successful invoke ConfigChanged.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">File system event args.</param>
@@ -91,18 +99,7 @@
                 string.Format("Settings have changed: {0}", e.FullPath));
             logEntry.Log(_logger, LogLevel.Information);
 
-            Load(true);
-        }
-
-        /// <summary>
-        /// Load/reload config files.
-        /// </summary>
-        /// <param name="reload">True if reloading, false if loading.</param>
-        public void Load(bool reload)
-        {
-            var loaded = Load();
-
-            if (!loaded || !reload)
+            if (!Load())
             {
                 return;
             }
@@ -129,7 +126,7 @@
 
                 return true;
             }
-            else if (Directory.Exists(_settingsFileOrFolderName) && _flatMap != null)
+            else if (Directory.Exists(_settingsFileOrFolderName))
             {
                 var ts = new List<T>();
 

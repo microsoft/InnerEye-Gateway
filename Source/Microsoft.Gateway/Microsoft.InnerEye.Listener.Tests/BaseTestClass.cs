@@ -524,7 +524,7 @@
         protected PushService CreatePushService(
             Func<IEnumerable<AETConfigModel>> aetConfigProvider = null) =>
                 new PushService(
-                    aetConfigProvider ?? _testAETConfigProvider.GetAETConfigs,
+                    aetConfigProvider ?? _testAETConfigProvider.AETConfigModels,
                     new DicomDataSender(),
                     TestPushQueuePath,
                     TestDeleteQueuePath,
@@ -562,7 +562,7 @@
             int instances = 1) =>
                 new UploadService(
                     innerEyeSegmentationClient != null ? () => innerEyeSegmentationClient : TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
-                    aetConfigProvider ?? _testAETConfigProvider.GetAETConfigs,
+                    aetConfigProvider ?? _testAETConfigProvider.AETConfigModels,
                     TestUploadQueuePath,
                     TestDownloadQueuePath,
                     TestDeleteQueuePath,

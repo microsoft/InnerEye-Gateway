@@ -6,17 +6,17 @@
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Monitor a JSON file containing a list of AETConfigModels.
+    /// Monitor a JSON file or folder containing a list of <see cref="AETConfigModel"/>.
     /// </summary>
     public class AETConfigProvider : BaseConfigProvider<IEnumerable<AETConfigModel>>
     {
         /// <summary>
-        /// File name for JSON file containing a list of AETConfigModels.
+        /// File name for JSON file containing a list of <see cref="AETConfigModel"/>.
         /// </summary>
         public static readonly string AETConfigFileName = "GatewayModelRulesConfig.json";
 
         /// <summary>
-        /// Folder name for folder containing JSON files, each containing a list of AETConfigModels.
+        /// Folder name for folder containing JSON files, each containing a list of <see cref="AETConfigModel"/>.
         /// </summary>
         public static readonly string AETConfigFolderName = "GatewayModelRulesConfig";
 
@@ -37,10 +37,10 @@
         }
 
         /// <summary>
-        /// Lookup list of AETConfigModels from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning list of <see cref="AETConfigModel"/> from cache.
         /// </summary>
-        /// <returns>List of AETConfigModels.</returns>
-        public IEnumerable<AETConfigModel> GetAETConfigs() =>
+        /// <returns>Cached list of <see cref="AETConfigModel"/>.</returns>
+        public IEnumerable<AETConfigModel> AETConfigModels() =>
             Config;
 
         /// <summary>

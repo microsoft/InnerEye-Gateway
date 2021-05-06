@@ -54,7 +54,7 @@
                         loggerFactory.CreateLogger("ConfigurationService"),
                         new UploadService(
                             gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
-                            aetConfigurationProvider.GetAETConfigs,
+                            aetConfigurationProvider.AETConfigModels,
                             GatewayMessageQueue.UploadQueuePath,
                             GatewayMessageQueue.DownloadQueuePath,
                             GatewayMessageQueue.DeleteQueuePath,
@@ -71,7 +71,7 @@
                             loggerFactory.CreateLogger("DownloadService"),
                             instances: 1),
                         new PushService(
-                            aetConfigurationProvider.GetAETConfigs,
+                            aetConfigurationProvider.AETConfigModels,
                             new DicomDataSender(),
                             GatewayMessageQueue.PushQueuePath,
                             GatewayMessageQueue.DeleteQueuePath,
