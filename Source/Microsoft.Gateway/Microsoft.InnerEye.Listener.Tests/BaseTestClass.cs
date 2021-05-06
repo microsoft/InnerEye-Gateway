@@ -110,7 +110,7 @@
         /// <summary>
         /// GatewayReceiveConfigProvider as loaded from _basePathConfigs.
         /// </summary>
-        private GatewayReceiveConfigProvider _testGatewayReceiveConfigProvider;
+        protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
 
         private bool disposedValue;
 
@@ -129,7 +129,7 @@
 
             _testAETConfigProvider = new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
             TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
-            _testGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            TestGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ReceiveSettings"), _basePathConfigs);
         }
 
         [TestInitialize]
@@ -326,7 +326,7 @@
             int port,
             DirectoryInfo rootDicomFolder = null)
         {
-            var gatewayConfig = _testGatewayReceiveConfigProvider.Config.ReceiveServiceConfig;
+            var gatewayConfig = TestGatewayReceiveConfigProvider.Config.ReceiveServiceConfig;
 
             return gatewayConfig.With(
                 new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, port, gatewayConfig.GatewayDicomEndPoint.Ip),
@@ -723,7 +723,7 @@
             {
                 _testAETConfigProvider.Dispose();
                 TestGatewayProcessorConfigProvider.Dispose();
-                _testGatewayReceiveConfigProvider.Dispose();
+                TestGatewayReceiveConfigProvider.Dispose();
             }
 
             disposedValue = true;
