@@ -741,36 +741,6 @@
         }
 
         /// <summary>
-        /// Disposes of all managed resources.
-        /// </summary>
-        /// <param name="disposing">If we are disposing.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposedValue)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _testAETConfigProvider.Dispose();
-                TestGatewayProcessorConfigProvider.Dispose();
-                TestGatewayReceiveConfigProvider.Dispose();
-            }
-
-            disposedValue = true;
-        }
-
-        /// <summary>
-        /// Implements the disposable pattern.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
         /// Generate a random string of target length or an empty string.
         /// </summary>
         /// <param name="random">Random.</param>
@@ -888,5 +858,35 @@
         /// </summary>
         public static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
             new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
+
+        /// <summary>
+        /// Disposes of all managed resources.
+        /// </summary>
+        /// <param name="disposing">If we are disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _testAETConfigProvider.Dispose();
+                TestGatewayProcessorConfigProvider.Dispose();
+                TestGatewayReceiveConfigProvider.Dispose();
+            }
+
+            disposedValue = true;
+        }
+
+        /// <summary>
+        /// Implements the disposable pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
