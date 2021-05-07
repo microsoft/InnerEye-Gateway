@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading;
 
@@ -58,6 +59,7 @@
         /// <summary>
         /// The current SQLite connection for this transaction.
         /// </summary>
+        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "False negative.")]
         private SqliteConnection _sqliteConnection;
 
         /// <summary>

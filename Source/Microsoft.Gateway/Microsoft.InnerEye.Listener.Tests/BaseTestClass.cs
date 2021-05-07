@@ -100,7 +100,7 @@
         /// <summary>
         /// AET configs as loaded from _basePathConfigs.
         /// </summary>
-        private AETConfigProvider _testAETConfigProvider;
+        private readonly AETConfigProvider _testAETConfigProvider;
 
         /// <summary>
         /// GatewayProcessorConfigProvider as loaded from _basePathConfigs.
@@ -110,7 +110,7 @@
         /// <summary>
         /// GatewayReceiveConfigProvider as loaded from _basePathConfigs.
         /// </summary>
-        private GatewayReceiveConfigProvider _testGatewayReceiveConfigProvider;
+        private readonly GatewayReceiveConfigProvider _testGatewayReceiveConfigProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseTestClass"/> class.
@@ -592,19 +592,20 @@
         {
             var dicomFiles = new DirectoryInfo(filesPath).GetFiles().Select(x => DicomFile.Open(x.FullName)).ToArray();
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
+            {
+                var testAETConfigModel = GetTestAETConfigModel();
 
-            var testAETConfigModel = GetTestAETConfigModel();
+                var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
+                var modelId = matchedModel.Result.ModelId;
 
-            var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
-            var modelId = matchedModel.Result.ModelId;
+                var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
+                    matchedModel.Result.ModelId,
+                    matchedModel.Result.ChannelData);
 
-            var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
-                matchedModel.Result.ModelId,
-                matchedModel.Result.ChannelData);
-
-            var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
-            return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+                var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+            }
         }
 
         protected static void WaitUntilNoMessagesOnQueue(IMessageQueue queue, int timeoutMs = 60000)

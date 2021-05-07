@@ -652,12 +652,12 @@
             // just loop until it has the right type.
             var expectedAETConfigModels = RandomArray(random, 3, 1, RandomAETConfigModel);
             while (expectedAETConfigModels[0].AETConfig.Config.ModelsConfig == null ||
-                expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Length == 0)
+                expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Count == 0)
             {
                 expectedAETConfigModels = RandomArray(random, 3, 1, RandomAETConfigModel);
             }
 
-            for (var i = 0; i < expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Length; i++)
+            for (var i = 0; i < expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Count; i++)
             {
                 // Clone the expected AET config model taking only the ith models config.
                 var expectedAETConfig0 = expectedAETConfigModels[0].With(
@@ -694,7 +694,7 @@
                 {
                     // If this model has ModelsConfig then create a new AET config model for each of the 
                     // models config.
-                    for (var i = 0; i < expectedAETConfigModels[j].AETConfig.Config.ModelsConfig.Length; i++)
+                    for (var i = 0; i < expectedAETConfigModels[j].AETConfig.Config.ModelsConfig.Count; i++)
                     {
                         // Clone the expected AET config model taking only the ith models config.
                         var expectedAETConfig0 = expectedAETConfigModels[j].With(

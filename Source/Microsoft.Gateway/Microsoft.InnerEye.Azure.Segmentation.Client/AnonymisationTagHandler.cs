@@ -122,9 +122,8 @@
         public static DicomItem RandomiseDateTime(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
         {
             var dateTime = TryGetDateTime(oldds, item.Tag);
-            string patientId;
 
-            oldds.TryGetString(DicomTag.PatientID, out patientId);
+            oldds.TryGetString(DicomTag.PatientID, out var patientId);
 
             if (!dateTime.HasValue || string.IsNullOrWhiteSpace(patientId))
             {

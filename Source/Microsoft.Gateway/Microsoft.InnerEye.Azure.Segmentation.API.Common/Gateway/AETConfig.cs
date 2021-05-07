@@ -24,10 +24,9 @@
         /// or
         /// modelConfig
         /// </exception>
-        [JsonConstructor]
         public AETConfig(
             AETConfigType aetConfigType,
-            ModelConstraintsConfig[] modelsConfig)
+            IReadOnlyList<ModelConstraintsConfig> modelsConfig)
         {
             AETConfigType = aetConfigType;
 
@@ -35,7 +34,7 @@
             {
                 ModelsConfig = modelsConfig ?? throw new ArgumentNullException(nameof(modelsConfig));
 
-                if (ModelsConfig.Length == 0)
+                if (!ModelsConfig.Any())
                 {
                     throw new ArgumentException("You must specify at least 1 ModelConstraintConfig", nameof(modelsConfig));
                 }
@@ -73,7 +72,7 @@
         /// <summary>
         /// If not IsFeedbackAET - then the models configured for this AE, or null otherwise
         /// </summary>
-        public ModelConstraintsConfig[] ModelsConfig { get; }
+        public IReadOnlyList<ModelConstraintsConfig> ModelsConfig { get; }
 
         /// <summary>
         /// Needs a model configuration
@@ -107,7 +106,7 @@
         {
             var hashCode = 602733048;
             hashCode = hashCode * -1521134295 + AETConfigType.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<ModelConstraintsConfig[]>.Default.GetHashCode(ModelsConfig);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyList<ModelConstraintsConfig>>.Default.GetHashCode(ModelsConfig);
             return hashCode;
         }
 

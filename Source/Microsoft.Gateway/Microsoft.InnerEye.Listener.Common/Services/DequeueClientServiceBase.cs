@@ -19,7 +19,7 @@
         /// <summary>
         /// Callback for gateway processor config.
         /// </summary>
-        private Func<DequeueServiceConfig> _getDequeueServiceConfig;
+        private readonly Func<DequeueServiceConfig> _getDequeueServiceConfig;
 
         /// <summary>
         /// The dequeue queue path.

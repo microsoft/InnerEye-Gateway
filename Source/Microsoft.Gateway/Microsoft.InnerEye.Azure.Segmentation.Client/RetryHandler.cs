@@ -68,7 +68,7 @@
 
                 i++;
                 Trace.TraceWarning($"Retrying Method: {request.Method}, RequestUri: {request.RequestUri}, retry count = {i}");
-                await Task.Delay(RetryDelayInMilliseconds);
+                await Task.Delay(RetryDelayInMilliseconds, cancellationToken);
             }
 
             throw new OperationCanceledException(cancellationToken);

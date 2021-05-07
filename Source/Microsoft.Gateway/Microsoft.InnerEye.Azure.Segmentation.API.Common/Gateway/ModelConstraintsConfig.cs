@@ -2,9 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
     using System.Linq;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Configurable constraints placed on data accepted by a model.
@@ -22,11 +20,10 @@
         /// or
         /// tagReplacements
         /// </exception>
-        [JsonConstructor]
         public ModelConstraintsConfig(
             string modelId,
-            ModelChannelConstraints[] channelConstraints,
-            TagReplacement[] tagReplacements)
+            IReadOnlyList<ModelChannelConstraints> channelConstraints,
+            IReadOnlyList<TagReplacement> tagReplacements)
         {
             ModelId = modelId;
             ChannelConstraints = channelConstraints ?? throw new ArgumentNullException(nameof(channelConstraints));
@@ -36,14 +33,12 @@
         /// <summary>
         /// The identifier of the model we are constraining
         /// </summary>
-        [Required]
         public string ModelId { get; }
 
         /// <summary>
         /// Constraints for each channel in the model.
         /// </summary>
-        [Required]
-        public ModelChannelConstraints[] ChannelConstraints { get; }
+        public IReadOnlyList<ModelChannelConstraints> ChannelConstraints { get; }
 
         /// <summary>
         /// Gets or sets the TagReplacements
@@ -51,8 +46,7 @@
         /// <value>
         /// The result structure set tags.
         /// </value>
-        [Required]
-        public TagReplacement[] TagReplacements { get; }
+        public IReadOnlyList<TagReplacement> TagReplacements { get; }
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -74,8 +68,8 @@
         {
             var hashCode = -1007173847;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ModelId);
-            hashCode = hashCode * -1521134295 + EqualityComparer<ModelChannelConstraints[]>.Default.GetHashCode(ChannelConstraints);
-            hashCode = hashCode * -1521134295 + EqualityComparer<TagReplacement[]>.Default.GetHashCode(TagReplacements);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyList<ModelChannelConstraints>>.Default.GetHashCode(ChannelConstraints);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyList<TagReplacement>>.Default.GetHashCode(TagReplacements);
             return hashCode;
         }
 
