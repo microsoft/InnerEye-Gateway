@@ -232,7 +232,7 @@
            string modelId,
            string segmentationId)
         {
-            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}"));
+            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}", UriKind.Relative));
 
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
@@ -294,7 +294,7 @@
                 compressionLevel: DicomCompressionHelpers.DefaultCompressionLevel);
 
             // POST
-            var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}"), new ByteArrayContent(dataZipped));
+            var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), new ByteArrayContent(dataZipped));
 
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
             {
@@ -315,7 +315,7 @@
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            var response = await _client.GetAsync(new Uri("v1/ping"));
+            var response = await _client.GetAsync(new Uri("v1/ping", UriKind.Relative));
 
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {
