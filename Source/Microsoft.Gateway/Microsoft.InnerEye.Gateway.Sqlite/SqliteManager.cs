@@ -72,7 +72,7 @@
         /// <exception cref="SqliteException">If we fail to open a connection to the database.</exception>
         public void CreateTableIfNotExists()
         {
-            string createTableIfNotExistsCommandFormat = "CREATE TABLE IF NOT EXISTS [{0}] " + $"({string.Join(", ", Columns.Select(x => $"{x.ColumnName} {x.ColumnDataType}"))})";
+            var createTableIfNotExistsCommandFormat = "CREATE TABLE IF NOT EXISTS [{0}] " + $"({string.Join(", ", Columns.Select(x => $"{x.ColumnName} {x.ColumnDataType}"))})";
 
             SqliteExtensions.ExecuteNonQueryNewConnection(
                connectionString: DatabaseConnectionString,

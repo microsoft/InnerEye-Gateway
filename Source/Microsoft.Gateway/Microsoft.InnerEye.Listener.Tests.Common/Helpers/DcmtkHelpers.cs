@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.Common.Helpers
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
@@ -46,7 +47,7 @@
         {
             var directoryPath = path;
 
-            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
                 directoryPath += Path.DirectorySeparatorChar;
             }
@@ -76,7 +77,7 @@
         {
             var filePath = path;
 
-            if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString()))
+            if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
                 var currentExecutionLocation = (new DirectoryInfo(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
                 filePath = currentExecutionLocation + filePath;

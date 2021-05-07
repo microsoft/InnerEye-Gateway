@@ -234,8 +234,7 @@
                 throw new ArgumentNullException(nameof(newds));
             }
 
-            var values = Array.Empty<string>();
-            newds.TryGetValues(DicomTag.DeidentificationMethod, out values);
+            newds.TryGetValues(DicomTag.DeidentificationMethod, out string[] values);
 
             var dicomDatasetDeidentificationMethods = values?.ToList() ?? new List<string>();
 

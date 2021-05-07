@@ -104,7 +104,7 @@
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                MemoryStream result = memoryStream;
+                var result = memoryStream;
                 memoryStream = null;
                 return result;
             }

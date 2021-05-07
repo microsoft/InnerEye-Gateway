@@ -68,7 +68,7 @@
                     $@"InnerEye Version: Test.AssemblyVersion\");
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SeriesDate,
-                    $"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}");
+                    $"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month:D2}{DateTime.UtcNow.Day:D2}");
 
                 var anonymized = DeanonymizeDicomFile(
                     dicomFile,

@@ -242,14 +242,14 @@
             else if (response.StatusCode == HttpStatusCode.OK)
             {
                 var zipStream = await response.Content.ReadAsByteArrayAsync();
-                using (ZipArchive archive = new ZipArchive(new MemoryStream(zipStream)))
+                using (var archive = new ZipArchive(new MemoryStream(zipStream)))
                 {
                     if (archive.Entries.Count != 1)
                     {
                         throw new NotSupportedException("Only 1 file is supported");
                     }
 
-                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    foreach (var entry in archive.Entries)
                     {
                         using (var stream = entry.Open())
                         {

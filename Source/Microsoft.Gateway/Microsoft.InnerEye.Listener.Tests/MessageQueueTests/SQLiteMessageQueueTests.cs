@@ -19,7 +19,7 @@
         [TestMethod]
         public void SqliteTransactionExceptionTests1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 3000;
 
@@ -41,7 +41,7 @@
         [TestMethod]
         public void SqliteTransactionExceptionTests2()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 3000;
 
@@ -62,7 +62,7 @@
         [TestMethod]
         public async Task SqliteRenewLeaseTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -102,7 +102,7 @@
         [TestMethod]
         public async Task SqliteExpiredLeaseTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -144,7 +144,7 @@
         [TestMethod]
         public async Task SqliteClearDuringTransaction1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -196,7 +196,7 @@
         [TestMethod]
         public void SqliteTransactionTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -227,7 +227,7 @@
         [TestMethod]
         public void SqliteTransactionTests2()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -259,7 +259,7 @@
         [TestMethod]
         public void SqliteTransactionDisposeTest1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
             var expected = CreateRandomQueueItem();
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
@@ -298,7 +298,7 @@
         [TestMethod]
         public void SqliteNestedTransactionTest()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -329,7 +329,7 @@
         [TestMethod]
         public void SqliteTestConcurrentReadWrite1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
             const int numberMessages = 100;
 
             var expectedResults = new PushQueueItem[numberMessages];

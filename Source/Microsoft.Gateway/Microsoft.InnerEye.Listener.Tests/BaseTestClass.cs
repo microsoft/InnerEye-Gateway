@@ -291,7 +291,7 @@
 
         protected DirectoryInfo CreateTemporaryDirectory()
         {
-            var result = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $@"InnerEyeListenerTestsTemp\{Guid.NewGuid().ToString()}"));
+            var result = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $@"InnerEyeListenerTestsTemp\{Guid.NewGuid()}"));
             temporaryDirectories.Add(result.FullName);
 
             return result;
@@ -579,12 +579,12 @@
                 var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
                 var modelId = matchedModel.Result.ModelId;
 
-                var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
+                var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
                     matchedModel.Result.ModelId,
                     matchedModel.Result.ChannelData);
 
-                var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
-                return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                return (segmentationId, modelId, referenceDicomFiles);
             }
         }
 
@@ -599,12 +599,12 @@
                 var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
                 var modelId = matchedModel.Result.ModelId;
 
-                var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
+                var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
                     matchedModel.Result.ModelId,
                     matchedModel.Result.ChannelData);
 
-                var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
-                return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                return (segmentationId, modelId, referenceDicomFiles);
             }
         }
 

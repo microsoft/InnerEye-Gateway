@@ -185,14 +185,14 @@
             Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<Dicom.DicomUID>(DicomTag.SOPClassUID));
             Assert.AreEqual(sopInstanceUID, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPInstanceUID));
 
-            var expectedDate = $"{testDateTime.Year}{testDateTime.Month.ToString("D2")}{testDateTime.Day.ToString("D2")}";
+            var expectedDate = $"{testDateTime.Year}{testDateTime.Month:D2}{testDateTime.Day:D2}";
             Assert.AreEqual(expectedDate, dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
             Assert.AreEqual("RTSTRUCT", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Modality));
             Assert.AreEqual("Microsoft Corporation", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Manufacturer));
             Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDescription));
             Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.OperatorsName, string.Empty));
 
-            Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
+            Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
             Assert.AreEqual(modelId, dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1));
 
             Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesNumber, string.Empty));

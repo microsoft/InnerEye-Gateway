@@ -72,7 +72,7 @@ csharp_prefer_braces = true:suggestion
 #prefer block bodies for constructors
 csharp_style_expression_bodied_constructors = false:suggestion
 #prefer block bodies for methods
-csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_methods = false:silent
 #prefer expression-bodied members for properties
 csharp_style_expression_bodied_properties = true:suggestion
 
@@ -121,7 +121,7 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggest
 #Style - Modifier preferences
 
 #when this rule is set to a list of modifiers, prefer the specified ordering.
-csharp_preferred_modifier_order = public,private,protected,internal,static,readonly,async,override,sealed,virtual,abstract:suggestion
+csharp_preferred_modifier_order = public,private,protected,internal,static,readonly,async,override,sealed,virtual,abstract:silent
 
 #Style - Pattern matching
 
@@ -146,14 +146,8 @@ dotnet_diagnostic.CA1031.severity = suggestion
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = suggestion
 
-# CA1304: Specify CultureInfo
-dotnet_diagnostic.CA1304.severity = suggestion
-
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = suggestion
-
-# CA1310: Specify StringComparison for correctness
-dotnet_diagnostic.CA1310.severity = suggestion
 
 # CA1508: Avoid dead conditional code
 dotnet_diagnostic.CA1508.severity = suggestion
@@ -181,11 +175,17 @@ dotnet_diagnostic.IDE0004.severity = error
 # IDE0005: Using directive is unnecessary.
 dotnet_diagnostic.IDE0005.severity = error
 
+# IDE0022: Use block body for methods
+dotnet_diagnostic.IDE0022.severity = silent
+
 # IDE0033: Use explicitly provided tuple name
 dotnet_diagnostic.IDE0033.severity = error
 
 # IDE0035: Remove unreachable code.
 dotnet_diagnostic.IDE0035.severity = error
+
+# IDE0036: Order modifiers
+dotnet_diagnostic.IDE0036.severity = silent
 
 # IDE0044: Add readonly modifier
 dotnet_diagnostic.IDE0044.severity = error

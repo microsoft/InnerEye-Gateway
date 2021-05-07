@@ -148,9 +148,7 @@
                 throw new ArgumentNullException(nameof(value));
             }
 
-            var transaction = queueTransaction as SqliteMessageQueueTransaction;
-
-            if (transaction == null)
+            if (!(queueTransaction is SqliteMessageQueueTransaction transaction))
             {
                 throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }
@@ -193,9 +191,7 @@
         /// <exception cref="MessageQueueReadException">If the queue deos not have any items on the queue.</exception>
         public T DequeueNextMessage<T>(IQueueTransaction queueTransaction)
         {
-            var transaction = queueTransaction as SqliteMessageQueueTransaction;
-
-            if (transaction == null)
+            if (!(queueTransaction is SqliteMessageQueueTransaction transaction))
             {
                 throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }

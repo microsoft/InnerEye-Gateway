@@ -99,18 +99,18 @@
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID));
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyID));
 
-                    Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 3).StartsWith("InnerEye Model Created:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 4).StartsWith("InnerEye Version:"));
+                    Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 3).StartsWith("InnerEye Model Created:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 4).StartsWith("InnerEye Version:", StringComparison.Ordinal));
 
                     Assert.AreEqual("1.2.840.10008.5.1.4.1.1.481.3", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SOPClassUID));
-                    Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
-                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
+                    Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month:D2}{DateTime.UtcNow.Day:D2}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
+                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2", StringComparison.Ordinal));
                     Assert.AreEqual("511091532", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesNumber, string.Empty));
                     Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesDescription, string.Empty));
-                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
+                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2", StringComparison.Ordinal));
                     Assert.AreEqual("ANONYM", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.OperatorsName, string.Empty));
 
                     VerifyDicomFile(file.FullName);
@@ -291,9 +291,9 @@
             var output = standardError
                 .Replace("Error - Bad Sequence number of Items 0 (1-n Required by Module definition) Element=<ContourSequence> Module=<ROIContour>", string.Empty)
                 .Replace("Error - Bad attribute Value Multiplicity Type 3 Optional Element=<ContourSequence> Module=<ROIContour>", string.Empty)
-                .ToLower();
+                .ToUpperInvariant();
 
-            Assert.IsFalse(output.Contains("error"));
+            Assert.IsFalse(output.Contains("ERROR"));
         }
 
         private static void AssertDicomFileIsAnonymised(DicomFile dicomFile)
@@ -301,7 +301,7 @@
             // Check the software version gets added
             var softwareVersion = dicomFile.Dataset.GetString(DicomTag.SoftwareVersions);
 
-            Assert.IsTrue(softwareVersion.StartsWith("Microsoft InnerEye Gateway:"));
+            Assert.IsTrue(softwareVersion.StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
 
             var acceptedTags = new List<DicomTag>()
             {
