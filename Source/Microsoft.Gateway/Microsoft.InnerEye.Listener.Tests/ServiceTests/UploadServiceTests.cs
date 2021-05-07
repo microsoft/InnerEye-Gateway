@@ -32,12 +32,12 @@
                     {
                         new ModelConstraintsConfig(
                             "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), -1, -1) },
-                            new TagReplacement[0]),
+                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                            Array.Empty<TagReplacement>()),
                         new ModelConstraintsConfig(
                             "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), -1, -1) },
-                            new TagReplacement[0]),
+                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                            Array.Empty<TagReplacement>()),
                     }),
                     testAETConfigModel.AETConfig.Destination,
                     false));
@@ -166,8 +166,8 @@
                     {
                         new ModelConstraintsConfig(
                             "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), new GroupConstraint(new DicomConstraint[0], LogicalOperator.And), -1, -1) },
-                            new TagReplacement[0]),
+                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                            Array.Empty<TagReplacement>()),
                     }),
                     testAETConfigModel.AETConfig.Destination,
                     true));

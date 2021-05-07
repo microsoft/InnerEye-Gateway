@@ -7,13 +7,10 @@
     using System.Linq;
     using System.Net.Sockets;
     using System.Threading.Tasks;
-
     using Dicom.Network;
-    using DicomClient = Dicom.Network.Client.DicomClient;
-
     using Interfaces;
-
     using Models;
+    using DicomClient = Dicom.Network.Client.DicomClient;
 
     /// <summary>
     /// A wrapper for sending data over Dicom.
@@ -104,11 +101,6 @@
                 peerApplicationEntityTitle,
                 peerApplicationEntityPort,
                 peerApplicationEntityIPAddress);
-
-            if (dicomFiles == null)
-            {
-                throw new ArgumentNullException(nameof(dicomFiles));
-            }
 
             var result = new List<Tuple<Dicom.DicomFile, DicomOperationResult>>();
 

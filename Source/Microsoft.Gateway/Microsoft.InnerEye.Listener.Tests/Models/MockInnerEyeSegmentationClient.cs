@@ -45,13 +45,13 @@
             return DelayAndThrowExceptionIfNotNull(PingException);
         }
 
-        public async Task<ModelResult> SegmentationResultAsync(string modelId, string segmentationId, IEnumerable<DicomFile> referenceDicomFiles, IEnumerable<TagReplacement> userSettingsForResultRTFile)
+        public async Task<ModelResult> SegmentationResultAsync(string modelId, string segmentationId, IEnumerable<DicomFile> referenceDicomFiles, IEnumerable<TagReplacement> userReplacements)
         {
             await DelayAndThrowExceptionIfNotNull(SegmentationResultException);
 
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userSettingsForResultRTFile);
+                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userReplacements);
             }
             else if (SegmentationProgressResult != null)
             {
@@ -74,7 +74,7 @@
                     dicomFile,
                     referenceDicomFiles,
                     TopLevelReplacements,
-                    userSettingsForResultRTFile,
+                    userReplacements,
                     SegmentationAnonymisationProtocolId,
                     SegmentationAnonymisationProtocol);
                 return new ModelResult(100, string.Empty, anonymized);
@@ -97,15 +97,15 @@
                     anonymisationProtocolId,
                     anonymisationProtocol);
 
-        public async Task<(string segmentationId, IEnumerable<DicomFile> postedImages)> StartSegmentationAsync(string modelId, IEnumerable<ChannelData> dicomFiles)
+        public async Task<(string segmentationId, IEnumerable<DicomFile> postedImages)> StartSegmentationAsync(string modelId, IEnumerable<ChannelData> channelIdsAndDicomFiles)
         {
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, dicomFiles);
+                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, channelIdsAndDicomFiles);
             }
             else
             {
-                return (Guid.NewGuid().ToString(), dicomFiles.SelectMany(x => x.DicomFiles).ToList());
+                return (Guid.NewGuid().ToString(), channelIdsAndDicomFiles.SelectMany(x => x.DicomFiles).ToList());
             }
         }
 

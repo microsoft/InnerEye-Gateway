@@ -53,7 +53,7 @@
         /// <summary>
         /// If this instance is disposed.
         /// </summary>
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// The current SQLite connection for this transaction.
@@ -174,6 +174,7 @@
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

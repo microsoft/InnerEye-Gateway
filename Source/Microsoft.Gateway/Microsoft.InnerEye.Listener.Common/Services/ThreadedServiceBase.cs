@@ -50,12 +50,12 @@
         /// <summary>
         /// If this instance is disposed.
         /// </summary>
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         /// <summary>
         /// If the main execution thread is running.
         /// </summary>
-        private bool _isRunning = false;
+        private bool _isRunning;
 
         /// <summary>
         /// The software version string for appending to Dicom files the Gateway verison that modified/ saved the file.
@@ -472,7 +472,7 @@
                          e);
             }
 
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         /// <summary>

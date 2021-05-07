@@ -83,7 +83,7 @@
                   associationDateTime: associationDateTime,
                   dequeueCount: dequeueCount)
         {
-            Paths = paths ?? new string[0];
+            Paths = paths ?? Array.Empty<string>();
         }
 
         /// <summary>

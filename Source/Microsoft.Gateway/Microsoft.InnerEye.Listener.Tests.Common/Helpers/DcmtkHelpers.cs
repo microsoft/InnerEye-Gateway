@@ -24,7 +24,7 @@
         BEExplicitRTCT,
     }
 
-    public class DcmtkHelpers
+    public static class DcmtkHelpers
     {
         private static string StoreSCUPath { get; } = "Assets\\storescu.exe";
 

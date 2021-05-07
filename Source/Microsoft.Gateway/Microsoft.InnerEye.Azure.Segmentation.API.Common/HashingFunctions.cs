@@ -22,7 +22,7 @@
                 var stringBuilder = new StringBuilder();
 
                 // This is to to create hashes that are valid UIs, w/o leading zeros. Potential future improvements - different hashing algorithms depending on VR
-                stringBuilder.Append("1");
+                stringBuilder.Append('1');
 
                 foreach (var hashedByte in hashData)
                 {

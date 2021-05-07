@@ -28,7 +28,7 @@
         /// <summary>
         /// If this instance is disposed.
         /// </summary>
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         /// <summary>
         /// Constructor. This class is disposable.
@@ -89,7 +89,7 @@
                 throw _dicomServer.Exception;
             }
 
-            return _dicomServer?.IsListening ?? false;
+            return _dicomServer.IsListening;
         }
 
         /// <summary>

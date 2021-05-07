@@ -3,12 +3,10 @@
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-
-    using Newtonsoft.Json;
-
+    using InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Sqlite;
     using Microsoft.InnerEye.Gateway.Sqlite.Extensions;
-    using InnerEye.Gateway.MessageQueueing.Exceptions;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Message queue service using SQLite as the backend database.
@@ -105,9 +103,9 @@
         /// <exception cref="SqliteException">If we fail to open a connection to the database.</exception>
         public SqliteMessageQueue(string tableName, uint transactionLeaseMs = 60 * 1000)
         {
-            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException(nameof(tableName));
+            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException("tableName should be non-empty", nameof(tableName));
 
-            _transactionLeaseMs = transactionLeaseMs >= 1000 ? transactionLeaseMs : throw new ArgumentException(nameof(transactionLeaseMs));
+            _transactionLeaseMs = transactionLeaseMs >= 1000 ? transactionLeaseMs : throw new ArgumentException("transactionLeaseMs should be at least 1000", nameof(transactionLeaseMs));
             _transactionRenewLeaseMs = transactionLeaseMs / 2; // Attempt to renew leases using timeout divided by 2
 
             SqliteManager = new SqliteManager(tableName, DatabaseConnectionStringFormat, QueueTableDataColumnNames);
@@ -154,7 +152,7 @@
 
             if (transaction == null)
             {
-                throw new ArgumentException(nameof(queueTransaction));
+                throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }
 
             // Create a unique row ID for this item (this will also be used for the commit and abort commands)
@@ -199,7 +197,7 @@
 
             if (transaction == null)
             {
-                throw new ArgumentException(nameof(queueTransaction));
+                throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }
 
             var result = default(T);
@@ -254,6 +252,7 @@
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

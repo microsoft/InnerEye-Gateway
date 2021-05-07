@@ -80,8 +80,8 @@
                   associationDateTime,
                   dequeueCount)
         {
-            AssociationFolderPath = !string.IsNullOrWhiteSpace(associationFolderPath) ? associationFolderPath : throw new ArgumentException(nameof(associationFolderPath));
-            RootDicomFolderPath = !string.IsNullOrWhiteSpace(rootDicomFolderPath) ? rootDicomFolderPath : throw new ArgumentException(nameof(rootDicomFolderPath));
+            AssociationFolderPath = !string.IsNullOrWhiteSpace(associationFolderPath) ? associationFolderPath : throw new ArgumentException("associationFolderPath should be non-empty", nameof(associationFolderPath));
+            RootDicomFolderPath = !string.IsNullOrWhiteSpace(rootDicomFolderPath) ? rootDicomFolderPath : throw new ArgumentException("rootDicomFolderPath should be non-empty", nameof(rootDicomFolderPath));
         }
 
         /// <summary>

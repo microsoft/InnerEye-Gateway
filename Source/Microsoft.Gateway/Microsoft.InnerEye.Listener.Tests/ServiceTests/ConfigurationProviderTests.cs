@@ -512,7 +512,7 @@
             var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
             Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
 
-            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_baseTestLogger, configurationDirectory);
+            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(BaseTestLogger, configurationDirectory);
             var actualGatewayReceiveConfig = gatewayReceiveConfigProvider.GatewayReceiveConfig();
 
             Assert.AreEqual(expectedGatewayReceiveConfig, actualGatewayReceiveConfig);
@@ -529,7 +529,7 @@
             var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
             Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
-            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_baseTestLogger, configurationDirectory);
+            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(BaseTestLogger, configurationDirectory);
             var actualGatewayProcessorConfig = gatewayProcessorConfigProvider.GatewayProcessorConfig();
 
             Assert.AreEqual(expectedGatewayProcessorConfig, actualGatewayProcessorConfig);
@@ -562,7 +562,7 @@
 
             Serialise(expectedAETConfigModels, folder, filename);
 
-            var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory, useFile);
+            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory, useFile);
             var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
 
             Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
@@ -607,7 +607,7 @@
             var gatewayReceiveConfig = RandomGatewayReceiveConfig(random);
             Serialise(gatewayReceiveConfig, aetConfigFolder, "test3.json");
 
-            var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory);
+            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
             var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
 
             Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
@@ -631,7 +631,7 @@
                 Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i));
             }
 
-            var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory);
+            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
             var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
 
             Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
@@ -669,7 +669,7 @@
                 Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i), true);
             }
 
-            var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory);
+            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
             var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
 
             Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
@@ -714,7 +714,7 @@
                 }
             }
 
-            var aetConfigProvider = new AETConfigProvider(_baseTestLogger, configurationDirectory);
+            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
             var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
 
             Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));

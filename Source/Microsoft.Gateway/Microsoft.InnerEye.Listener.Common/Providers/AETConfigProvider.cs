@@ -42,12 +42,12 @@
         {
             Load();
 
-            _t = _ts != null ? MergeModels(_ts) : _t;
+            Result = Ts != null ? MergeModels(Ts) : Result;
 
             // no need to keep two copies of all the config data.
-            _ts = null;
+            Ts = null;
 
-            return _t;
+            return Result;
         }
 
         /// <summary>

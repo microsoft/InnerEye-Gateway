@@ -44,12 +44,12 @@
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
-        protected readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+        protected Microsoft.Extensions.Logging.ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// Logger for common use.
         /// </summary>
-        protected readonly ILogger _baseTestLogger;
+        protected ILogger BaseTestLogger { get; }
 
         /// <summary>
         /// Gets or sets the test context.
@@ -119,15 +119,15 @@
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
-            _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            _baseTestLogger = _loggerFactory.CreateLogger("BaseTest");
+            LoggerFactory = Extensions.Logging.LoggerFactory.Create(builder => builder.AddConsole());
+            BaseTestLogger = LoggerFactory.CreateLogger("BaseTest");
 
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
             Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
 
-            _testAETConfigProvider = new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
-            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
-            _testGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            _testAETConfigProvider = new AETConfigProvider(LoggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
+            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(LoggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            _testGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(LoggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
         }
 
         [TestInitialize]
@@ -180,7 +180,7 @@
             TestContext.WriteLine($"Written Dicom file to path: {path}");
         }
 
-        protected DequeueServiceConfig GetTestDequeueServiceConfig(
+        protected static DequeueServiceConfig GetTestDequeueServiceConfig(
             uint maximumQueueMessageAgeSeconds = 100,
             uint deadLetterMoveFrequencySeconds = 1) =>
                 new DequeueServiceConfig(maximumQueueMessageAgeSeconds, deadLetterMoveFrequencySeconds);
@@ -214,7 +214,7 @@
                 }
                 catch (Exception e)
                 {
-                    _baseTestLogger.LogError(e, $"Failed to convert file to HTML. File {markdownFile}");
+                    BaseTestLogger.LogError(e, $"Failed to convert file to HTML. File {markdownFile}");
                 }
             }
         }
@@ -409,7 +409,7 @@
         /// </summary>
         /// <param name="dicomDataReceiver">Dicom data receiver.</param>
         /// <param name="port">Port.</param>
-        protected void StartDicomDataReceiver(
+        protected static void StartDicomDataReceiver(
             ListenerDataReceiver dicomDataReceiver,
             int port)
         {
@@ -480,7 +480,7 @@
                 new ConfigurationService(
                     innerEyeSegmentationClient != null ? () => innerEyeSegmentationClient : TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
                     getConfigurationServiceConfig ?? TestGatewayProcessorConfigProvider.ConfigurationServiceConfig,
-                    _loggerFactory.CreateLogger("ConfigurationService"),
+                    LoggerFactory.CreateLogger("ConfigurationService"),
                     services);
 
         /// <summary>
@@ -491,7 +491,7 @@
                 new DeleteService(
                     TestDeleteQueuePath,
                     TestGatewayProcessorConfigProvider.DequeueServiceConfig,
-                    _loggerFactory.CreateLogger("DeleteService"));
+                    LoggerFactory.CreateLogger("DeleteService"));
 
         /// <summary>
         /// Creates a new instance of the <see cref="DownloadService"/> class.
@@ -511,7 +511,7 @@
                     TestDeleteQueuePath,
                     () => new DownloadServiceConfig(),
                     dequeueServiceConfig != null ? (Func<DequeueServiceConfig>)(() => dequeueServiceConfig) : TestGatewayProcessorConfigProvider.DequeueServiceConfig,
-                    _loggerFactory.CreateLogger("DownloadService"),
+                    LoggerFactory.CreateLogger("DownloadService"),
                     instances);
 
         /// <summary>
@@ -527,7 +527,7 @@
                     TestPushQueuePath,
                     TestDeleteQueuePath,
                     TestGatewayProcessorConfigProvider.DequeueServiceConfig,
-                    _loggerFactory.CreateLogger("PushService"),
+                    LoggerFactory.CreateLogger("PushService"),
                     1);
 
         /// <summary>
@@ -540,7 +540,7 @@
                 new ReceiveService(
                     getReceiveServiceConfig,
                     TestUploadQueuePath,
-                    _loggerFactory.CreateLogger("ReceiveService"));
+                    LoggerFactory.CreateLogger("ReceiveService"));
 
         protected ReceiveService CreateReceiveService(
             int port,
@@ -565,7 +565,7 @@
                     TestDownloadQueuePath,
                     TestDeleteQueuePath,
                     TestGatewayProcessorConfigProvider.DequeueServiceConfig,
-                    _loggerFactory.CreateLogger("UploadService"),
+                    LoggerFactory.CreateLogger("UploadService"),
                     instances);
 
         protected async Task<(string SegmentationId, string ModelId, IEnumerable<byte[]> Data)> StartRealSegmentationAsync(string filesPath)

@@ -27,12 +27,12 @@
         /// <summary>
         /// Cached copy of data as last loaded from JSON file.
         /// </summary>
-        protected T _t;
+        protected T Result { get; set; }
 
         /// <summary>
         /// Cached copy of data as last loaded from folder of JSON files.
         /// </summary>
-        protected IEnumerable<T> _ts;
+        protected IEnumerable<T> Ts { get; set; }
 
         /// <summary>
         /// Initialize a new instance of the <see cref="BaseConfigProvider"/> class.
@@ -54,13 +54,13 @@
         {
             if (File.Exists(_settingsFileOrFolderName))
             {
-                _ts = null;
+                Ts = null;
 
-                (_t, _) = LoadFile(_settingsFileOrFolderName);
+                (Result, _) = LoadFile(_settingsFileOrFolderName);
             }
             else if (Directory.Exists(_settingsFileOrFolderName))
             {
-                _t = default(T);
+                Result = default(T);
                 var ts = new List<T>();
 
                 foreach (var file in Directory.EnumerateFiles(_settingsFileOrFolderName, "*.json"))
@@ -72,7 +72,7 @@
                     }
                 }
 
-                _ts = ts.ToArray();
+                Ts = ts.ToArray();
             }
             else
             {

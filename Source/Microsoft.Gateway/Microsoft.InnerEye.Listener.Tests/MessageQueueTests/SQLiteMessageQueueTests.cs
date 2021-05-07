@@ -618,7 +618,7 @@
             }
         }
 
-        private PushQueueItem CreateRandomQueueItem(int index = 0)
+        private static PushQueueItem CreateRandomQueueItem(int index = 0)
         {
             return new PushQueueItem(
                 new GatewayApplicationEntity(Guid.NewGuid().ToString(), index, Guid.NewGuid().ToString()),
@@ -632,7 +632,7 @@
             };
         }
 
-        private void AssertCompare(PushQueueItem expected, PushQueueItem actual)
+        private static void AssertCompare(PushQueueItem expected, PushQueueItem actual)
         {
             Assert.AreEqual(expected.AssociationGuid, actual.AssociationGuid);
             Assert.AreEqual(expected.CalledApplicationEntityTitle, actual.CalledApplicationEntityTitle);
@@ -649,7 +649,7 @@
             }
         }
 
-        private void Enqueue(PushQueueItem queueItem, string messageQueuePath)
+        private static void Enqueue(PushQueueItem queueItem, string messageQueuePath)
         {
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -657,7 +657,7 @@
             }
         }
 
-        private void Enqueue(PushQueueItem queueItem, SqliteMessageQueue messageQueue)
+        private static void Enqueue(PushQueueItem queueItem, SqliteMessageQueue messageQueue)
         {
             using (var queueTransaction = messageQueue.CreateQueueTransaction())
             {
@@ -667,7 +667,7 @@
             }
         }
 
-        private PushQueueItem Dequeue(string messageQueuePath)
+        private static PushQueueItem Dequeue(string messageQueuePath)
         {
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {

@@ -35,7 +35,7 @@
         public GatewayReceiveConfig GatewayReceiveConfig()
         {
             Load();
-            return _t;
+            return Result;
         }
 
         /// <summary>

@@ -37,7 +37,7 @@
         public GatewayProcessorConfig GatewayProcessorConfig()
         {
             Load();
-            return _t;
+            return Result;
         }
 
         /// <summary>

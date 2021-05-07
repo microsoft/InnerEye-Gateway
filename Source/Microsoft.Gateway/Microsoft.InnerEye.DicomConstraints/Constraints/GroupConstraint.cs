@@ -43,7 +43,7 @@
 
         internal GroupConstraint()
         {
-            Constraints = new DicomConstraint[0];
+            Constraints = Array.Empty<DicomConstraint>();
             Op = LogicalOperator.And;
         }
 

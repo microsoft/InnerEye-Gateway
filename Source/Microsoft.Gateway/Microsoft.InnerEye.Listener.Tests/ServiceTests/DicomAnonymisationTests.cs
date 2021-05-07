@@ -272,7 +272,7 @@
             }
         }
 
-        private void VerifyDicomFile(string path)
+        private static void VerifyDicomFile(string path)
         {
             var verifierPath = Path.Combine("Assets", "dicom3tools", "dciodvfy.exe");
             Assert.IsNotNull(verifierPath, "DICOM verifier executable (dciodvfy.exe) not found on system PATH");
@@ -296,7 +296,7 @@
             Assert.IsFalse(output.Contains("error"));
         }
 
-        private void AssertDicomFileIsAnonymised(DicomFile dicomFile)
+        private static void AssertDicomFileIsAnonymised(DicomFile dicomFile)
         {
             // Check the software version gets added
             var softwareVersion = dicomFile.Dataset.GetString(DicomTag.SoftwareVersions);

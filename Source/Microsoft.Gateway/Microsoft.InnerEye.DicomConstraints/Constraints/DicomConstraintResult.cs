@@ -27,7 +27,7 @@
         public DicomConstraintResult(bool result, DicomConstraint constraint, params DicomConstraintResult[] childResults)
             : this(result, constraint)
         {
-            ChildResults = childResults ?? throw new ArgumentNullException(nameof(childResults));
+            ChildResults = childResults;
         }
 
         /// <summary>

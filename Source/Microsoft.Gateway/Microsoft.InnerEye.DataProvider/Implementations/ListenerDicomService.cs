@@ -105,7 +105,7 @@ namespace Microsoft.InnerEye.Listener.DataProvider.Implementations
                             "Association requested unsupported SOP class: {0}",
                             presentationContext.AbstractSyntax)));
 
-                    presentationContext.AcceptTransferSyntaxes(new DicomTransferSyntax[0], true);
+                    presentationContext.AcceptTransferSyntaxes(Array.Empty<DicomTransferSyntax>(), true);
                 }
             }
 
@@ -256,7 +256,7 @@ namespace Microsoft.InnerEye.Listener.DataProvider.Implementations
             {
                 Trace.TraceError("No FileStoreParameters object provided at DicomServer initialization. Incoming DICOM requests will not be handled correctly.");
             }
-            else if (_parameters?.DicomSaver == null)
+            else if (_parameters.DicomSaver == null)
             {
                 Trace.TraceWarning("File Store service is created, but no image saver class provided. Incoming images will not be saved.");
             }

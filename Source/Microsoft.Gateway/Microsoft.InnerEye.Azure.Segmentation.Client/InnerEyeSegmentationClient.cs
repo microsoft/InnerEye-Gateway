@@ -232,7 +232,7 @@
            string modelId,
            string segmentationId)
         {
-            var response = await _client.GetAsync($@"/v1/model/results/{segmentationId}");
+            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}"));
 
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
@@ -282,7 +282,7 @@
 
             if (channelIdsAndDicomFiles.Any(x => !x.DicomFiles.Any()))
             {
-                throw new ArgumentException(nameof(channelIdsAndDicomFiles), "No dicomFiles in some channelId");
+                throw new ArgumentException("No dicomFiles in some channelId", nameof(channelIdsAndDicomFiles));
             }
 
             // Anonymise data
@@ -294,7 +294,7 @@
                 compressionLevel: DicomCompressionHelpers.DefaultCompressionLevel);
 
             // POST
-            var response = await _client.PostAsync($@"/v1/model/start/{modelId}", new ByteArrayContent(dataZipped));
+            var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}"), new ByteArrayContent(dataZipped));
 
             if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
             {
@@ -315,7 +315,7 @@
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            var response = await _client.GetAsync("v1/ping");
+            var response = await _client.GetAsync(new Uri("v1/ping"));
 
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {
