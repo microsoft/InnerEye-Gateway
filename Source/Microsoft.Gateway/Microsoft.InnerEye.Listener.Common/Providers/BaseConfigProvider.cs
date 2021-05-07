@@ -15,6 +15,48 @@
     public class BaseConfigProvider<T> : IDisposable
     {
         /// <summary>
+        /// Class to hold results from trying to open and parse a possible JSON file.
+        /// </summary>
+        private class LoadJsonResult
+        {
+            /// <summary>
+            /// True if the file has loaded, false otherwise.
+            /// </summary>
+            /// <remarks>
+            /// The FileSystemWatcher can report file changed events whilst another process is saving
+            /// a file. In this case there may be a System.IO.IOException (“File used by another process”).
+            /// </remarks>
+            public bool Loaded { get; }
+
+            /// <summary>
+            /// True if the file has been parsed, false otherwise.
+            /// </summary>
+            /// <remarks>
+            /// In the case of loading from a folder, all files are loaded and parsed. There may be other files
+            /// there and they are to be ignored.
+            /// </remarks>
+            public bool Parsed { get; }
+
+            /// <summary>
+            /// An instance of type T if the file has been loaded and parsed correctly. Default(T) otherwise.
+            /// </summary>
+            public T Result { get; }
+
+            /// <summary>
+            /// Initialize a new instance of the <see cref="LoadJsonResult"/> class.
+            /// </summary>
+            /// <param name="loaded">True if file loaded.</param>
+            /// <param name="parsed">True if file parsed.</param>
+            /// <param name="result">Instance of type T if loaded and parsed.</param>
+            public LoadJsonResult(bool loaded, bool parsed, T result)
+            {
+                Loaded = loaded;
+                Parsed = parsed;
+                Result = result;
+            }
+        }
+
+        /// <summary>
         /// Logger for errors loading or parsing JSON.
         /// </summary>
         private readonly ILogger _logger;
@@ -115,14 +157,14 @@
         {
             if (File.Exists(_settingsFileOrFolderName))
             {
-                var (t, loaded, parsed) = LoadFile(_settingsFileOrFolderName);
+                var loadJsonResult = LoadFile(_settingsFileOrFolderName);
 
-                if (!loaded || !parsed)
+                if (!loadJsonResult.Loaded || !loadJsonResult.Parsed)
                 {
                     return false;
                 }
 
-                Config = t;
+                Config = loadJsonResult.Result;
 
                 return true;
             }
@@ -132,21 +174,21 @@
 
                 foreach (var file in Directory.EnumerateFiles(_settingsFileOrFolderName, "*.json"))
                 {
-                    var (t, loaded, parsed) = LoadFile(file);
-                    if (!loaded)
+                    var loadJsonResult = LoadFile(file);
+                    if (!loadJsonResult.Loaded)
                     {
                         // File still in use, FileWatcher has reported file changed but
                         // the other process has not finished yet.
                         return false;
                     }
 
-                    if (parsed)
+                    if (loadJsonResult.Parsed)
                     {
-                        ts.Add(t);
+                        ts.Add(loadJsonResult.Result);
                     }
                 }
 
-                Config = _flatMap.Invoke(ts);
+                Config = _flatMap(ts);
 
                 return true;
             }
@@ -172,17 +214,17 @@
                 throw new NotImplementedException(string.Format("Can only update single settings files: {0}", _settingsFileOrFolderName));
             }
 
-            var (t, loaded, parsed) = LoadFile(_settingsFileOrFolderName);
-            if (!loaded || !parsed)
+            var loadJsonResult = LoadFile(_settingsFileOrFolderName);
+            if (!loadJsonResult.Loaded || !loadJsonResult.Parsed)
             {
                 return (default(T), false);
             }
 
-            var newt = updater.Invoke(t);
+            var newt = updater(loadJsonResult.Result);
 
             equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
 
-            if (equalityComparer.Equals(newt, t))
+            if (equalityComparer.Equals(newt, loadJsonResult.Result))
             {
                 return (default(T), false);
             }
@@ -196,14 +238,14 @@
         /// Load T from a JSON file.
         /// </summary>
         /// <param name="path">Path to file.</param>
-        /// <returns>Triple of T, true if file loaded correctly, false otherwise, true if file parsed correctly, false otherwise.</returns>
-        private (T, bool, bool) LoadFile(string path)
+        /// <returns>New <see cref="LoadJsonResult"/>.</returns>
+        private LoadJsonResult LoadFile(string path)
         {
             try
             {
                 var jsonText = File.ReadAllText(path);
 
-                return (JsonConvert.DeserializeObject<T>(jsonText), true, true);
+                return new LoadJsonResult(true, true, JsonConvert.DeserializeObject<T>(jsonText));
             }
             catch (JsonSerializationException e)
             {
@@ -211,7 +253,7 @@
                     string.Format("Unable to parse settings file {0}", path));
                 logEntry.Log(_logger, LogLevel.Error, e);
 
-                return (default(T), true, false);
+                return new LoadJsonResult(true, false, default(T));
             }
             catch (IOException e)
             {
@@ -219,7 +261,7 @@
                     string.Format("Unable to load settings file {0}", path));
                 logEntry.Log(_logger, LogLevel.Error, e);
 
-                return (default(T), false, false);
+                return new LoadJsonResult(false, false, default(T));
             }
         }
 
