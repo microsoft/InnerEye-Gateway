@@ -79,8 +79,7 @@
         [TestMethod]
         public void TestBadProductKeyAfterStart()
         {
-            var client = GetMockInnerEyeSegmentationClient();
-
+            using (var client = GetMockInnerEyeSegmentationClient())
             // Create the services with multiple instances.
             using (var downloadService = CreateDownloadService(instances: 3))
             using (var uploadService = CreateUploadService(instances: 3))

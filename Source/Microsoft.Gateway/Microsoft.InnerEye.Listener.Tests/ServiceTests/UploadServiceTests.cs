@@ -21,29 +21,27 @@
         [TestMethod]
         public void StrangeConfigUploadServiceTest()
         {
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var testAETConfigModel = GetTestAETConfigModel();
+
             var newTestAETConfigModel = testAETConfigModel.With(
-                aetConfig: new ClientAETConfig(
-                new AETConfig(
-                    AETConfigType.Model,
-                    new[]
-                    {
-                        new ModelConstraintsConfig(
-                            "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
-                            Array.Empty<TagReplacement>()),
-                        new ModelConstraintsConfig(
-                            "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
-                            Array.Empty<TagReplacement>()),
-                    }),
-                    testAETConfigModel.AETConfig.Destination,
-                    false));
+                aetConfig: testAETConfigModel.AETConfig.With(
+                    config: new AETConfig(
+                        AETConfigType.Model,
+                        new[]
+                        {
+                            new ModelConstraintsConfig(
+                                "b033d049-0233-4068-bc0f-c64cec48e8fa",
+                                new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                                Array.Empty<TagReplacement>()),
+                            new ModelConstraintsConfig(
+                                "b033d049-0233-4068-bc0f-c64cec48e8fa",
+                                new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                                Array.Empty<TagReplacement>()),
+                        })));
 
             var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
             using (var uploadQueue = uploadService.UploadQueue)
@@ -94,8 +92,7 @@
                 file.CopyTo(Path.Combine(tempFolder.FullName, file.Name));
             }
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var downloadService = CreateDownloadService(segmentationClient))
             using (var uploadService = CreateUploadService(segmentationClient))
@@ -155,22 +152,20 @@
                 file.CopyTo(Path.Combine(tempFolder.FullName, file.Name));
             }
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var testAETConfigModel = GetTestAETConfigModel();
+
             var newTestAETConfigModel = testAETConfigModel.With(
-                aetConfig: new ClientAETConfig(
-                new AETConfig(
-                    AETConfigType.Model,
-                    new[]
-                    {
-                        new ModelConstraintsConfig(
-                            "b033d049-0233-4068-bc0f-c64cec48e8fa",
-                            new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
-                            Array.Empty<TagReplacement>()),
-                    }),
-                    testAETConfigModel.AETConfig.Destination,
-                    true));
+                aetConfig: testAETConfigModel.AETConfig.With(
+                    config: new AETConfig(
+                        AETConfigType.Model,
+                        new[]
+                        {
+                            new ModelConstraintsConfig(
+                                "b033d049-0233-4068-bc0f-c64cec48e8fa",
+                                new [] { new ModelChannelConstraints("ct", new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), new GroupConstraint(Array.Empty<DicomConstraint>(), LogicalOperator.And), -1, -1) },
+                                Array.Empty<TagReplacement>()),
+                        }),
+                    shouldReturnImage: true));
 
             var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
@@ -189,6 +184,7 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, newTestAETConfigModel.AETConfig.Destination.Port);
 
+                using (var segmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var deleteService = CreateDeleteService())
                 using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
                 using (var uploadQueue = uploadService.UploadQueue)

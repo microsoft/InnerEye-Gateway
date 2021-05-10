@@ -109,26 +109,27 @@
 
             testContext?.WriteLine($"Sending file via DCMTK StoreSCU from: {path}");
 
-            var process = new Process();
-
-            process.StartInfo.FileName = fileName;
-            process.StartInfo.Arguments = $"{logLevel}{abortS}{sd} -aec {calledAETitle} -aet {applicationEntityTitle} -xf \"{configPath}\" {scuProfileString} {hostIP} {port} \"{path}\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-
-            testContext?.WriteLine($"DCMTK StoreSCU start arguments: {process.StartInfo.Arguments}");
-
-            process.Start();
-
-            if (waitForExit)
+            using (var process = new Process())
             {
-                var stdOut = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
+                process.StartInfo.FileName = fileName;
+                process.StartInfo.Arguments = $"{logLevel}{abortS}{sd} -aec {calledAETitle} -aet {applicationEntityTitle} -xf \"{configPath}\" {scuProfileString} {hostIP} {port} \"{path}\"";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
 
-                return stdOut;
+                testContext?.WriteLine($"DCMTK StoreSCU start arguments: {process.StartInfo.Arguments}");
+
+                process.Start();
+
+                if (waitForExit)
+                {
+                    var stdOut = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    return stdOut;
+                }
+
+                return string.Empty;
             }
-
-            return string.Empty;
         }
     }
 }

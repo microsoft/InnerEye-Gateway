@@ -24,6 +24,7 @@
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.Processor.Services;
     using Microsoft.InnerEye.Listener.Receiver.Services;
+    using Microsoft.InnerEye.Listener.Tests.DataProviderTests;
     using Microsoft.InnerEye.Listener.Tests.Models;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,7 +35,7 @@
     /// The base test class.
     /// </summary>
     [TestClass]
-    public class BaseTestClass
+    public class BaseTestClass : IDisposable
     {
         /// <summary>
         /// List of chars to use for random string generation.
@@ -50,6 +51,13 @@
         /// Logger for common use.
         /// </summary>
         protected ILogger BaseTestLogger { get; }
+
+        /// <summary>
+        /// Debug output stream for fo-dicom.
+        /// </summary>
+        private readonly DebugOutStream debugOutStream;
+
+        private bool disposedValue;
 
         /// <summary>
         /// Gets or sets the test context.
@@ -123,7 +131,8 @@
             BaseTestLogger = LoggerFactory.CreateLogger("BaseTest");
 
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
-            Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
+            debugOutStream = new DebugOutStream();
+            Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DebugTextWriter(debugOutStream)));
 
             _testAETConfigProvider = new AETConfigProvider(LoggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
             TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(LoggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
@@ -825,5 +834,27 @@
         /// </summary>
         public static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
             new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                debugOutStream.Dispose();
+            }
+
+            disposedValue = true;
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

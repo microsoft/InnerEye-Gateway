@@ -293,23 +293,26 @@
                 channels: anonymisedDicomData,
                 compressionLevel: DicomCompressionHelpers.DefaultCompressionLevel);
 
-            // POST
-            var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), new ByteArrayContent(dataZipped));
-
-            if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
+            using (var content = new ByteArrayContent(dataZipped))
             {
-                throw new ArgumentException(response.ReasonPhrase);
-            }
+                // POST
+                var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), content);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception(response.ReasonPhrase);
-            }
+                if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
+                {
+                    throw new ArgumentException(response.ReasonPhrase);
+                }
 
-            var segmentationId = await response.Content.ReadAsStringAsync();
-            Trace.TraceInformation($"Segmentation uploaded with id={segmentationId}");
-            var flatAnonymizedDicomFiles = anonymisedDicomData.SelectMany(x => x.DicomFiles);
-            return (segmentationId, flatAnonymizedDicomFiles);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception(response.ReasonPhrase);
+                }
+
+                var segmentationId = await response.Content.ReadAsStringAsync();
+                Trace.TraceInformation($"Segmentation uploaded with id={segmentationId}");
+                var flatAnonymizedDicomFiles = anonymisedDicomData.SelectMany(x => x.DicomFiles);
+                return (segmentationId, flatAnonymizedDicomFiles);
+            }
         }
 
         /// <inheritdoc />

@@ -103,11 +103,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
-
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
                                                 .Select(x => DicomFile.Open(x.FullName))
@@ -115,10 +110,14 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
+
                 downloadService.Start();
 
                 Assert.IsTrue(downloadService.IsExecutionThreadRunning);
@@ -154,11 +153,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationResultException = new Exception();
-
             var resultsDirectory = CreateTemporaryDirectory();
 
             // Copy files to result directory
@@ -172,10 +166,14 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var downloadService = CreateDownloadService(mockSegmentationClient, GetTestDequeueServiceConfig(maximumQueueMessageAgeSeconds: 1)))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationResultException = new Exception();
+
                 deleteService.Start();
                 downloadService.Start();
 
@@ -210,11 +208,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
-
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
                                                 .Select(x => DicomFile.Open(x.FullName))
@@ -222,9 +215,13 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 142, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
+
                 TransactionalEnqueue(
                        downloadQueue,
                        new DownloadQueueItem(
@@ -307,11 +304,6 @@
             var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\");
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 144, "127.0.0.1");
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Fake a no response when getting progress
-            mockSegmentationClient.SegmentationResultException = new HttpRequestException();
-
             // Create a Data receiver to receive the RT struct result
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(CreateTemporaryDirectory().FullName)))
             {
@@ -326,11 +318,15 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
+                using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService(mockSegmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
                 {
+                    // Fake a no response when getting progress
+                    mockSegmentationClient.SegmentationResultException = new HttpRequestException();
+
                     pushService.Start();
                     downloadService.Start();
 

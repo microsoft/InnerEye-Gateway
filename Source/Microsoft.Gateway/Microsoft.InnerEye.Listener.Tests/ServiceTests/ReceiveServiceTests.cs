@@ -22,9 +22,6 @@
         {
             var callingAet = "ProstateRTMl";
 
-            var client = GetMockInnerEyeSegmentationClient();
-
-
             var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
             var configurationServiceConfig1 = new ConfigurationServiceConfig(
@@ -47,6 +44,7 @@
             mockReceiverConfigurationProvider2.ConfigurationQueue.Enqueue(testReceiveServiceConfig1);
             mockReceiverConfigurationProvider2.ConfigurationQueue.Enqueue(testReceiveServiceConfig2);
 
+            using (var client = GetMockInnerEyeSegmentationClient())
             using (var receiveService = CreateReceiveService(mockReceiverConfigurationProvider2.GetConfiguration))
             using (var uploadQueue = receiveService.UploadQueue)
             using (var configurationService = CreateConfigurationService(
@@ -116,7 +114,6 @@
             var callingAet = "ProstateRTMl";
 
             var mockReceiverConfigurationProvider = new MockConfigurationProvider<ReceiveServiceConfig>();
-            var client = GetMockInnerEyeSegmentationClient();
 
             var gatewayReceiveConfig = GetTestGatewayReceiveServiceConfig(140);
 

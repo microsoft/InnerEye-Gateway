@@ -30,8 +30,6 @@
                 file.CopyTo(Path.Combine(tempFolder.FullName, file.Name));
             }
 
-            var client = GetMockInnerEyeSegmentationClient();
-
             var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
 
             var configurationServiceConfig1 = new ConfigurationServiceConfig(
@@ -61,6 +59,7 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, testAETConfigModel.AETConfig.Destination.Port);
 
+                using (var client = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
                 using (var uploadService = CreateUploadService(client))
                 using (var uploadQueue = uploadService.UploadQueue)
@@ -132,9 +131,6 @@
         {
             var testAETConfigModel = GetTestAETConfigModel();
 
-            // Change this to real client to run a live pipeline
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var resultDirectory = CreateTemporaryDirectory();
 
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultDirectory.FullName)))
@@ -152,6 +148,7 @@
 
                 var receivePort = 141;
 
+                using (var segmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService(segmentationClient))
@@ -205,10 +202,9 @@
         {
             var receivePort = 141;
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var testAETConfigModel = GetTestAETConfigModel();
 
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService())
             using (var downloadService = CreateDownloadService(segmentationClient))
