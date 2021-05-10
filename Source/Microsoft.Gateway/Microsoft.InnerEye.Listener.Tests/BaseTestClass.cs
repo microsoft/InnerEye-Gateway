@@ -182,6 +182,8 @@
 
         protected void WriteDicomFileForBuildPackage(string fileName, DicomFile dicomFile)
         {
+            dicomFile = dicomFile ?? throw new ArgumentNullException(nameof(dicomFile));
+
             var path = GetBuildPackageResultPath(fileName, "AnonymisationProtocols");
 
             dicomFile.Save(path);
@@ -343,6 +345,8 @@
 
         protected static void TransactionalEnqueue<T>(IMessageQueue InnerEyeMessageQueue, T value)
         {
+            InnerEyeMessageQueue = InnerEyeMessageQueue ?? throw new ArgumentNullException(nameof(InnerEyeMessageQueue));
+
             using (var queueTransaction = InnerEyeMessageQueue.CreateQueueTransaction())
             {
                 try
@@ -361,6 +365,8 @@
 
         protected static T TransactionalDequeue<T>(IMessageQueue messageQueue, int timeoutMs = 2000)
         {
+            messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+
             var startTime = DateTime.UtcNow;
 
             while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
@@ -380,6 +386,8 @@
 
         protected static T TryDequeue<T>(IMessageQueue messageQueue, IQueueTransaction messageQueueTransaction, int timeoutMs = 2000)
         {
+            messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+
             var startTime = DateTime.UtcNow;
 
             while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
@@ -423,6 +431,8 @@
             ListenerDataReceiver dicomDataReceiver,
             int port)
         {
+            dicomDataReceiver = dicomDataReceiver ?? throw new ArgumentNullException(nameof(dicomDataReceiver));
+
             var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(2));
             Assert.IsTrue(started);
             Assert.IsTrue(dicomDataReceiver.IsListening);
@@ -649,6 +659,8 @@
 
         protected static void Enqueue<T>(IMessageQueue queue, T message, bool clearQueue)
         {
+            queue = queue ?? throw new ArgumentNullException(nameof(queue));
+
             if (clearQueue)
             {
                 queue.Clear();
@@ -684,7 +696,12 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random bool.</returns>
-        public static bool RandomBool(Random random) => random.Next(2) == 1;
+        public static bool RandomBool(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return random.Next(2) == 1;
+        }
 
         /// <summary>
         /// Generate a random enum.
@@ -694,8 +711,9 @@
         /// <returns>Random element of enum T.</returns>
         public static T RandomEnum<T>(Random random)
         {
-            var values = Enum.GetValues(typeof(T));
+            random = random ?? throw new ArgumentNullException(nameof(random));
 
+            var values = Enum.GetValues(typeof(T));
             return (T)values.GetValue(random.Next(values.Length));
         }
 
@@ -707,6 +725,8 @@
         /// <returns>Random string.</returns>
         public static string RandomString(Random random, int length = 6)
         {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
             var s = new StringBuilder(length);
 
             for (var i = 0; i < length; i++)
@@ -731,8 +751,12 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random unsigned short.</returns>
-        public static ushort RandomUShort(Random random) =>
-            (ushort)random.Next(0, 65535);
+        public static ushort RandomUShort(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return (ushort)random.Next(0, 65535);
+        }
 
         /// <summary>
         /// Generate random list of <see cref="T"/>.
@@ -745,6 +769,9 @@
         /// <returns>New list of ModelConstraintsConfig.</returns>
         public static T[] RandomArray<T>(Random random, int maxDepth, int count, Func<Random, int, T> createRandomT)
         {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+            createRandomT = createRandomT ?? throw new ArgumentNullException(nameof(createRandomT));
+
             var list = new T[count];
 
             for (var i = 0; i < count; i++)
@@ -763,8 +790,13 @@
         /// <param name="maxDepth">Limit nesting on group tags.</param>
         /// <param name="createRandomTs">List of functions taking Random, returning T.</param>
         /// <returns>New random T.</returns>
-        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs) =>
-            createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+            createRandomTs = createRandomTs ?? throw new ArgumentNullException(nameof(createRandomTs));
+
+            return createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+        }
 
         /// <summary>
         /// Acceptable Dicom PatientSex codes.s

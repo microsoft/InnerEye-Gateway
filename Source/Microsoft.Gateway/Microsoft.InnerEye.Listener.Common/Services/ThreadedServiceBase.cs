@@ -500,6 +500,8 @@
         /// <returns>The collection of DICOM files.</returns>
         protected IEnumerable<DicomFile> ReadDicomFiles(IEnumerable<string> filePaths, QueueItemBase queueItemBase)
         {
+            filePaths = filePaths ?? throw new ArgumentNullException(nameof(filePaths));
+
             foreach (var filePath in filePaths)
             {
                 var dicomFile = TryOpenDicomFile(filePath, queueItemBase);
@@ -573,14 +575,14 @@
         /// </summary>
         /// <param name="logEntry">Log entry.</param>
         protected void LogInformation(LogEntry logEntry) =>
-            logEntry.Log(_logger, LogLevel.Information);
+            logEntry?.Log(_logger, LogLevel.Information);
 
         /// <summary>
         /// Logs the event at trace level.
         /// </summary>
         /// <param name="logEntry">Log entry.</param>
         protected void LogTrace(LogEntry logEntry) =>
-            logEntry.Log(_logger, LogLevel.Trace);
+            logEntry?.Log(_logger, LogLevel.Trace);
 
         /// <summary>
         /// Logs the error.
@@ -588,6 +590,6 @@
         /// <param name="logEntry">Log entry.</param>
         /// <param name="exception">Exception.</param>
         protected void LogError(LogEntry logEntry, Exception exception) =>
-            logEntry.Log(_logger, LogLevel.Error, exception);
+            logEntry?.Log(_logger, LogLevel.Error, exception);
     }
 }

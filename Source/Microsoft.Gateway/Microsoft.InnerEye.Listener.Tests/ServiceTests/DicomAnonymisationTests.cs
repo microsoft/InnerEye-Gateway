@@ -467,6 +467,8 @@
         /// <param name="dicomFiles">DicomFiles to update.</param>
         public static void AddRandomTags(Random random, IEnumerable<DicomFile> dicomFiles)
         {
+            dicomFiles = dicomFiles ?? throw new ArgumentNullException(nameof(dicomFiles));
+
             foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
             {
                 foreach (var dicomTag in dicomTagRandomiserPair.Item1)
@@ -594,6 +596,11 @@
             IEnumerable<TagReplacement> tagReplacements,
             bool sameModalities)
         {
+            originalDicomFile = originalDicomFile ?? throw new ArgumentNullException(nameof(originalDicomFile));
+            deanonymizedDicomFile = deanonymizedDicomFile ?? throw new ArgumentNullException(nameof(deanonymizedDicomFile));
+            topLevelReplacements = topLevelReplacements ?? throw new ArgumentNullException(nameof(topLevelReplacements));
+            tagReplacements = tagReplacements ?? throw new ArgumentNullException(nameof(tagReplacements));
+
             var sourceDataset = originalDicomFile.Dataset;
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
 

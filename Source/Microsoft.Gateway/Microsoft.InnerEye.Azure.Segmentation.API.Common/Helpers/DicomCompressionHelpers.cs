@@ -166,6 +166,8 @@
         /// <param name="dicomFiles">The dicom files.</param>
         public static void CompressDicomFilesToStream(Stream stream, IEnumerable<DicomFile> dicomFiles)
         {
+            dicomFiles = dicomFiles ?? throw new ArgumentNullException(nameof(dicomFiles));
+
             // Note: we must leave the stream open here as we do not own the stream.
             CompressDicomFilesToStream(dicomFiles, stream, DefaultCompressionLevel, leaveStreamOpen: true);
         }

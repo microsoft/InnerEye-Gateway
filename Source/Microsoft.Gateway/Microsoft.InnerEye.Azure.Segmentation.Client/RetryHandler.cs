@@ -41,6 +41,8 @@
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            request = request ?? throw new ArgumentNullException(nameof(request));
+
             var i = 0;
             HttpResponseMessage httpResponseMessage = null;
 

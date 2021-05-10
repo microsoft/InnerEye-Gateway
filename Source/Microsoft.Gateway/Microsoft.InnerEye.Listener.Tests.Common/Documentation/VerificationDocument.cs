@@ -20,6 +20,8 @@
         /// <param name="testContext">The current test context.</param>
         public static void AppendTestResult(string path, TestContext testContext)
         {
+            testContext = testContext ?? throw new ArgumentNullException(nameof(testContext));
+
             var testResult = CreateTestResult(testContext).ToString();
 
             if (!File.Exists(path))

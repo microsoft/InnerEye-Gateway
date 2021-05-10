@@ -21,6 +21,8 @@
         /// <exception cref="ArgumentException"></exception>
         public static void RunServices(string serviceName, ServiceSettings serviceSettings, params IService[] services)
         {
+            serviceSettings = serviceSettings ?? throw new ArgumentNullException(nameof(serviceSettings));
+
             if (services.Length == 0)
             {
                 throw new ArgumentException("Must provided at least one service to run.", nameof(services));

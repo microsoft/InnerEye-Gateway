@@ -54,6 +54,8 @@ namespace Microsoft.InnerEye.Listener.Common.Services
         /// <returns>Full path to existing directory or Empty if none exist.</returns>
         public static string FindRelativeDirectory(IEnumerable<string> relativePaths, ILogger logger)
         {
+            relativePaths = relativePaths ?? throw new ArgumentNullException(nameof(relativePaths));
+
             var parentDirectory = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
 
             foreach (var relativePath in relativePaths)

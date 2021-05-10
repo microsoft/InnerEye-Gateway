@@ -49,8 +49,8 @@
             AssociationQueueItemBase associationQueueItemBase,
             IEnumerable<string> paths)
             : this(
-                  calledApplicationEntityTitle: associationQueueItemBase.CalledApplicationEntityTitle,
-                  callingApplicationEntityTitle: associationQueueItemBase.CallingApplicationEntityTitle,
+                  calledApplicationEntityTitle: associationQueueItemBase?.CalledApplicationEntityTitle ?? throw new ArgumentNullException(nameof(associationQueueItemBase)),
+                  callingApplicationEntityTitle: associationQueueItemBase?.CallingApplicationEntityTitle ?? throw new ArgumentNullException(nameof(associationQueueItemBase)),
                   paths: paths,
                   associationGuid: associationQueueItemBase.AssociationGuid,
                   // We reset the date time to maximise the amount of time we try to delete (this association could have expried and we are trying to clean up).

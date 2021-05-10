@@ -90,6 +90,8 @@
         /// <param name="equalityComparer">How to compare objects.</param>
         protected void UpdateFile(Func<T, T> updater, IEqualityComparer<T> equalityComparer)
         {
+            updater = updater ?? throw new ArgumentNullException(nameof(updater));
+
             if (!File.Exists(_settingsFileOrFolderName))
             {
                 throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, "Can only update single settings files: {0}", _settingsFileOrFolderName));
@@ -102,6 +104,7 @@
             }
 
             var newt = updater.Invoke(t);
+            equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
             if (equalityComparer.Equals(newt, t))
             {
                 return;

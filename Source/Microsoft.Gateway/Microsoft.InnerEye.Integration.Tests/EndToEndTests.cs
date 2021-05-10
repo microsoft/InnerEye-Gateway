@@ -178,6 +178,8 @@
         /// <param name="modelId">Expected modelId.</param>
         public static void AssertIsDicomRtFile(DateTime testDateTime, DicomFile dicomFile, string modelId)
         {
+            dicomFile = dicomFile ?? throw new ArgumentNullException(nameof(dicomFile));
+
             Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.FileMetaInfo.MediaStorageSOPClassUID);
             var sopInstanceUID = dicomFile.FileMetaInfo.MediaStorageSOPInstanceUID;
             Assert.AreEqual(DicomTransferSyntax.ImplicitVRLittleEndian, dicomFile.FileMetaInfo.TransferSyntax);

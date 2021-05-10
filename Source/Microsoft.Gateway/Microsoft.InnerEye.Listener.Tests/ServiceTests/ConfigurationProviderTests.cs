@@ -102,11 +102,15 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random ConfigurationServiceConfig.</returns>
-        public static ConfigurationServiceConfig RandomConfigurationServiceConfig(Random random) =>
-            new ConfigurationServiceConfig(
+        public static ConfigurationServiceConfig RandomConfigurationServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new ConfigurationServiceConfig(
                 DateTime.UtcNow.AddSeconds(5),
                 DateTime.UtcNow.AddSeconds(10),
                 random.Next(61, 3600));
+        }
 
         /// <summary>
         /// Generate random <see cref="GatewayReceiveConfig"/>.
@@ -134,16 +138,24 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random DequeueServiceConfig.</returns>
-        public static DequeueServiceConfig RandomDequeueServiceConfig(Random random) =>
-            new DequeueServiceConfig(random.Next(202, 299), random.Next(302, 399));
+        public static DequeueServiceConfig RandomDequeueServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new DequeueServiceConfig(random.Next(202, 299), random.Next(302, 399));
+        }
 
         /// <summary>
         /// Generate random <see cref="DownloadServiceConfig"/>.
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random DownloadServiceConfig.</returns>
-        public static DownloadServiceConfig RandomDownloadServiceConfig(Random random) =>
-            new DownloadServiceConfig(random.Next(2, 99), random.Next(102, 199));
+        public static DownloadServiceConfig RandomDownloadServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new DownloadServiceConfig(random.Next(2, 99), random.Next(102, 199));
+        }
 
         /// <summary>
         /// Generate random <see cref="GatewayProcessorConfig"/>.

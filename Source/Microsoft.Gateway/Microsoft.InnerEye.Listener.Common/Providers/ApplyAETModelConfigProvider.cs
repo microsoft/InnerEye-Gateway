@@ -39,6 +39,8 @@
         /// <returns>Matching AETConfigModel if one found, null otherwise.</returns>
         public static AETConfigModel GetAETConfigModel(IEnumerable<AETConfigModel> clientAETList, string calledAET, string callingAET)
         {
+            clientAETList = clientAETList ?? throw new ArgumentNullException(nameof(clientAETList));
+
             foreach (var aetConfig in clientAETList)
             {
                 if (aetConfig.CalledAET.Equals(calledAET, System.StringComparison.Ordinal) && aetConfig.CallingAET.Equals(callingAET, System.StringComparison.Ordinal))

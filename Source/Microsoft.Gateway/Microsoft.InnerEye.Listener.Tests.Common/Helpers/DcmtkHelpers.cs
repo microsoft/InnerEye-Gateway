@@ -45,6 +45,8 @@
         /// <returns>The result for the Store SCU function. This string will be empty if it completed succesfully.</returns>
         public static string SendFolderUsingDCMTK(string path, int port, ScuProfile scuProfile, TestContext testContext, bool scanDirectories = true, bool waitForExit = true, bool abort = false, string applicationEntityTitle = "STORESCU", string calledAETitle = "ANY-SCP", string hostIP = "127.0.0.1")
         {
+            path = path ?? throw new ArgumentNullException(nameof(path));
+
             var directoryPath = path;
 
             if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
@@ -75,6 +77,8 @@
         /// <returns>The result for the Store SCU function. This string will be empty if it completed succesfully.</returns>
         public static string SendFileUsingDCMTK(string path, int port, ScuProfile scuProfile, TestContext testContext, bool waitForExit = true, bool abort = false, string applicationEntityTitle = "STORESCU", string calledAETitle = "ANY-SCP", string hostIP = "127.0.0.1")
         {
+            path = path ?? throw new ArgumentNullException(nameof(path));
+
             var filePath = path;
 
             if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
