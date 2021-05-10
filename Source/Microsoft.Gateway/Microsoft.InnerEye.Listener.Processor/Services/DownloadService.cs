@@ -268,7 +268,7 @@
                                      downloadQueueItem: downloadQueueItem,
                                      downloadProgress: modelResult.Progress,
                                      downloadError: modelResult.Error),
-                                new Exception("Failed to get a segmentation result."));
+                                new ProcessorServiceException("Failed to get a segmentation result."));
 
                         // We cannot recover from this error, so we log and continue.
                         return null;

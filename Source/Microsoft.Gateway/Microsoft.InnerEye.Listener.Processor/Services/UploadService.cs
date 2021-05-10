@@ -152,7 +152,7 @@
                     else
                     {
                         LogError(LogEntry.Create(AssociationStatus.UploadErrorAssocationFolderDeleted, uploadQueueItem: queueItem),
-                                 new Exception("The association folder has been deleted."));
+                                 new ProcessorServiceException("The association folder has been deleted."));
                     }
 
                     transaction.Commit();
@@ -313,7 +313,7 @@
                 LogError(LogEntry.Create(AssociationStatus.UploadErrorTagsDoNotMatch,
                              uploadQueueItem: uploadQueueItem,
                              failedDicomTags: string.Join(",", failedDicomTags.Select(x => x.DictionaryEntry.Name))),
-                         new Exception("Failed to find a model for the received Dicom data."));
+                         new ProcessorServiceException("Failed to find a model for the received Dicom data."));
             }
         }
 

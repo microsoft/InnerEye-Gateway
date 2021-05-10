@@ -220,7 +220,7 @@
             if (dicomFiles.Length == 0)
             {
                 LogError(LogEntry.Create(AssociationStatus.PushErrorFilesEmpty, pushQueueItem: pushQueueItem),
-                         new Exception("No files to push."));
+                         new ProcessorServiceException("No files to push."));
                 return;
             }
 

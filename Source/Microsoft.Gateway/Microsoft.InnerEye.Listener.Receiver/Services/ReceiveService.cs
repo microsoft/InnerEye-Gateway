@@ -211,7 +211,7 @@
             {
                 LogError(LogEntry.Create(AssociationStatus.ReceiveUploadError, uploadQueueItem: queueItem,
                              dicomDataReceiverProgress: CreateReceiveProperties(e)),
-                         new Exception("Cannot add to upload queue"));
+                         new ReceiveServiceException("Cannot add to upload queue"));
             }
         }
 
