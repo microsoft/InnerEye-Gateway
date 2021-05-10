@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -628,7 +629,7 @@
             for (var i = 0; i < expectedAETConfigModels.Length; i++)
             {
                 var expectedAETConfig = new[] { expectedAETConfigModels[i] };
-                Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i));
+                Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", i));
             }
 
             var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
@@ -666,7 +667,7 @@
                             modelsConfig: new[] { expectedAETConfigModels[0].AETConfig.Config.ModelsConfig[i] })));
 
                 var expectedAETConfig = new[] { expectedAETConfig0 };
-                Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i), true);
+                Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", i), true);
             }
 
             var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
@@ -703,14 +704,14 @@
                                     modelsConfig: new[] { expectedAETConfigModels[j].AETConfig.Config.ModelsConfig[i] })));
 
                         var expectedAETConfig = new[] { expectedAETConfig0 };
-                        Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}_{1}.json", j, i), true);
+                        Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}_{1}.json", j, i), true);
                     }
                 }
                 else
                 {
                     // No ModelsConfig so just clone at the base.
                     var expectedAETConfig = new[] { expectedAETConfigModels[j] };
-                    Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", j), true);
+                    Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", j), true);
                 }
             }
 

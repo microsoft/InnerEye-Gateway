@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -77,7 +78,7 @@
             else
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
-                    string.Format("Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
+                    string.Format(CultureInfo.InvariantCulture, "Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
                 logEntry.Log(_logger, LogLevel.Error);
             }
         }
@@ -91,7 +92,7 @@
         {
             if (!File.Exists(_settingsFileOrFolderName))
             {
-                throw new NotImplementedException(string.Format("Can only update single settings files: {0}", _settingsFileOrFolderName));
+                throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, "Can only update single settings files: {0}", _settingsFileOrFolderName));
             }
 
             var (t, loaded) = LoadFile(_settingsFileOrFolderName);
@@ -125,7 +126,7 @@
             catch (Exception e)
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
-                    string.Format("Unable to load settings file {0}", path));
+                    string.Format(CultureInfo.InvariantCulture, "Unable to load settings file {0}", path));
                 logEntry.Log(_logger, LogLevel.Error, e);
 
                 return (default(T), false);

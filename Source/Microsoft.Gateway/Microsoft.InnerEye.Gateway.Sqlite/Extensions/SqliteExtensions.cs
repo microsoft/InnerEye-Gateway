@@ -2,7 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-
+    using System.Globalization;
     using Microsoft.Data.Sqlite;
     using Microsoft.InnerEye.Gateway.Sqlite.Exceptions;
     using Newtonsoft.Json;
@@ -28,8 +28,8 @@
         [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public static int ExecuteNonQueryNewConnection(string connectionString, string commandText)
         {
-            connectionString = string.IsNullOrWhiteSpace(connectionString) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(connectionString)), nameof(connectionString)) : connectionString;
-            commandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+            connectionString = string.IsNullOrWhiteSpace(connectionString) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(connectionString)), nameof(connectionString)) : connectionString;
+            commandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -61,7 +61,7 @@
                 throw new ArgumentNullException(nameof(command));
             }
 
-            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
 
             try
             {
@@ -99,7 +99,7 @@
                 throw new ArgumentNullException(nameof(command));
             }
 
-            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
 
             try
             {
@@ -110,7 +110,7 @@
                     throw new SqliteReadException($"Failed to execute scalar command: {commandText}.");
                 }
 
-                return JsonConvert.DeserializeObject<T>(Convert.ToString(result));
+                return JsonConvert.DeserializeObject<T>(Convert.ToString(result, CultureInfo.InvariantCulture));
             }
             // Only catch SQLite exceptions
             catch (SqliteException e)

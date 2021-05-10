@@ -146,9 +146,6 @@ dotnet_diagnostic.CA1031.severity = suggestion
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = suggestion
 
-# CA1305: Specify IFormatProvider
-dotnet_diagnostic.CA1305.severity = suggestion
-
 # CA1508: Avoid dead conditional code
 dotnet_diagnostic.CA1508.severity = suggestion
 

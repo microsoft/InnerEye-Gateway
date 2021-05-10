@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Sqlite;
@@ -133,7 +134,7 @@
         {
             SqliteExtensions.ExecuteNonQueryNewConnection(
                 connectionString: _databaseConnectionString,
-                commandText: string.Format(SqliteManager.ClearTableCommandTextFormat, QueuePath));
+                commandText: string.Format(CultureInfo.InvariantCulture, SqliteManager.ClearTableCommandTextFormat, QueuePath));
         }
 
         /// <inheritdoc />
@@ -168,7 +169,7 @@
                 command.Parameters.AddWithValue($"@{QueueTableEnqueueTimeColumn.ColumnName}", DateTime.UtcNow.Ticks);
 
                 // Execute the query and insert the row
-                var result = command.ExecuteNonQueryWithRetry(string.Format(SqliteManager.GetInsertRowCommandFormat(), QueuePath));
+                var result = command.ExecuteNonQueryWithRetry(string.Format(CultureInfo.InvariantCulture, SqliteManager.GetInsertRowCommandFormat(), QueuePath));
 
                 if (result == 0)
                 {
@@ -210,7 +211,7 @@
                             // Note: We change the row ID to a new ID so we know which row to read (but leave the enqueue row ID)
                             (QueueTableRowIdColumn.ColumnName, rowId.ToString()),
                             (QueueTableTransactionIdColumn.ColumnName, string.Empty), // Empty the transaction ID
-                            (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString()) // Set a lease
+                            (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString(CultureInfo.InvariantCulture)) // Set a lease
                         },
                         $"WHERE {QueueTableRowIdColumn.ColumnName} IN (SELECT {QueueTableRowIdColumn.ColumnName} FROM [{QueuePath}] WHERE ({QueueTableTransactionIdColumn.ColumnName} = \"\" AND {QueueTableTransactionLeaseColumn.ColumnName} < {DateTime.UtcNow.Ticks}) OR {QueueTableTransactionIdColumn.ColumnName} = \"{transaction.TransactionId}\" ORDER BY {QueueTableEnqueueTimeColumn.ColumnName} ASC LIMIT 1)"));
 
@@ -232,7 +233,7 @@
             // Enqueue a function to renew the lease for this row on a timer task.
             transaction.EnqueueRenewLeaseCommand(
                 () => GetUpdateSqlCommandText(
-                        new[] { (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString()) },
+                        new[] { (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString(CultureInfo.InvariantCulture)) },
                         GetWhereClauseRowIdCommandText(rowId, QueueTableRowIdColumn.ColumnName)));
 
             // Create a new command to expire the lease if the transaction is aborted.

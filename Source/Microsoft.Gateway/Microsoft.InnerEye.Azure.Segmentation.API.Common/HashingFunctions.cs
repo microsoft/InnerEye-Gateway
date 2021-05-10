@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
 {
+    using System.Globalization;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -26,7 +27,7 @@
 
                 foreach (var hashedByte in hashData)
                 {
-                    stringBuilder.Append(hashedByte.ToString("d2"));
+                    stringBuilder.Append(hashedByte.ToString("d2", CultureInfo.InvariantCulture));
                 }
 
                 return stringBuilder.ToString().Substring(0, length);

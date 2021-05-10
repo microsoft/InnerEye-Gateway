@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -792,7 +793,7 @@
         /// Func to create a random DicomAgeString.
         /// </summary>
         public static readonly Func<DicomTag, Random, DicomItem> RandomDicomAgeString = (tag, random) =>
-            new DicomAgeString(tag, string.Format("{0:D3}Y", random.Next(18, 100)));
+            new DicomAgeString(tag, string.Format(CultureInfo.InvariantCulture, "{0:D3}Y", random.Next(18, 100)));
 
         /// <summary>
         /// Func to create a random DicomPersonName.

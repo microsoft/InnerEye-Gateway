@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
@@ -92,7 +93,7 @@
         /// <value>
         /// The deidentification string.
         /// </value>
-        protected string DeidentificationMethodString => string.Format(TagHandlerDeidentificationNameFormat, _assemblyVersion, _anonymisationProtocolId);
+        protected string DeidentificationMethodString => string.Format(CultureInfo.InvariantCulture, TagHandlerDeidentificationNameFormat, _assemblyVersion, _anonymisationProtocolId);
 
         [Description("Uses SHA512 to generate a new 64 char length Unique Identifier.")]
         public static DicomItem LongHashID(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)

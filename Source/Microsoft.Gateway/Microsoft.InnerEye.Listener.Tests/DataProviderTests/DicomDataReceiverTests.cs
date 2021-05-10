@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.DataProviderTests
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -113,7 +114,7 @@
                 {
                     if (e.ProgressCode == DicomReceiveProgressCode.AssociationEstablished)
                     {
-                        receivedAssociations[int.Parse(e.DicomAssociation.CallingAE)] = e.DicomAssociation.CallingAE;
+                        receivedAssociations[int.Parse(e.DicomAssociation.CallingAE, CultureInfo.InvariantCulture)] = e.DicomAssociation.CallingAE;
                         Interlocked.Increment(ref associationsReceivedCount);
                     }
                 };
@@ -126,14 +127,14 @@
                         ScuProfile.LEExplicitCT,
                         TestContext,
                         waitForExit: false,
-                        applicationEntityTitle: i.ToString());
+                        applicationEntityTitle: i.ToString(CultureInfo.InvariantCulture));
                 });
 
                 SpinWait.SpinUntil(() => associationsReceivedCount == numberOfAssociations, TimeSpan.FromMinutes(1));
 
                 for (var i = 0; i < numberOfAssociations; i++)
                 {
-                    Assert.IsTrue(receivedAssociations[i] == i.ToString());
+                    Assert.IsTrue(receivedAssociations[i] == i.ToString(CultureInfo.InvariantCulture));
                 }
             }
         }

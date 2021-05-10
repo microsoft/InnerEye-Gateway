@@ -3,6 +3,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -62,7 +63,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
                 if (Directory.Exists(configurationPath))
                 {
                     var logEntry = LogEntry.Create(ServiceStatus.Starting,
-                        string.Format("Settings location: {0}", configurationPath));
+                        string.Format(CultureInfo.InvariantCulture, "Settings location: {0}", configurationPath));
                     logEntry.Log(logger, LogLevel.Information);
 
                     return configurationPath;

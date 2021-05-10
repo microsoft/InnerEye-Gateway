@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Gateway.Sqlite
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using Microsoft.Data.Sqlite;
@@ -76,7 +77,7 @@
 
             SqliteExtensions.ExecuteNonQueryNewConnection(
                connectionString: DatabaseConnectionString,
-               commandText: string.Format(createTableIfNotExistsCommandFormat, _tableName));
+               commandText: string.Format(CultureInfo.InvariantCulture, createTableIfNotExistsCommandFormat, _tableName));
         }
 
         /// <summary>
@@ -94,7 +95,7 @@
                 Directory.CreateDirectory(path);
             }
 
-            return string.Format(DatabaseConnectionStringFormat, path);
+            return string.Format(CultureInfo.InvariantCulture, DatabaseConnectionStringFormat, path);
         }
     }
 }
