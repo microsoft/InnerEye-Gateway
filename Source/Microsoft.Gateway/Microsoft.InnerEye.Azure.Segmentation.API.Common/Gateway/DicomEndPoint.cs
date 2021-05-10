@@ -25,11 +25,11 @@
         {
             Title = title ?? throw new ArgumentNullException(nameof(title));
             Port = port;
-            Ip = ip ?? throw new ArgumentNullException(nameof(ip));
-            if (string.IsNullOrEmpty(Ip))
+            if (string.IsNullOrEmpty(ip))
             {
                 throw new ArgumentException("The specified Ip is empty", nameof(ip));
             }
+            Ip = ip;
         }
 
         /// <summary>

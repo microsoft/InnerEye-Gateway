@@ -80,7 +80,9 @@
 
                 dicomDataReceiver.StopServer();
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                 Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                 var files = new DirectoryInfo(folderPath).GetFiles();
 
@@ -366,7 +368,9 @@
 
                 dicomDataReceiver.StopServer();
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                 Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                 var files = new DirectoryInfo(folderPath).GetFiles();
 

@@ -143,9 +143,6 @@ dotnet_diagnostic.CA1014.severity = none
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = suggestion
 
-# CA1508: Avoid dead conditional code
-dotnet_diagnostic.CA1508.severity = suggestion
-
 dotnet_code_quality.ca1711.allowed_suffixes = Queue
 
 # CA2007: Consider calling ConfigureAwait on the awaited task

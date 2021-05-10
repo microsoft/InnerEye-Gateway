@@ -92,7 +92,9 @@
 
                     SpinWait.SpinUntil(() => eventCount >= 3);
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                     var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
 
@@ -181,7 +183,9 @@
                     // Wait for all events to finish on the data received
                     SpinWait.SpinUntil(() => eventCount >= 3, TimeSpan.FromMinutes(3));
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                     var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
 

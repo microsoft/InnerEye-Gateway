@@ -223,7 +223,9 @@
                     Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<DownloadQueueItem>(downloadQueue));
                     Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<PushQueueItem>(pushQueue));
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                     // Check we received the image in the result
                     Assert.AreEqual(21, new DirectoryInfo(folderPath).GetFiles().Length);
