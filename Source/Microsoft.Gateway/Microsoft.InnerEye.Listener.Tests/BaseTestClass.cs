@@ -601,7 +601,7 @@
 
                 var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
                     matchedModel.Result.ModelId,
-                    matchedModel.Result.ChannelData);
+                    matchedModel.Result.ChannelData).ConfigureAwait(false);
 
                 var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
                 return (segmentationId, modelId, referenceDicomFiles);
@@ -621,7 +621,7 @@
 
                 var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
                     matchedModel.Result.ModelId,
-                    matchedModel.Result.ChannelData);
+                    matchedModel.Result.ChannelData).ConfigureAwait(false);
 
                 var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
                 return (segmentationId, modelId, referenceDicomFiles);

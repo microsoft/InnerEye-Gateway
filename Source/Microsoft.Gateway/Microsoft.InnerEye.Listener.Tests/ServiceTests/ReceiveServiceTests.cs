@@ -228,7 +228,7 @@
                     "Hello",
                     calledAet,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));
@@ -249,7 +249,7 @@
                     "Hello",
                     calledAet,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));

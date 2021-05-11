@@ -38,7 +38,7 @@
                     "Hello",
                     applicationEntity.Title,
                     applicationEntity.Port,
-                    applicationEntity.IpAddress);
+                    applicationEntity.IpAddress).ConfigureAwait(false);
 
                 Assert.AreEqual(DicomOperationResult.Success, result1);
 
@@ -49,12 +49,12 @@
                 "Hello",
                 applicationEntity.Title,
                 applicationEntity.Port,
-                applicationEntity.IpAddress);
+                applicationEntity.IpAddress).ConfigureAwait(false);
 
             Assert.AreEqual(DicomOperationResult.NoResponse, result2);
 
             // Try ping with IPv6 Address
-            var result3 = await dataSender.DicomEchoAsync("Hello", "RListenerTest", 105, "2a00:1450:4009:800::200e");
+            var result3 = await dataSender.DicomEchoAsync("Hello", "RListenerTest", 105, "2a00:1450:4009:800::200e").ConfigureAwait(false);
 
             Assert.AreEqual(DicomOperationResult.NoResponse, result3);
         }
@@ -69,7 +69,7 @@
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 131, "127.0.0.1");
 
             var dicomFiles = new DirectoryInfo(@"Images\1ValidSmall\").GetFiles().Select(x => DicomFile.Open(x.FullName)).ToArray();
-            var rtFile = await DicomFile.OpenAsync(@"Images\LargeSeriesWithContour\rtstruct.dcm");
+            var rtFile = await DicomFile.OpenAsync(@"Images\LargeSeriesWithContour\rtstruct.dcm").ConfigureAwait(false);
 
             var resultsDirectory = CreateTemporaryDirectory();
 
@@ -82,7 +82,7 @@
                     applicationEntity.Title,
                     applicationEntity.Port,
                     applicationEntity.IpAddress,
-                    dicomFiles);
+                    dicomFiles).ConfigureAwait(false);
 
                 foreach (var result in results)
                 {
@@ -95,7 +95,7 @@
                     applicationEntity.Title,
                     applicationEntity.Port,
                     applicationEntity.IpAddress,
-                    rtFile);
+                    rtFile).ConfigureAwait(false);
 
                 Assert.AreEqual(1, rtResult.Count());
 

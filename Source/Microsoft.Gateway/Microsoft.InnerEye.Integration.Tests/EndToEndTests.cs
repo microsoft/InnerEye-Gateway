@@ -39,7 +39,7 @@
             {
                 using (var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
-                    await segmentationClient.PingAsync();
+                    await segmentationClient.PingAsync().ConfigureAwait(false);
                 }
             }
             catch (AuthenticationException)
@@ -120,7 +120,7 @@
                     testAETConfigModel.CallingAET,
                     testAETConfigModel.CalledAET,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);
 
                 // Send the image stack
@@ -151,7 +151,7 @@
 
                 var receivedFilePath = receivedFiles.First().FullName;
 
-                var dicomFile = await DicomFile.OpenAsync(receivedFilePath, FileReadOption.ReadAll);
+                var dicomFile = await DicomFile.OpenAsync(receivedFilePath, FileReadOption.ReadAll).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
 

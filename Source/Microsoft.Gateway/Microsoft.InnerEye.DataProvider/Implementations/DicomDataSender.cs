@@ -60,11 +60,11 @@
                     // Do not put any async code in here as it will not wait.
                     result = GetStatus(response.Status);
                 })
-            });
+            }).ConfigureAwait(false);
 
             try
             {
-                await dicomClient.SendAsync();
+                await dicomClient.SendAsync().ConfigureAwait(false);
             }
             catch (SocketException e)
             {
@@ -129,7 +129,7 @@
                         },
                     };
 
-                    await dicomClient.AddRequestAsync(dicomStoreRequest);
+                    await dicomClient.AddRequestAsync(dicomStoreRequest).ConfigureAwait(false);
                     filesToSend++;
                 }
                 catch (Exception e)
@@ -138,7 +138,7 @@
                 }
             }
 
-            await dicomClient.SendAsync();
+            await dicomClient.SendAsync().ConfigureAwait(false);
 
             // Add any missing results
             foreach (var dicomFile in dicomFiles)

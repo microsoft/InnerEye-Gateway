@@ -36,7 +36,7 @@
         {
             var resultDirectory = CreateTemporaryDirectory();
 
-            var (segmentationId, modelId, data) = await StartRealSegmentationAsync(@"Images\1ValidSmall\");
+            var (segmentationId, modelId, data) = await StartRealSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 140, "localhost");
 
             // Create a Data receiver to receive the RT struct result
@@ -90,7 +90,7 @@
                 // Check we have a file
                 Assert.AreEqual(1, files.Length);
 
-                var dicomFile = await DicomFile.OpenAsync(files[0].FullName);
+                var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
 
@@ -304,7 +304,7 @@
         [TestMethod]
         public async Task DownloadServiceNoApiConnection()
         {
-            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\");
+            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 144, "127.0.0.1");
 
             // Create a Data receiver to receive the RT struct result
@@ -351,7 +351,7 @@
                             isDryRun: false));
 
                     // Wait
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
 
                     // Null the exception from the mock client
                     mockSegmentationClient.SegmentationResultException = null;
@@ -378,7 +378,7 @@
                 // Check we have a file
                 Assert.AreEqual(1, files.Length);
 
-                var dicomFile = await DicomFile.OpenAsync(files[0].FullName);
+                var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
 

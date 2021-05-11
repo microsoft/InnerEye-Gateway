@@ -106,7 +106,7 @@
 
                 try
                 {
-                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken);
+                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken).ConfigureAwait(false);
 
                     // If we have dequed this item more than once, lets check if the destination 
                     // Dicom endpoint has been updated on the configuration service (or if the destination is null).
@@ -144,7 +144,7 @@
                             ownApplicationEntityTitle: queueItem.CalledApplicationEntityTitle,
                             destination: queueItem.DestinationApplicationEntity,
                             cancellationToken: cancellationToken,
-                            dicomFiles: dicomFiles.ToArray());
+                            dicomFiles: dicomFiles.ToArray()).ConfigureAwait(false);
                     }
 
                     // Enqueue delete the files.
@@ -233,7 +233,7 @@
                 destination.Title,
                 destination.Port,
                 destination.IpAddress,
-                dicomFiles);
+                dicomFiles).ConfigureAwait(false);
 
             if (result.Any(x => x.Item2 != DicomOperationResult.Success))
             {

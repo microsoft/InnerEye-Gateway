@@ -144,9 +144,9 @@ namespace Microsoft.InnerEye.Listener.Common.Services
         {
             // Check we can still ping with the license key
             // This call will stop this service if the license key is invalid.
-            await PingAsync();
+            await PingAsync().ConfigureAwait(false);
 
-            await Task.Delay(_configurationServiceConfig.ConfigurationRefreshDelay, cancellationToken);
+            await Task.Delay(_configurationServiceConfig.ConfigurationRefreshDelay, cancellationToken).ConfigureAwait(false);
 
             var config = _getConfigurationServiceConfig();
 
@@ -210,7 +210,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
             {
                 if (_innerEyeSegmentationClient != null)
                 {
-                    await _innerEyeSegmentationClient.PingAsync();
+                    await _innerEyeSegmentationClient.PingAsync().ConfigureAwait(false);
                 }
             }
             catch (AuthenticationException e)

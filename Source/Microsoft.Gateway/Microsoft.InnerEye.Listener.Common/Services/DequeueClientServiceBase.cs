@@ -131,7 +131,7 @@
             catch (MessageQueueReadException)
             {
                 // Delay here before throw the exception up the next level to delay message queue reads.
-                await Task.Delay(DequeueServiceConfig.DequeueTimeout, cancellationToken);
+                await Task.Delay(DequeueServiceConfig.DequeueTimeout, cancellationToken).ConfigureAwait(false);
                 throw;
             }
             catch (MessageQueuePermissionsException e)

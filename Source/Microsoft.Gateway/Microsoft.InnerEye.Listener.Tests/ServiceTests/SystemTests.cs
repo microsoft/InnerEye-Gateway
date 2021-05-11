@@ -96,7 +96,7 @@
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
 #pragma warning restore CA1508 // Avoid dead conditional code
 
-                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
+                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
 
@@ -117,7 +117,7 @@
             {
                 downloadService.Start();
 
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 downloadService.OnStop();
 
@@ -168,7 +168,7 @@
                         testAETConfigModel.CallingAET,
                         testAETConfigModel.CalledAET,
                         receivePort,
-                        "127.0.0.1");
+                        "127.0.0.1").ConfigureAwait(false);
 
                     Assert.IsTrue(echoResult == DicomOperationResult.Success);
 
@@ -187,7 +187,7 @@
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
 #pragma warning restore CA1508 // Avoid dead conditional code
 
-                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
+                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
 
@@ -230,7 +230,7 @@
                     applicationEntityTitle: testAETConfigModel.CallingAET,
                     calledAETitle: testAETConfigModel.CalledAET);
 
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 WaitUntilNoMessagesOnQueue(uploadQueue);
 

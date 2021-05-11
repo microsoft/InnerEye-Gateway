@@ -54,7 +54,7 @@
 
                 try
                 {
-                    deleteQueueItem = await DequeueNextMessageAsync(transaction, cancellationToken);
+                    deleteQueueItem = await DequeueNextMessageAsync(transaction, cancellationToken).ConfigureAwait(false);
 
                     // Delete every path in the queue item. Each path could be a directory or a file.
                     foreach (var path in deleteQueueItem.Paths)

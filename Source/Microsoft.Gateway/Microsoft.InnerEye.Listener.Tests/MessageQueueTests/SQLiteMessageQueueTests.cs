@@ -82,7 +82,7 @@
                     var dequeued = messageQueue.DequeueNextMessage<PushQueueItem>(queueTransaction1);
 
                     // Wait for twice the time - the lease should have expired if the renew code is not working
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     Assert.ThrowsException<MessageQueueReadException>(() => messageQueue.DequeueNextMessage<PushQueueItem>(queueTransaction1));
                 }
@@ -125,7 +125,7 @@
                     AssertCompare(expected, actual1);
 
                     // Wait for twice the time - the lease should have now expired
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     // Dequeue on a different transaction
                     var actual2 = TransactionalDequeue<PushQueueItem>(messageQueue);
@@ -167,7 +167,7 @@
                     AssertCompare(expected, actual);
 
                     // Wait for the renew lease task to be called at least once.
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
                 }
 
                 using (var transaction = messageQueue.CreateQueueTransaction())
@@ -182,7 +182,7 @@
                     AssertCompare(expected, actual);
 
                     // Wait for the renew lease task to be called at least once.
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     // Make sure no exception is thrown.
                     transaction.Commit();

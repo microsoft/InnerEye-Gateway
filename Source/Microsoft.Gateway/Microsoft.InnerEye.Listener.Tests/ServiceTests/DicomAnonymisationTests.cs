@@ -73,7 +73,7 @@
                 SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 1);
 
                 // Wait for all files to save.
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 var originalSlice = DicomFile.Open(new DirectoryInfo(image).GetFiles().First().FullName);
 
@@ -168,7 +168,7 @@
                 SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 20);
 
                 // Wait for all files to save.
-                await Task.Delay(200);
+                await Task.Delay(200).ConfigureAwait(false);
 
                 var savedSampleFile = false;
 
@@ -241,7 +241,7 @@
                 SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 1);
 
                 // Wait for all files to save.
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 var savedSampleFile = false;
 
@@ -536,7 +536,7 @@
             string sourceImageFileName,
             IEnumerable<TagReplacement> tagReplacements)
         {
-            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll);
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll).ConfigureAwait(false);
             // Make a copy of the existing DicomDataset
             var originalDataset = originalDicomFile.Dataset.Clone();
 
@@ -714,7 +714,7 @@
             var random = new Random();
             var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
-            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
+            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>()).ConfigureAwait(false);
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
@@ -728,7 +728,7 @@
             await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
-                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
+                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists)).ConfigureAwait(false);
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
@@ -742,7 +742,7 @@
             await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
-                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
+                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists)).ConfigureAwait(false);
         }
     }
 }

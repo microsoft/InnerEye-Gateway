@@ -439,7 +439,7 @@
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions, string.Join(@"\", newSoftwareVersions));
 
-                await dicomFile.SaveAsync(filePath);
+                await dicomFile.SaveAsync(filePath).ConfigureAwait(false);
 
                 filePaths.Add(filePath);
             }

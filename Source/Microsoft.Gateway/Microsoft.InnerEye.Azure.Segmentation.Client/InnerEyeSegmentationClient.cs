@@ -208,7 +208,7 @@
             IEnumerable<DicomFile> referenceDicomFiles,
             IEnumerable<TagReplacement> userReplacements)
         {
-            var modelResult = await SegmentationResultAsync(modelId, segmentationId);
+            var modelResult = await SegmentationResultAsync(modelId, segmentationId).ConfigureAwait(false);
             if (modelResult.DicomResult != null)
             {
                 var anonymizedDicomFile = DeanonymizeDicomFile(
@@ -235,16 +235,16 @@
            string modelId,
            string segmentationId)
         {
-            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}", UriKind.Relative));
+            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}", UriKind.Relative)).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
-                var message = await response.Content.ReadAsStringAsync();
+                var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 return new ModelResult(50, message, null);
             }
             else if (response.StatusCode == HttpStatusCode.OK)
             {
-                var zipStream = await response.Content.ReadAsByteArrayAsync();
+                var zipStream = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
                 using (var archive = new ZipArchive(new MemoryStream(zipStream)))
                 {
                     if (archive.Entries.Count != 1)
@@ -299,7 +299,7 @@
             using (var content = new ByteArrayContent(dataZipped))
             {
                 // POST
-                var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), content);
+                var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), content).ConfigureAwait(false);
 
                 if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
                 {
@@ -311,7 +311,7 @@
                     throw new SegmentationClientException(response.ReasonPhrase);
                 }
 
-                var segmentationId = await response.Content.ReadAsStringAsync();
+                var segmentationId = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 Trace.TraceInformation($"Segmentation uploaded with id={segmentationId}");
                 var flatAnonymizedDicomFiles = anonymisedDicomData.SelectMany(x => x.DicomFiles);
                 return (segmentationId, flatAnonymizedDicomFiles);
@@ -321,7 +321,7 @@
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            var response = await _client.GetAsync(new Uri("v1/ping", UriKind.Relative));
+            var response = await _client.GetAsync(new Uri("v1/ping", UriKind.Relative)).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {

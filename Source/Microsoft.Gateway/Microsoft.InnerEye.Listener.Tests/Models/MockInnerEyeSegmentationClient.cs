@@ -47,11 +47,11 @@
 
         public async Task<ModelResult> SegmentationResultAsync(string modelId, string segmentationId, IEnumerable<DicomFile> referenceDicomFiles, IEnumerable<TagReplacement> userReplacements)
         {
-            await DelayAndThrowExceptionIfNotNull(SegmentationResultException);
+            await DelayAndThrowExceptionIfNotNull(SegmentationResultException).ConfigureAwait(false);
 
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userReplacements);
+                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userReplacements).ConfigureAwait(false);
             }
             else if (SegmentationProgressResult != null)
             {
@@ -59,7 +59,7 @@
             }
             else
             {
-                var dicomFile = await DicomFile.OpenAsync(SegmentationResultFile, FileReadOption.ReadAll);
+                var dicomFile = await DicomFile.OpenAsync(SegmentationResultFile, FileReadOption.ReadAll).ConfigureAwait(false);
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions,
                     $@"InnerEye AI Model: Test.Name\" +
@@ -101,7 +101,7 @@
         {
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, channelIdsAndDicomFiles);
+                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, channelIdsAndDicomFiles).ConfigureAwait(false);
             }
             else
             {
@@ -123,7 +123,7 @@
 
         private async Task DelayAndThrowExceptionIfNotNull(Exception e)
         {
-            await Task.Delay(ResponseDelay);
+            await Task.Delay(ResponseDelay).ConfigureAwait(false);
 
             if (e != null)
             {

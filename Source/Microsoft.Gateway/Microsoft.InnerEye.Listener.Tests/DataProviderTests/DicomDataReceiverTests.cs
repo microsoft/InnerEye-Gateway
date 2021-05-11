@@ -69,7 +69,7 @@
                     "RListener",
                     applicationEntity.Title,
                     applicationEntity.Port,
-                    applicationEntity.IpAddress);
+                    applicationEntity.IpAddress).ConfigureAwait(false);
 
                 // Check echo
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);

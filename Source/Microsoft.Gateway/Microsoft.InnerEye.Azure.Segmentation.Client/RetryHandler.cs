@@ -50,7 +50,7 @@
             {
                 try
                 {
-                    httpResponseMessage = await base.SendAsync(request, cancellationToken);
+                    httpResponseMessage = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Only retry on unknown exceptions or service unvailable.
                     if (httpResponseMessage.StatusCode != HttpStatusCode.ServiceUnavailable)
@@ -70,7 +70,7 @@
 
                 i++;
                 Trace.TraceWarning($"Retrying Method: {request.Method}, RequestUri: {request.RequestUri}, retry count = {i}");
-                await Task.Delay(RetryDelayInMilliseconds, cancellationToken);
+                await Task.Delay(RetryDelayInMilliseconds, cancellationToken).ConfigureAwait(false);
             }
 
             throw new OperationCanceledException(cancellationToken);
