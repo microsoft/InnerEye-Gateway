@@ -1,10 +1,10 @@
 ﻿namespace DICOMAnonymizer.Tests
 {
-    using Dicom;
-    using DICOMAnonymizer;
     using System;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using Dicom;
+    using DICOMAnonymizer;
     using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
     internal class AnonymisationTagHandler : ITagHandler

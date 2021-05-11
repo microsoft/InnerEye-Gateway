@@ -54,7 +54,7 @@ namespace DICOMAnonymizer.Tests
         {
             var specUrl = new Uri(@"http://dicom.nema.org/medical/dicom/current/source/docbook/part15/part15.xml", UriKind.Absolute);
 
-            WebRequest request = WebRequest.Create(specUrl);
+            var request = WebRequest.Create(specUrl);
             request.Method = "HEAD";
             var etag = request.GetResponse().Headers["etag"].Replace(':', '-');
 
@@ -63,9 +63,9 @@ namespace DICOMAnonymizer.Tests
                 using (var client = new WebClient())
                 using (var reader = new StreamReader(client.OpenRead(specUrl)))
                 {
-                    string onlineSpec = reader.ReadToEnd();
+                    var onlineSpec = reader.ReadToEnd();
 
-                    string localSpec = File.ReadAllText(cProfPath);
+                    var localSpec = File.ReadAllText(cProfPath);
                     Assert.AreEqual(localSpec, onlineSpec);
                 }
 
@@ -79,7 +79,7 @@ namespace DICOMAnonymizer.Tests
         {
             var specUrl = new Uri(@"http://dicom.nema.org/medical/dicom/current/source/docbook/part04/part04.xml", UriKind.Absolute);
 
-            WebRequest request = WebRequest.Create(specUrl);
+            var request = WebRequest.Create(specUrl);
             request.Method = "HEAD";
             var etag = request.GetResponse().Headers["etag"].Replace(':', '-');
 
@@ -88,9 +88,9 @@ namespace DICOMAnonymizer.Tests
                 using (var client = new WebClient())
                 using (var reader = new StreamReader(client.OpenRead(specUrl)))
                 {
-                    string onlineSpec = reader.ReadToEnd();
+                    var onlineSpec = reader.ReadToEnd();
 
-                    string localSpec = File.ReadAllText(serClassSpecPath);
+                    var localSpec = File.ReadAllText(serClassSpecPath);
                     Assert.AreEqual(localSpec, onlineSpec);
                 }
 
@@ -118,8 +118,8 @@ namespace DICOMAnonymizer.Tests
             var regProf = new List<string>(4);
             foreach (var row in rows)
             {
-                bool isTag = false;
-                StringBuilder sb = new StringBuilder();
+                var isTag = false;
+                var sb = new StringBuilder();
                 var clms = row.Elements().ToList();
 
                 var parenthesis = new[] { '(', ')' };
@@ -149,13 +149,13 @@ namespace DICOMAnonymizer.Tests
                         tag = tag.Replace(" ", string.Empty);
                     }
 
-                    Regex r = new Regex("[0-9A-F]{4},[0-9A-F]{4}");
+                    var r = new Regex("[0-9A-F]{4},[0-9A-F]{4}");
                     Assert.IsTrue(r.IsMatch(tag));
                     isTag = true;
                 }
                 sb.Append(tag);
 
-                for (int i = 4; i < clms.Count; i++)
+                for (var i = 4; i < clms.Count; i++)
                 {
                     sb.Append(";" + clms[i].Value);
                 }
@@ -213,7 +213,7 @@ namespace DICOMAnonymizer.Tests
             Assert.IsTrue(Enumerable.SequenceEqual(specSOPNames, enumNames));
 
             // Check conversions from name -> code, and vice versa
-            for (int i = 0; i < specSOPNames.Count; i++)
+            for (var i = 0; i < specSOPNames.Count; i++)
             {
                 var name = SOPClassFinder.SOPClassName(specSOPCodes[i]);
                 Assert.AreEqual(specSOPNames[i], name.ToString());

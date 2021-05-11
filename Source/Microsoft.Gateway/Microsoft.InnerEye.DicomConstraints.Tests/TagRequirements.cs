@@ -10,7 +10,7 @@
         [TestMethod]
         public void ConstraintsTestOptionality()
         {
-            DicomDataset ds = new DicomDataset();
+            var ds = new DicomDataset();
 
             var c0 = new OrderedIntConstraint(Order.Equal, 4, DicomTag.SeriesNumber);
 

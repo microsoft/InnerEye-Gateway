@@ -1,12 +1,11 @@
-﻿using Dicom;
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-namespace DICOMAnonymizer
+﻿namespace DICOMAnonymizer
 {
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+    using Dicom;
+
     /// TODO: Ideally, argument DicomDataset oldds should be declared as immutable.
-    using AnonFunc = Func<DicomDataset, List<TagOrIndex>, DicomItem, DicomItem>;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
     public interface ITagHandler
     {

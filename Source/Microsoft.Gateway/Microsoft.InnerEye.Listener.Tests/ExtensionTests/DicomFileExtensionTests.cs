@@ -43,7 +43,7 @@
             var metadataBytes = dicomFile.CreateNewDicomFileWithoutPixelData(segmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
 
             var pixelData = Dicom.Imaging.DicomPixelData.Create(dicomFile.Dataset);
-            byte[] org_data = pixelData.GetFrame(0).Data;
+            var org_data = pixelData.GetFrame(0).Data;
 
             // Pixel data exists and is non-empty in the original file
             Assert.IsTrue(org_data.Length > 1);

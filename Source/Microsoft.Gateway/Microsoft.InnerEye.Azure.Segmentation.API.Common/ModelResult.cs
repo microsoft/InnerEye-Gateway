@@ -1,8 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
 {
-    using Dicom;
-
     using System;
+    using Dicom;
 
     /// <summary>
     /// Model result information.

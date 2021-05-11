@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Dicom;
-using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
-
-namespace DICOMAnonymizer
+﻿namespace DICOMAnonymizer
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using Dicom;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
+
     public class AnonymizeEngine
     {
         /// <summary>
@@ -164,7 +164,7 @@ namespace DICOMAnonymizer
             var newds = ModeSwitch(oldds, m);
             var arr = oldds.ToList();
 
-            for (int i = 0; i < arr.Count; i++)
+            for (var i = 0; i < arr.Count; i++)
             {
                 var item = arr[i];
 
@@ -175,7 +175,7 @@ namespace DICOMAnonymizer
                 // and Exit methods for Seqs.
                 if (item is DicomSequence)
                 {
-                    DicomSequence nseq = new DicomSequence(item.Tag);
+                    var nseq = new DicomSequence(item.Tag);
                     stack.Push(new TagOrIndex(item.Tag));
                     // Visit sequence's children
                     foreach (var tuple in (item as DicomSequence).Items.ToList().Select((value, j) => new { j, value }))
@@ -263,7 +263,7 @@ namespace DICOMAnonymizer
         /// <returns></returns>
         public DicomDataset Anonymize(DicomDataset dataset)
         {
-            Mode m = _mode;
+            var m = _mode;
             if (m == Mode.clone)
             {
                 // TODO: Anonymizing DicomElement needs deep copy
@@ -282,7 +282,7 @@ namespace DICOMAnonymizer
             file = file ?? throw new ArgumentNullException(nameof(file));
 
             var transferSyntax = file.FileMetaInfo.Contains(DicomTag.TransferSyntaxUID) ? file.FileMetaInfo.TransferSyntax : null;
-            Mode m = _mode;
+            var m = _mode;
             if (m == Mode.clone)
             {
                 file = file.Clone();
@@ -324,7 +324,7 @@ namespace DICOMAnonymizer
         private static string Indent(int lvl)
         {
             var sb = new StringBuilder();
-            for (int i = 0; i < lvl; i++)
+            for (var i = 0; i < lvl; i++)
             {
                 sb.Append("  ");
             }
@@ -342,7 +342,7 @@ namespace DICOMAnonymizer
                 var tag = func_tag.Value;
 
                 // TagFunction => List<Tags>
-                if (grouped.TryGetValue(WrappingClass(func), out SortedDictionary<string, List<string>> func_tags))
+                if (grouped.TryGetValue(WrappingClass(func), out var func_tags))
                 {
                     if (!func_tags.ContainsKey(Name(func)))
                     {
@@ -425,7 +425,7 @@ namespace DICOMAnonymizer
                             // Gets the description attribute of each AnonFunc
                             var method = r.GetType().GetMethod(tf);
                             var attr = (DescriptionAttribute)method.GetCustomAttributes(typeof(DescriptionAttribute), false)[0];
-                            string desc = attr.Description;
+                            var desc = attr.Description;
 
                             // Get the related AnonFunc examples
                             var exampMethod = r.GetType().GetMethod(tf + "Examples");
@@ -439,7 +439,7 @@ namespace DICOMAnonymizer
                             report.Add(Indent(2) + "Description:");
                             report.AddRange(Regex.Split(desc, "\r\n|\r|\n").Select(s => Indent(3) + s.Trim()));
                             report.Add(Indent(2) + "Examples:");
-                            int num = 0;
+                            var num = 0;
                             examples.ForEach(ex =>
                             {
                                 num++;

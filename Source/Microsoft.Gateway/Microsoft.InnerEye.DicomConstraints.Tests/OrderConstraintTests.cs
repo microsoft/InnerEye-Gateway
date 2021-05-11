@@ -23,7 +23,7 @@
             var o6 = new OrderedIntConstraint(Order.NotEqual, 42, DicomTag.SeriesNumber);
             var o7 = new OrderedIntConstraint(Order.Always, 42, DicomTag.SeriesNumber);
 
-            DicomDataset ds = new DicomDataset
+            var ds = new DicomDataset
             {
                 { DicomTag.SeriesNumber, 41 },
             };
@@ -71,7 +71,7 @@
             var o6 = new TimeOrderConstraint(Order.NotEqual, new TimeSpan(11, 11, 11), DicomTag.SeriesTime);
             var o7 = new TimeOrderConstraint(Order.Always, new TimeSpan(11, 11, 11), DicomTag.SeriesTime);
 
-            DicomDataset ds = new DicomDataset
+            var ds = new DicomDataset
             {
                 { DicomTag.SeriesTime, new DateTime(2017, 2, 14, 10, 11, 11) },
             };
@@ -113,7 +113,7 @@
             var c0 = new RegexConstraint(DicomTag.SeriesDescription, @"(hog)", RegexOptions.ECMAScript);
             var c0R = new RequiredTagConstraint(TagRequirement.Optional, c0);
 
-            DicomDataset ds = new DicomDataset();
+            var ds = new DicomDataset();
             ds.AddOrUpdate(DicomTag.SeriesDescription, @"hog protocol v1");
 
             Assert.IsTrue(c0R.Check(ds).Result);
@@ -123,7 +123,7 @@
         [TestMethod]
         public void ConstraintUID()
         {
-            DicomDataset ds = new DicomDataset();
+            var ds = new DicomDataset();
             ds.AddOrUpdate(DicomTag.SOPClassUID, DicomUID.CTImageStorage);
 
             var s0 = new UIDStringOrderConstraint(Order.Equal, DicomUID.CTImageStorage.UID, DicomTag.SOPClassUID);
@@ -135,7 +135,7 @@
         [TestMethod]
         public void ConstraintCodeString()
         {
-            DicomDataset ds = new DicomDataset();
+            var ds = new DicomDataset();
             ds.AddOrUpdate(DicomTag.BodyPartExamined, "PELVIS");
 
             var d0 = new OrderedStringConstraint(Order.NotEqual, "SKULL", DicomTag.BodyPartExamined);
@@ -147,7 +147,7 @@
         [TestMethod]
         public void ConstraintCodeStringCases()
         {
-            DicomDataset ds = new DicomDataset();
+            var ds = new DicomDataset();
             ds.AddOrUpdate(DicomTag.BodyPartExamined, "PELVIS");
 
             var orderedCaseSensitive = new OrderedString("pElViS", StringComparisonType.CultureInvariantIgnoreCase);
