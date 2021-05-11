@@ -140,9 +140,6 @@ dotnet_style_qualification_for_property = false:suggestion
 # CA1014: Mark assemblies with CLSCompliant
 dotnet_diagnostic.CA1014.severity = none
 
-# CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = suggestion
-
 # IDE0004: Remove Unnecessary Cast
 dotnet_diagnostic.IDE0004.severity = error
 

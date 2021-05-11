@@ -28,7 +28,6 @@
         };
 
         [TestCategory("DownloadService")]
-        [Ignore("Integration test, relies on live API")]
         [Description("Test the happy end to end path of the download service using the live segmentation service.")]
         [Timeout(240 * 1000)]
         [TestMethod]
@@ -36,7 +35,7 @@
         {
             var resultDirectory = CreateTemporaryDirectory();
 
-            var (segmentationId, modelId, data) = await StartRealSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
+            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 140, "localhost");
 
             // Create a Data receiver to receive the RT struct result
@@ -53,8 +52,9 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
+                using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
-                using (var downloadService = CreateDownloadService())
+                using (var downloadService = CreateDownloadService(mockSegmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 {
                     pushService.Start();
@@ -93,8 +93,6 @@
                 var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
-
-                TryDeleteDirectory(folderPath);
             }
         }
 
@@ -381,8 +379,6 @@
                 var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
-
-                TryDeleteDirectory(folderPath);
             }
         }
     }

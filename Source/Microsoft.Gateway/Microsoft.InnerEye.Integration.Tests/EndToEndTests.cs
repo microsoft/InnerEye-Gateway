@@ -46,7 +46,7 @@
             {
                 Assert.Fail("Invalid product key. Check ProcessorSettings.LicenseKeyEnvVar in TestConfigurations/GatewayProcessorConfig.json and the corresponding system environment variable.");
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
                 Assert.Fail("Unable to connect to inference service uri. Check ProcessorSettings.InferenceUri in TestConfigurations/GatewayProcessorConfig.json.");
             }

@@ -1,7 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Gateway.MessageQueueing.Sqlite
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using InnerEye.Gateway.MessageQueueing.Exceptions;
@@ -141,7 +140,6 @@
         /// <exception cref="ArgumentException">If the queue transaction is null or is not the correct type.</exception>
         /// <exception cref="ArgumentNullException">If input value is null.</exception>
         /// <exception cref="MessageQueueWriteException">If the queue cannot write the input value.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void Enqueue<T>(T value, IQueueTransaction queueTransaction)
         {
             if (value == null)

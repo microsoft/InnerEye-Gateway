@@ -126,7 +126,15 @@
 
                 return (JsonConvert.DeserializeObject<T>(jsonText), true);
             }
-            catch (Exception e)
+            catch (JsonSerializationException e)
+            {
+                var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
+                    string.Format(CultureInfo.InvariantCulture, "Unable to parse settings file {0}", path));
+                logEntry.Log(_logger, LogLevel.Error, e);
+
+                return (default(T), false);
+            }
+            catch (IOException e)
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
                     string.Format(CultureInfo.InvariantCulture, "Unable to load settings file {0}", path));

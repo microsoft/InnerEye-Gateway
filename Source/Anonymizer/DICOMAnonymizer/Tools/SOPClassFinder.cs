@@ -412,15 +412,13 @@ namespace DICOMAnonymizer.Tools
 
         public static SOPClass? SOPClassName(string code)
         {
-            SOPClass? v = null;
-            _sopCodeMap.TryGetValue(code, out v);
+            _sopCodeMap.TryGetValue(code, out var v);
             return v;
         }
 
         public static string SOPClassCode(SOPClass sop)
         {
-            string v = null;
-            _sopNameMap.TryGetValue(sop, out v);
+            _sopNameMap.TryGetValue(sop, out var v);
             return v;
         }
     }

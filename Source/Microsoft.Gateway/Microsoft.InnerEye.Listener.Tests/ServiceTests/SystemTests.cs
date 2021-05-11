@@ -99,10 +99,6 @@
                     var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
-
-                    dicomFile = null;
-
-                    TryDeleteDirectory(folderPath);
                 }
             }
         }
@@ -190,10 +186,6 @@
                     var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
-
-                    dicomFile = null;
-
-                    TryDeleteDirectory(folderPath);
                 }
             }
         }

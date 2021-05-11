@@ -72,10 +72,6 @@
 
                 Trace.TraceError($"[{GetType().Name}] A socket exception occured during the Dicom echo. Failed to get a response. Exception: {e}");
             }
-            catch (Exception e)
-            {
-                Trace.TraceError($"[{GetType().Name}] An unkown exception occured during the Dicom echo. Exception: {e}");
-            }
 
             return result;
         }

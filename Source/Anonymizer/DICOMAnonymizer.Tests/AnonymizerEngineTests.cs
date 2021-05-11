@@ -89,7 +89,7 @@ namespace DICOMAnonymizer.Tests
             {
                 anon.Anonymize(ds);
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 Assert.AreEqual("Hello", e.Message);
             }

@@ -58,6 +58,10 @@
                         return httpResponseMessage;
                     }
                 }
+                catch (HttpRequestException e)
+                {
+                    Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, with exception {e}");
+                }
                 catch (Exception e)
                 {
                     Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, with exception {e}");

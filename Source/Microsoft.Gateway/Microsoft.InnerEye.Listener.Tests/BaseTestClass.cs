@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
@@ -396,7 +397,7 @@
                 {
                     return messageQueue.DequeueNextMessage<T>(messageQueueTransaction);
                 }
-                catch (Exception)
+                catch (MessageQueueReadException)
                 {
                     Task.WaitAll(Task.Delay(500));
                 }
@@ -405,20 +406,13 @@
             throw new MessageQueueReadException("Failed to transactional dequeue.");
         }
 
-        protected void TryDeleteDirectory(string directory)
+        private static void TryDeleteDirectory(string directory)
         {
             var directoryInfo = new DirectoryInfo(directory);
 
             if (directoryInfo.Exists)
             {
-                try
-                {
-                    directoryInfo.Delete(true);
-                }
-                catch (Exception e)
-                {
-                    TestContext.WriteLine($"Failed to delete directory {directory} with exception {e}");
-                }
+                directoryInfo.Delete(true);
             }
         }
 
@@ -684,7 +678,7 @@
                 {
                     process.Kill();
                 }
-                catch (Exception e)
+                catch (Win32Exception e)
                 {
                     TestContext.WriteLine($"Failed to kill process {process.Id}, {process.ProcessName} with exception {e}");
                 }
