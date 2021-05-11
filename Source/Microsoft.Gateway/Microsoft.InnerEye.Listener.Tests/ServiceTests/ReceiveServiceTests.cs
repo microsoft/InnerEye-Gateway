@@ -1,11 +1,11 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 {
-    using System;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
     using Microsoft.InnerEye.Listener.Tests.Models;
@@ -126,7 +126,7 @@
                 receiveService.Start();
 
                 // This should cause an exception to be raised in ReceiveService.GetAcceptedSopClassesAndTransferSyntaxes
-                mockReceiverConfigurationProvider.TestException = new Exception("A general exception.");
+                mockReceiverConfigurationProvider.TestException = new ConfigurationException("A general exception.");
 
                 uploadQueue.Clear();
 

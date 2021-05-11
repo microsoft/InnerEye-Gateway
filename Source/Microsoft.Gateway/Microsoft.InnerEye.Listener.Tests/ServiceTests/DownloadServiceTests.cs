@@ -13,6 +13,7 @@
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.Common;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -174,7 +175,7 @@
             using (var downloadQueue = downloadService.DownloadQueue)
             {
                 // Set the client to always return 50%
-                mockSegmentationClient.SegmentationResultException = new Exception();
+                mockSegmentationClient.SegmentationResultException = new SegmentationClientException("Segmentation error");
 
                 deleteService.Start();
                 downloadService.Start();

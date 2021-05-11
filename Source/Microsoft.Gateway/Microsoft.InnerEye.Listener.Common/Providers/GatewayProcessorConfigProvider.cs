@@ -131,7 +131,7 @@
                         "License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
                         processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar);
                     var logEntry = LogEntry.Create(ServiceStatus.Starting);
-                    logEntry.Log(logger, Microsoft.Extensions.Logging.LogLevel.Error, new Exception(message));
+                    logEntry.Log(logger, Microsoft.Extensions.Logging.LogLevel.Error, new ConfigurationException(message));
                 }
 
                 return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);

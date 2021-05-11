@@ -15,6 +15,7 @@
 
     using DICOMAnonymizer;
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using static DICOMAnonymizer.AnonymizeEngine;
 
     /// <summary>
@@ -269,7 +270,7 @@
                 throw new ArgumentException($"SegmentationId run not found {segmentationId} for model {modelId}");
             }
 
-            throw new Exception(response.ReasonPhrase);
+            throw new SegmentationClientException(response.ReasonPhrase);
         }
 
         /// <inheritdoc />
@@ -307,7 +308,7 @@
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception(response.ReasonPhrase);
+                    throw new SegmentationClientException(response.ReasonPhrase);
                 }
 
                 var segmentationId = await response.Content.ReadAsStringAsync();

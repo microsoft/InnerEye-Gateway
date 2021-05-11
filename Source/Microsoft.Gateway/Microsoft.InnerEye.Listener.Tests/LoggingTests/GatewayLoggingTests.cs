@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.LoggingTests
 {
-    using System;
     using System.Diagnostics;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -13,7 +13,7 @@
         [TestMethod]
         public void TestTraceLogging1()
         {
-            Trace.TraceError($"[{GetType().Name}] #$^&*(^Funky {new Exception("Something went really wrong.")}");
+            Trace.TraceError($"[{GetType().Name}] #$^&*(^Funky {new ConfigurationException("Something went really wrong.")}");
         }
     }
 }

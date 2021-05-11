@@ -14,6 +14,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
     using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Gateway.Logging;
     using Microsoft.InnerEye.Gateway.Models;
+    using Microsoft.InnerEye.Listener.Common.Providers;
 
     /// <summary>
     /// The receive configuration service, used for starting and stopping the receive service base on configuration changes,
@@ -73,7 +74,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
             }
 
             var logEntry2 = LogEntry.Create(ServiceStatus.Starting);
-            logEntry2.Log(logger, LogLevel.Error, new Exception("Cannot find configuration directory."));
+            logEntry2.Log(logger, LogLevel.Error, new ConfigurationException("Cannot find configuration directory."));
 
             return string.Empty;
         }

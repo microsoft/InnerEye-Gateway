@@ -27,7 +27,7 @@
             {
                 return aetConfig.AETConfig;
             }
-            throw new Exception($"Config for called AET {calledAET} and calling AET {callingAET} not found");
+            throw new ConfigurationException($"Config for called AET {calledAET} and calling AET {callingAET} not found");
         }
 
         /// <summary>

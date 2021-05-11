@@ -148,9 +148,6 @@ dotnet_code_quality.ca1711.allowed_suffixes = Queue
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = suggestion
 
-# CA2201: Do not raise reserved exception types
-dotnet_diagnostic.CA2201.severity = suggestion
-
 # CA5359: Do Not Disable Certificate Validation
 dotnet_diagnostic.CA5359.severity = suggestion
 
@@ -186,6 +183,9 @@ dotnet_diagnostic.IDE0052.severity = error
 
 # IDE0070: Use 'System.HashCode'
 dotnet_diagnostic.IDE0070.severity = error
+
+# IDE0079: Remove unnecessary suppression
+dotnet_diagnostic.IDE0079.severity = error
 
 # IDE0080: Remove unnecessary suppression operator
 dotnet_diagnostic.IDE0080.severity = error

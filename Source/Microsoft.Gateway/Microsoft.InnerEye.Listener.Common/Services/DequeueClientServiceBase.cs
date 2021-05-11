@@ -1,7 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -155,7 +154,6 @@
         /// <param name="queueItem">The queue item.</param>
         /// <param name="queueTransaction">The message queue transaction.</param>
         /// <param name="oldQueueItemAction">Action when the queue item is old and will be removed from the queues (including the dead letter queue).</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected void HandleExceptionForTransaction(T queueItem, IQueueTransaction queueTransaction, Action oldQueueItemAction = null)
         {
             if (queueTransaction == null)
@@ -201,7 +199,7 @@
                     LogError(LogEntry.Create(MessageQueueStatus.TooOldForDeadLetterError,
                                  queueItemBase: queueItem,
                                  sourceMessageQueuePath: _dequeueQueuePath),
-                             new Exception("Message dequeued too many times. Remove from all queues."));
+                             new ServiceBaseException("Message dequeued too many times. Remove from all queues."));
                 }
 
                 queueTransaction.Commit();
