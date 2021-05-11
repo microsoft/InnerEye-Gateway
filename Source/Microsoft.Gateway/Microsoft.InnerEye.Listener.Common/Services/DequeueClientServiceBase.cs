@@ -204,7 +204,9 @@
 
                 queueTransaction.Commit();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(MessageQueueStatus.TransactionExceptionHandlerError,
                              queueItemBase: queueItem,
@@ -282,7 +284,9 @@
                         // Abort on a write exception
                         transaction.Abort();
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         LogError(LogEntry.Create(MessageQueueStatus.MoveError,
                                      information: "Failed to dequeue a message from the dead letter queue",

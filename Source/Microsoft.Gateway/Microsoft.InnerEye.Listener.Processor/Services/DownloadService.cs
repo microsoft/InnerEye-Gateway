@@ -178,7 +178,9 @@
                     transaction.Abort();
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.DownloadError, downloadQueueItem: queueItem),
                              e);

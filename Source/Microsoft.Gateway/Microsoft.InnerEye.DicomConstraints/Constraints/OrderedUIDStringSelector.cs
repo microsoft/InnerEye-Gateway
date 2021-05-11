@@ -6,14 +6,10 @@
     using Dicom;
     using Newtonsoft.Json;
 
-    // File name should match first type name
-#pragma warning disable SA1649
-
     /// <summary>
     /// Impose a constraint on a DicomUID
     /// </summary>
     public class UIDStringOrderConstraint : DicomTagConstraint, IEquatable<UIDStringOrderConstraint>
-#pragma warning restore SA1649
     {
         /// <summary>
         /// Constructor

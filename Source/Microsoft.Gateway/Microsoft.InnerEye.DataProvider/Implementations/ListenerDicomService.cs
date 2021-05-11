@@ -198,8 +198,9 @@ namespace Microsoft.InnerEye.Listener.DataProvider.Implementations
 
                 return new DicomCStoreResponse(request, storeException.Status);
             }
-
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _parameters.Update?.Invoke(_transferId, _socketConnectionDateTime, _currentDicomAssociation, DicomReceiveProgressCode.ErrorSavingFile);
 

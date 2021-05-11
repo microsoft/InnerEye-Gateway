@@ -1,13 +1,10 @@
 ﻿namespace Microsoft.InnerEye.Listener.Receiver.Services
 {
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using Dicom;
     using Dicom.Network;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -83,7 +80,7 @@
             // Start listening
             var serverStarted = _dataReceiver.StartServer(
                     port: _receiveServiceConfig.GatewayDicomEndPoint.Port,
-                    getAcceptedTransferSyntaxes: GetAcceptedSopClassesAndTransferSyntaxes,
+                    getAcceptedTransferSyntaxes: () => _receiveServiceConfig.AcceptedSopClassesAndTransferSyntaxes,
                     timeout: TimeSpan.FromSeconds(2));
 
             if (!serverStarted)
@@ -179,7 +176,9 @@
                         transaction.Commit();
                     }
                     // This should never happen unless someone has manually changed the queue configuration
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         transaction.Abort();
                         LogError(LogEntry.Create(AssociationStatus.ReceiveEnqueueError, uploadQueueItem: queueItem),
@@ -216,32 +215,6 @@
         }
 
         /// <summary>
-        /// Gets the accepted SOP classes and transfer syntaxes.
-        /// </summary>
-        /// <returns>The accepted SOP classes and transfer syntaxes.</returns>
-        private IReadOnlyDictionary<DicomUID, DicomTransferSyntax[]> GetAcceptedSopClassesAndTransferSyntaxes()
-        {
-            try
-            {
-                var gatewayReceiveConfig = _getReceiveServiceConfig();
-
-                if (gatewayReceiveConfig != null)
-                {
-                    _receiveServiceConfig = gatewayReceiveConfig;
-                }
-            }
-            // We catch all exceptions and return the latest cached result on error. We do not want to stop accepting data
-            // just because we cannot communicate with our API. We should stop processing further down the chain.
-            catch (Exception e)
-            {
-                LogError(LogEntry.Create(ServiceStatus.GetAcceptedSopClassesAndTransferSyntaxesError),
-                         e);
-            }
-
-            return _receiveServiceConfig.AcceptedSopClassesAndTransferSyntaxes;
-        }
-
-        /// <summary>
         /// Disposes of the data receiver and sets the private value to null.
         /// </summary>
         private void DisposeDataReceiver()
@@ -268,7 +241,6 @@
                 // This is causing too verbose logging. Consider turning back on if running a telemetry/logging solution that can deal with it
                 //PresentationContextsToLogString(e.DicomAssociation.PresentationContexts)
                 null);
-
 
         /// <summary>
         /// Converts a Dicom presentation context collection to a human readable string.

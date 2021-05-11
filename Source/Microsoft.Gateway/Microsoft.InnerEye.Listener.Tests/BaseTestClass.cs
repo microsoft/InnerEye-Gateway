@@ -225,7 +225,9 @@
                     File.WriteAllBytes(resultPath, contents);
                     TestContext.AddResultFile(resultPath);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     BaseTestLogger.LogError(e, $"Failed to convert file to HTML. File {markdownFile}");
                 }

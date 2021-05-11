@@ -50,7 +50,7 @@
             {
                 File.AppendAllLines(path, lines);
             }
-            catch
+            catch (IOException)
             {
                 if (retryCount >= 0)
                 {

@@ -124,7 +124,9 @@
 
                 LogInformation(LogEntry.Create(ServiceStatus.Started));
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StartError), e);
 
@@ -144,7 +146,9 @@
             {
                 _cancellationTokenSource?.Cancel();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StoppingError,
                              information: "Cancellation token source cancel exception."),
@@ -156,7 +160,9 @@
                 // Will only wait 10 seconds for all tasks to finish nicely
                 Task.WaitAll(_executionTasks.Where(x => x != null).ToArray(), TimeSpan.FromSeconds(10));
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StoppingError,
                              information: "Unknown exception waiting for all execution tasks to end."),
@@ -204,7 +210,9 @@
                 {
                     queue.Value.Dispose();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(MessageQueueStatus.DisposeError,
                                  sourceMessageQueuePath: queue.Value.QueuePath),
@@ -260,7 +268,9 @@
                     EnqueueMessage(message, messageQueuePath, transaction);
                     transaction.Commit();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.BaseEnqueueMessageError,
                                  queueItemBase: message),
@@ -464,7 +474,9 @@
             {
                 return Directory.EnumerateFiles(directoryPath);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(AssociationStatus.BaseEnumerateDirectoryError,
                             queueItemBase: queueItemBase,
@@ -530,7 +542,9 @@
             {
                 return DicomFile.Open(filePath);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(AssociationStatus.BaseOpenDicomFileError,
                             queueItemBase: queueItemBase,
@@ -563,7 +577,9 @@
                         LogError(LogEntry.Create(ServiceStatus.ExecuteError), e);
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(ServiceStatus.ExecuteError), e);
                 }
