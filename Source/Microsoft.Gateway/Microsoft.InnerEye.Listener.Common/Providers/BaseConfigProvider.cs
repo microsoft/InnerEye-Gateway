@@ -97,7 +97,8 @@
         /// <param name="logger">Logger.</param>
         /// <param name="folderName">Settings folder name.</param>
         /// <param name="settingsFile">Optional settings file, use String.Empty to monitor a folder.</param>
-        /// <param name="flatMap">Optional flat map to handle folders.</param>
+        /// <param name="flatMap">Optional flat map to handle folders. This should merge a T from each file in the folder
+        /// into a single new T. This is required if monitoring a folder.</param>
         public BaseConfigProvider(
             ILogger logger,
             string folderName,
