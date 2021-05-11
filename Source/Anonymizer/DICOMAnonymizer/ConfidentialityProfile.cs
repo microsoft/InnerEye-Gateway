@@ -1,22 +1,20 @@
-﻿using Dicom;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-
-namespace DICOMAnonymizer
+﻿namespace DICOMAnonymizer
 {
+    using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
-    using static AnonymizeEngine;
-    using AnonFunc = Func<DicomDataset, List<TagOrIndex>, DicomItem, DicomItem>;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text.RegularExpressions;
+    using Dicom;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
     public class ConfidentialityProfile : ITagHandler
     {
 
         #region DICOM Confidentiality Profile
 
-        public static readonly List<string> TagProfile = new List<string>
+        public static readonly IReadOnlyList<string> TagProfile = new List<string>
         {
             "0008,0050;Z;;;;;;;;;",
             "0018,4000;X;;;;;;;C;;",
@@ -294,7 +292,7 @@ namespace DICOMAnonymizer
             "0038,4000;X;;;;;;;C;;",
         };
 
-        public static readonly List<string> RegexProfile = new List<string>
+        public static readonly IReadOnlyList<string> RegexProfile = new List<string>
         {
             "[0-9A-F]{3}[13579BDF],[0-9A-F]{4};X;C;;;;;;;;",
             "50[0-9A-F]{2},[0-9A-F]{4};X;;;;;;;;;C",
@@ -310,7 +308,9 @@ namespace DICOMAnonymizer
         /// <see>http://dicom.nema.org/medical/dicom/current/output/html/part15.html</see>
         /// <remarks>The order of the flags are mapped to the profile's CSV file</remarks>
         [Flags]
+#pragma warning disable CA1028 // Enum Storage should be Int32
         public enum SecurityProfileOptions : short
+#pragma warning restore CA1028 // Enum Storage should be Int32
         {
             BasicProfile = 1,
             RetainSafePrivate = 2,
@@ -326,7 +326,10 @@ namespace DICOMAnonymizer
 
         /// <summary>Profile actions per tag as described in DICOM PS 3.15-2017c</summary>
         /// <see>http://dicom.nema.org/medical/dicom/current/output/html/part15.html</see>
+#pragma warning disable CA1028 // Enum Storage should be Int32
+        [Flags]
         public enum SecurityProfileActions : byte
+#pragma warning restore CA1028 // Enum Storage should be Int32
         {
             D = 1,  // Replace with a non-zero length value that may be a dummy value and consistent with the VR
             Z = 2,  // Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR
@@ -468,6 +471,8 @@ namespace DICOMAnonymizer
         /// <returns>A boolean flag indicating whether the element is of the expected type, otherwise false</returns>
         public static bool IsOtherElement(DicomElement element)
         {
+            element = element ?? throw new ArgumentNullException(nameof(element));
+
             var t = element.GetType();
             return t == typeof(DicomOtherByte) || t == typeof(DicomOtherDouble) || t == typeof(DicomOtherFloat)
                    || t == typeof(DicomOtherLong) || t == typeof(DicomOtherWord) || t == typeof(DicomUnknown);
@@ -478,6 +483,8 @@ namespace DICOMAnonymizer
         /// <returns>The data type if found, otherwise null</returns>
         public static Type ElementValueType(DicomElement element)
         {
+            element = element ?? throw new ArgumentNullException(nameof(element));
+
             var t = element.GetType();
             if (t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof(DicomValueElement<>))
             {
@@ -503,8 +510,10 @@ namespace DICOMAnonymizer
         [Description(@"We replace a UID with a new random one. This function keeps internal state so
                        the same UID tag in future Dicoms will be consistently replaced. To reset,
                        use the ReplacedUIDs property.")]
-        public DicomItem ReplaceUID(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
+        public DicomItem ReplaceUID(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item)
         {
+            item = item ?? throw new ArgumentNullException(nameof(item));
+
             var element = (item as DicomElement);
             if (element == null)
             {
@@ -537,8 +546,10 @@ namespace DICOMAnonymizer
 
         [Description(@"Keeps the examined item but sets its value to be a dummy value. If the VR is a string
                        we replace it with the word 'ANONYMOUS', or else we set it to be empty.")]
-        public static DicomItem CleanDummyElement(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
+        public static DicomItem CleanDummyElement(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item)
         {
+            item = item ?? throw new ArgumentNullException(nameof(item));
+
             var vr = item.ValueRepresentation;
 
             if (vr.IsString)
@@ -556,7 +567,7 @@ namespace DICOMAnonymizer
         /// <param name="oldds">Reference to the old dataset</param>
         /// <param name="item">The element to be processed</param>
         [Description("Keeps the examined item but sets its value to be empty.")]
-        public static DicomItem BlankElement(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
+        public static DicomItem BlankElement(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item)
         {
             var element = (item as DicomElement);
             if (element == null)
@@ -613,7 +624,7 @@ namespace DICOMAnonymizer
         /// <param name="oldds"></param>
         /// <param name="item"></param>
         [Description("Removes the examined item.")]
-        public static DicomItem RemoveItem(DicomDataset oldds, List<TagOrIndex> path, DicomItem item) { return null; }
+        public static DicomItem RemoveItem(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item) { return null; }
 
         /// <summary>
         /// Keeps an item by adding it to the new dataset
@@ -621,28 +632,28 @@ namespace DICOMAnonymizer
         /// <param name="oldds">Reference to the old dataset</param>
         /// <param name="item">The element to be processed</param>
         [Description("Keeps the examined item.")]
-        public static DicomItem KeepItem(DicomDataset oldds, List<TagOrIndex> path, DicomItem item) { return item; }
+        public static DicomItem KeepItem(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item) { return item; }
 
         #endregion
 
         #region Tag handler examples
 
-        public static List<AnonExample> ReplaceUIDExamples()
+        public static IReadOnlyList<AnonExample> ReplaceUIDExamples()
         {
             return new List<AnonExample> { };
         }
 
-        public static List<AnonExample> CleanDummyElementExamples()
+        public static IReadOnlyList<AnonExample> CleanDummyElementExamples()
         {
             return new List<AnonExample> { };
         }
 
-        public static List<AnonExample> BlankElementExamples()
+        public static IReadOnlyList<AnonExample> BlankElementExamples()
         {
             return new List<AnonExample> { };
         }
 
-        public static List<AnonExample> RemoveItemExamples()
+        public static IReadOnlyList<AnonExample> RemoveItemExamples()
         {
             var output = new AnonExample();
 
@@ -657,7 +668,7 @@ namespace DICOMAnonymizer
             return new List<AnonExample> { output };
         }
 
-        public static List<AnonExample> KeepItemExamples()
+        public static IReadOnlyList<AnonExample> KeepItemExamples()
         {
             var output = new AnonExample();
 

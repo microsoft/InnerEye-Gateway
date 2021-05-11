@@ -1,11 +1,11 @@
-﻿using Dicom;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using Dicom;
 using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
 namespace DICOMAnonymizer
@@ -26,11 +26,13 @@ namespace DICOMAnonymizer
         private readonly Dictionary<Regex, AnonFunc> _regexFuncs = new Dictionary<Regex, AnonFunc>();
         private readonly Dictionary<DicomTag, AnonFunc> _tagFuncs = new Dictionary<DicomTag, AnonFunc>();
         private readonly List<ITagHandler> _tagHandlers = new List<ITagHandler>();
-        private List<ITagHandler> _postprocesses { get; set; } = new List<ITagHandler>();
+        private readonly List<ITagHandler> _postprocesses = new List<ITagHandler>();
 
         // TODO: A way to make descriptions optional during testing
-        private readonly bool _testingmode = false;
+        private readonly bool _testingmode;
+#pragma warning disable IDE0051 // Remove unused private members
         private AnonymizeEngine(Mode m, bool testing)
+#pragma warning restore IDE0051 // Remove unused private members
         {
             _mode = m;
             _testingmode = testing;
@@ -50,7 +52,7 @@ namespace DICOMAnonymizer
 
             if (f.Method.GetCustomAttributes(typeof(DescriptionAttribute), false).Length != 1)
             {
-                throw new FormatException(string.Format("{0}:{1} Description attribute is missing", f.Target.GetType().FullName, f.Method.Name));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "{0}:{1} Description attribute is missing", f.Target.GetType().FullName, f.Method.Name));
             }
         }
 
@@ -64,11 +66,11 @@ namespace DICOMAnonymizer
             var exampMethod = th.GetType().GetMethod(f.Method.Name + "Examples");
             if (exampMethod == null)
             {
-                throw new FormatException(string.Format("{0}:{1} Examples are missing.", f.Target.GetType().FullName, f.Method.Name));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "{0}:{1} Examples are missing.", f.Target.GetType().FullName, f.Method.Name));
             }
             if (!exampMethod.IsStatic)
             {
-                throw new FormatException(string.Format("{0}:{1} should be static.", f.Target.GetType().FullName, f.Method.Name));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "{0}:{1} should be static.", f.Target.GetType().FullName, f.Method.Name));
             }
         }
 
@@ -78,6 +80,8 @@ namespace DICOMAnonymizer
         /// <param name="th">The tag handler from which tag actions will be consumed</param>
         public void RegisterHandler(ITagHandler th)
         {
+            th = th ?? throw new ArgumentNullException(nameof(th));
+
             _tagHandlers.Add(th);
             _postprocesses.Add(th);
 
@@ -100,8 +104,10 @@ namespace DICOMAnonymizer
         /// Register all actions of a TagHandler. Overwrites duplicates in favor of new actions. The actions can have side-effects.
         /// </summary>
         /// <param name="th">The tag handler from which tag actions will be consumed</param>
-        public List<string> ForceRegisterHandler(ITagHandler th)
+        public IReadOnlyList<string> ForceRegisterHandler(ITagHandler th)
         {
+            th = th ?? throw new ArgumentNullException(nameof(th));
+
             _tagHandlers.Add(th);
             _postprocesses.Add(th);
 
@@ -123,7 +129,7 @@ namespace DICOMAnonymizer
                 CheckAnonymizationAttributesExist(x.Value);
                 CheckExamplesExist(th, x.Value);
 
-                if (_regexFuncs.FirstOrDefault(pair => pair.Key.ToString().Equals(x.Key.ToString())).Key != null)
+                if (_regexFuncs.FirstOrDefault(pair => pair.Key.ToString().Equals(x.Key.ToString(), StringComparison.Ordinal)).Key != null)
                 {
                     report.Add(x.Key.ToString());
                 }
@@ -135,7 +141,7 @@ namespace DICOMAnonymizer
 
         private readonly Mode _mode;
 
-        private DicomDataset ModeSwitch(DicomDataset ds, Mode m)
+        private static DicomDataset ModeSwitch(DicomDataset ds, Mode m)
         {
             switch (m)
             {
@@ -182,11 +188,11 @@ namespace DICOMAnonymizer
                         var n = DoAnonymization(seqds, stack, m);
                         // The only reason we get an empty DicomDataset is because
                         // we deleted its tags during recursion.
-                        if (n.Count() > 0) // So we skip it
+                        if (n.Any()) // So we skip it
                         {
                             nseq.Items.Add(n);
                         }
-                        if (seqds.Count() == 0) // AND we remove it from the original seq (this is for inplace mode)
+                        if (!seqds.Any()) // AND we remove it from the original seq (this is for inplace mode)
                         {
                             (item as DicomSequence).Items.Remove(seqds);
                         }
@@ -273,6 +279,8 @@ namespace DICOMAnonymizer
         /// <param name="file">The file containing the dataset to be altered</param>
         public DicomFile Anonymize(DicomFile file)
         {
+            file = file ?? throw new ArgumentNullException(nameof(file));
+
             var transferSyntax = file.FileMetaInfo.Contains(DicomTag.TransferSyntaxUID) ? file.FileMetaInfo.TransferSyntax : null;
             Mode m = _mode;
             if (m == Mode.clone)
@@ -298,22 +306,22 @@ namespace DICOMAnonymizer
 
         #region Reporting
 
-        private string WrappingClass(AnonFunc f)
+        private static string WrappingClass(AnonFunc f)
         {
             return f.Method.DeclaringType.FullName;
         }
 
-        private string Name(AnonFunc f)
+        private static string Name(AnonFunc f)
         {
             return f.Method.Name;
         }
 
-        private string TagName(DicomTag t)
+        private static string TagName(DicomTag t)
         {
-            return t.DictionaryEntry.Name + " " + t.ToString().ToUpper();
+            return t.DictionaryEntry.Name + " " + t.ToString().ToUpper(CultureInfo.InvariantCulture);
         }
 
-        private string Indent(int lvl)
+        private static string Indent(int lvl)
         {
             var sb = new StringBuilder();
             for (int i = 0; i < lvl; i++)
@@ -323,7 +331,7 @@ namespace DICOMAnonymizer
             return sb.ToString();
         }
 
-        private Dictionary<string, SortedDictionary<string, List<string>>> GroupTagsByTagFuncsAndTagHandler(IEnumerable<KeyValuePair<AnonFunc, string>> func_tag_stream)
+        private static Dictionary<string, SortedDictionary<string, List<string>>> GroupTagsByTagFuncsAndTagHandler(IEnumerable<KeyValuePair<AnonFunc, string>> func_tag_stream)
         {
             // TagHandler => TagFunction => List<Tags>
             var grouped = new Dictionary<string, SortedDictionary<string, List<string>>>();
@@ -356,7 +364,7 @@ namespace DICOMAnonymizer
         }
 
         // TODO: Return a well structured XML/JSON
-        public List<string> ReportRegisteredHandlers()
+        public IReadOnlyList<string> ReportRegisteredHandlers()
         {
             var report = new List<string>();
 
@@ -454,46 +462,50 @@ namespace DICOMAnonymizer
             return report;
         }
 
-        public class AnonExample
-        {
-            public List<string> DependingInput { get; } = new List<string>();
-            public List<string> Input { get; } = new List<string>();
-            public List<string> Output { get; } = new List<string>();
-            public List<string> StateBefore { get; } = new List<string>();
-            public List<string> StateAfter { get; } = new List<string>();
+        #endregion
 
-            public static void InferOutput(DicomItem input, DicomItem output, AnonExample example)
+    }
+
+    public class AnonExample
+    {
+        public IReadOnlyList<string> DependingInput { get; } = new List<string>();
+#pragma warning disable CA1002 // Do not expose generic lists
+        public List<string> Input { get; } = new List<string>();
+        public List<string> Output { get; } = new List<string>();
+#pragma warning restore CA1002 // Do not expose generic lists
+        public IReadOnlyList<string> StateBefore { get; } = new List<string>();
+        public IReadOnlyList<string> StateAfter { get; } = new List<string>();
+
+        public static void InferOutput(DicomItem input, DicomItem output, AnonExample example)
+        {
+            example = example ?? throw new ArgumentNullException(nameof(example));
+
+            if (output == null)
             {
-                if (output == null)
+                example.Output.Add("<removed>");
+            }
+            else if (input == output)
+            {
+                example.Output.Add("<retained>");
+            }
+            else if (output is DicomElement)
+            {
+                if (output is DicomDate)
                 {
-                    example.Output.Add("<removed>");
+                    var v = (output as DicomDate).Get<DateTime>();
+                    example.Output.Add(v.ToShortDateString());
                 }
-                else if (input == output)
+                else if (output is DicomTime)
                 {
-                    example.Output.Add("<retained>");
+                    var v = (output as DicomTime).Get<DateTime>();
+                    example.Output.Add(v.TimeOfDay.ToString());
                 }
-                else if (output as DicomElement != null)
+                else
                 {
-                    if (output as DicomDate != null)
-                    {
-                        var v = (output as DicomDate).Get<DateTime>();
-                        example.Output.Add(v.ToShortDateString());
-                    }
-                    else if (output as DicomTime != null)
-                    {
-                        var v = (output as DicomTime).Get<DateTime>();
-                        example.Output.Add(v.TimeOfDay.ToString());
-                    }
-                    else
-                    {
-                        var v = (output as DicomElement).Get<string>();
-                        example.Output.Add(v == "" ? "<empty>" : v);
-                    }
+                    var v = (output as DicomElement).Get<string>();
+                    example.Output.Add(string.IsNullOrEmpty(v) ? "<empty>" : v);
                 }
             }
         }
-
-        #endregion
-
     }
 }

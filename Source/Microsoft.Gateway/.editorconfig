@@ -178,6 +178,9 @@ dotnet_diagnostic.IDE0051.severity = error
 # IDE0052: Remove unread private members
 dotnet_diagnostic.IDE0052.severity = error
 
+# IDE0065: Misplaced using directive
+csharp_using_directive_placement = inside_namespace
+
 # IDE0070: Use 'System.HashCode'
 dotnet_diagnostic.IDE0070.severity = error
 

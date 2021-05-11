@@ -8,14 +8,9 @@
     using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
-
     using Dicom;
-
     using DICOMAnonymizer;
-
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
-
-    using static DICOMAnonymizer.AnonymizeEngine;
 
     using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 

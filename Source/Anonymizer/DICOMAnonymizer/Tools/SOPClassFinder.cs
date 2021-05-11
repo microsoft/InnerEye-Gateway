@@ -27,7 +27,9 @@ namespace DICOMAnonymizer.Tools
         MultiframeGrayscaleByteSecondaryCaptureImageStorage,
         MultiframeGrayscaleWordSecondaryCaptureImageStorage,
         MultiframeTrueColorSecondaryCaptureImageStorage,
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         _12leadECGWaveformStorage,
+#pragma warning restore CA1707 // Identifiers should not contain underscores
         GeneralECGWaveformStorage,
         AmbulatoryECGWaveformStorage,
         HemodynamicWaveformStorage,
@@ -135,7 +137,7 @@ namespace DICOMAnonymizer.Tools
         RTBrachyApplicationSetupDeliveryInstructionStorage,
     }
 
-    public class SOPClassFinder
+    public static class SOPClassFinder
     {
 
         #region SOP Class Dictionaries

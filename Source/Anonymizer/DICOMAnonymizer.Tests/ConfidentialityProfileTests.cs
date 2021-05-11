@@ -23,7 +23,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void AnonymizeInPlace_Dataset_PatientDataEmpty()
+        public void AnonymizeInPlaceDatasetPatientDataEmpty()
         {
             var dataset = DicomFile.Open(@"TestData/CT1_J2KI").Dataset;
 
@@ -39,7 +39,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void AnonymizeInPlace_File_SopInstanceUidTransferredToMetaInfo()
+        public void AnonymizeInPlaceFileSopInstanceUidTransferredToMetaInfo()
         {
             var file = DicomFile.Open(@"TestData/CT1_J2KI");
             var old = file.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPInstanceUID);
@@ -57,7 +57,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void AnonymizeInPlace_File_ImplementationVersionNameNotMaintained()
+        public void AnonymizeInPlaceFileImplementationVersionNameNotMaintained()
         {
             var file = DicomFile.Open(@"TestData/CT1_J2KI");
             var expected = file.FileMetaInfo.ImplementationVersionName;
@@ -75,7 +75,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void Anonymize_Dataset_OriginalDatasetNotModified()
+        public void AnonymizeDatasetOriginalDatasetNotModified()
         {
             var dataset = DicomFile.Open(@"TestData/CT-MONO2-16-ankle").Dataset;
             var expected = dataset.GetSingleValue<DicomUID>(DicomTag.StudyInstanceUID);
