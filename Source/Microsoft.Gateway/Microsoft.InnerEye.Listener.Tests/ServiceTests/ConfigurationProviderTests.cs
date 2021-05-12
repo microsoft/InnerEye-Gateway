@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
     using Microsoft.InnerEye.DicomConstraints;
     using Microsoft.InnerEye.Gateway.Models;
@@ -516,8 +517,10 @@
 
         [TestCategory("ConfigurationProvider")]
         [Description("Creates a random gateway receive config, saves it, and checks it loads correctly.")]
+        [DataRow(false, DisplayName = "Load GatewayReceiveConfig")]
+        [DataRow(true, DisplayName = "Reload GatewayReceiveConfig")]
         [TestMethod]
-        public void TestLoadGatewayReceiveConfig()
+        public void TestLoadGatewayReceiveConfig(bool reload)
         {
             var configurationDirectory = CreateTemporaryDirectory().FullName;
             var random = new Random();
@@ -525,16 +528,68 @@
             var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
             Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
 
-            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualGatewayReceiveConfig = gatewayReceiveConfigProvider.GatewayReceiveConfig();
+            using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.Config);
 
-            Assert.AreEqual(expectedGatewayReceiveConfig, actualGatewayReceiveConfig);
+                if (reload)
+                {
+                    var configReloadedCount = 0;
+
+                    gatewayReceiveConfigProvider.ConfigChanged += (s, e) =>
+                    {
+                        Interlocked.Increment(ref configReloadedCount);
+                    };
+
+                    var expectedGatewayReceiveConfig2 = RandomGatewayReceiveConfig(random);
+                    Serialise(expectedGatewayReceiveConfig2, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+
+                    SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                    Assert.AreEqual(expectedGatewayReceiveConfig2, gatewayReceiveConfigProvider.Config);
+                }
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway receive config, saves it, and checks it loads correctly. Then toggles runAsConsole.")]
+        [TestMethod]
+        public void TestUpdateGatewayReceiveConfigRunAsConsole()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayReceiveConfig = RandomGatewayReceiveConfig(random);
+            Serialise(expectedGatewayReceiveConfig, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+
+            using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayReceiveConfig, gatewayReceiveConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayReceiveConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var runAsConsole = gatewayReceiveConfigProvider.Config.ServiceSettings.RunAsConsole;
+
+                gatewayReceiveConfigProvider.SetRunAsConsole(!runAsConsole);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // RunAsConsole should have now toggled.
+                Assert.AreEqual(!runAsConsole, gatewayReceiveConfigProvider.Config.ServiceSettings.RunAsConsole);
+            }
         }
 
         [TestCategory("ConfigurationProvider")]
         [Description("Creates a random gateway processor config, saves it, and checks it loads correctly.")]
+        [DataRow(false, DisplayName = "Load GatewayProcessorConfig")]
+        [DataRow(true, DisplayName = "Reload GatewayProcessorConfig")]
         [TestMethod]
-        public void TestLoadGatewayProcessorConfig()
+        public void TestLoadGatewayProcessorConfig(bool reload)
         {
             var configurationDirectory = CreateTemporaryDirectory().FullName;
             var random = new Random();
@@ -542,112 +597,191 @@
             var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
             Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
-            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualGatewayProcessorConfig = gatewayProcessorConfigProvider.GatewayProcessorConfig();
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
 
-            Assert.AreEqual(expectedGatewayProcessorConfig, actualGatewayProcessorConfig);
+                if (reload)
+                {
+                    var configReloadedCount = 0;
+
+                    gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
+                    {
+                        Interlocked.Increment(ref configReloadedCount);
+                    };
+
+                    var expectedGatewayProcessorConfig2 = RandomGatewayProcessorConfig(random);
+                    Serialise(expectedGatewayProcessorConfig2, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+                    SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                    Assert.AreEqual(expectedGatewayProcessorConfig2, gatewayProcessorConfigProvider.Config);
+                }
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway processor config, saves it, and checks it loads correctly. Then toggles runAsConsole.")]
+        [TestMethod]
+        public void TestUpdateGatewayProcessorConfigRunAsConsole()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var runAsConsole = gatewayProcessorConfigProvider.Config.ServiceSettings.RunAsConsole;
+
+                gatewayProcessorConfigProvider.SetRunAsConsole(!runAsConsole);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // RunAsConsole should have now toggled.
+                Assert.AreEqual(!runAsConsole, gatewayProcessorConfigProvider.Config.ServiceSettings.RunAsConsole);
+            }
+        }
+
+        [TestCategory("ConfigurationProvider")]
+        [Description("Creates a random gateway processor config, saves it, and checks it loads correctly. Then toggles updates processor settings.")]
+        [TestMethod]
+        public void TestUpdateGatewayProcessorConfigProcessorSettings()
+        {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+            var random = new Random();
+
+            var expectedGatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+            Serialise(expectedGatewayProcessorConfig, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
+            using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
+            {
+                Assert.AreEqual(expectedGatewayProcessorConfig, gatewayProcessorConfigProvider.Config);
+
+                var configReloadedCount = 0;
+
+                gatewayProcessorConfigProvider.ConfigChanged += (s, e) =>
+                {
+                    Interlocked.Increment(ref configReloadedCount);
+                };
+
+                var processorSettings = RandomProcessorSettings(random);
+
+                gatewayProcessorConfigProvider.SetProcessorSettings(processorSettings.InferenceUri);
+
+                SpinWait.SpinUntil(() => configReloadedCount > 0, TimeSpan.FromSeconds(10));
+
+                // InferenceUri should have now changed.
+                Assert.AreEqual(processorSettings.InferenceUri, gatewayProcessorConfigProvider.Config.ProcessorSettings.InferenceUri);
+            }
         }
 
         /// <summary>
-        /// Create a list of random AET config models, save them to a single file, and check they load correctly.
+        /// Create an Action for saving a set of AETConfigModels to a single file.
         /// </summary>
-        /// <param name="useFile">True to use AETConfigProvider in single file mode, false to use it in folder mode.</param>
-        public void TestLoadAETConfigCommon(bool useFile)
-        {
-            var configurationDirectory = CreateTemporaryDirectory().FullName;
-            var random = new Random();
+        /// <param name="configurationDirectory">Folder to store file in.</param>
+        /// <returns>Action.</returns>
+        public static Action<Random, AETConfigModel[]> SaveFileAETConfigModels(string configurationDirectory) =>
+            (random, aetConfigModels) => Serialise(aetConfigModels, configurationDirectory, AETConfigProvider.AETConfigFileName);
 
-            var expectedAETConfigModels = RandomArray(random, 2, 10, RandomAETConfigModel);
-            var folder = string.Empty;
-            var filename = string.Empty;
-
-            if (useFile)
+        /// <summary>
+        /// Create an Action for saving a set of AETConfigModels to a folder.
+        /// </summary>
+        /// <param name="configurationDirectory">Folder to store folder in.</param>
+        /// <param name="addJunk">True to add junk files that should be ignored.</param>
+        /// <param name="multipleFiles">True to split config across multiple files.</param>
+        /// <returns>Action.</returns>
+        public static Action<Random, AETConfigModel[]> SaveFolderAETConfigModels(string configurationDirectory, bool addJunk, bool multipleFiles) =>
+            (random, aetConfigModels) =>
             {
-                folder = configurationDirectory;
-                filename = AETConfigProvider.AETConfigFileName;
-            }
-            else
-            {
-                folder = Path.Combine(configurationDirectory, AETConfigProvider.AETConfigFolderName);
+                var folder = Path.Combine(configurationDirectory, AETConfigProvider.AETConfigFolderName);
                 Directory.CreateDirectory(folder);
-                filename = "test1.json";
-            }
 
-            Serialise(expectedAETConfigModels, folder, filename);
+                // Add in two extra files that should be ignored.
+                if (addJunk)
+                {
+                    // Write a random GatewayProcessorConfig
+                    var gatewayProcessorConfig = RandomGatewayProcessorConfig(random);
+                    Serialise(gatewayProcessorConfig, folder, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
-            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory, useFile);
-            var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
+                    // Write a random GatewayReceiverConfig
+                    var gatewayReceiveConfig = RandomGatewayReceiveConfig(random);
+                    Serialise(gatewayReceiveConfig, folder, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
+                }
 
-            Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
-        }
+                if (multipleFiles)
+                {
+                    for (var i = 0; i < aetConfigModels.Length; i++)
+                    {
+                        var expectedAETConfig = new[] { aetConfigModels[i] };
+                        Serialise(expectedAETConfig, folder, string.Format(CultureInfo.InvariantCulture, "test{0}.json", i + 1));
+                    }
+                }
+                else
+                {
+                    Serialise(aetConfigModels, folder, "test1.json");
+                }
+            };
 
-        [TestCategory("ConfigurationProvider")]
-        [Description("Creates a list of AET config models, saves it to a file, and checks it loads correctly.")]
-        [TestMethod]
-        public void TestLoadAETConfigFile()
-        {
-            TestLoadAETConfigCommon(true);
-        }
+        public static AETConfigModel[] OrderAETConfigModels(IEnumerable<AETConfigModel> aetConfigModels) =>
+            aetConfigModels.OrderBy(m => m.CalledAET).ThenBy(m => m.CallingAET).ToArray();
 
-        [TestCategory("ConfigurationProvider")]
-        [Description("Creates a list of AET config models, saves it to a file in a folder, and checks it loads correctly.")]
-        [TestMethod]
-        public void TestLoadAETConfigFolder()
-        {
-            TestLoadAETConfigCommon(false);
-        }
-
-        [TestCategory("ConfigurationProvider")]
-        [Description("Creates a list of AET config models, saves them along with two other config files, and checks the models load correctly" +
-            "and the other configs are ignored.")]
-        [TestMethod]
-        public void TestLoadAETConfigInvalidFiles()
-        {
-            var configurationDirectory = CreateTemporaryDirectory().FullName;
-            var random = new Random();
-
-            var aetConfigFolder = Path.Combine(configurationDirectory, AETConfigProvider.AETConfigFolderName);
-            Directory.CreateDirectory(aetConfigFolder);
-
-            var expectedAETConfigModels = RandomArray(random, 3, 10, RandomAETConfigModel);
-            Serialise(expectedAETConfigModels, aetConfigFolder, "test1.json");
-
-            // Write a random GatewayProcessorConfig
-            var gatewayProcessorConfig = RandomGatewayProcessorConfig(random);
-            Serialise(gatewayProcessorConfig, aetConfigFolder, "test2.json");
-
-            // Write a random GatewayReceiverConfig
-            var gatewayReceiveConfig = RandomGatewayReceiveConfig(random);
-            Serialise(gatewayReceiveConfig, aetConfigFolder, "test3.json");
-
-            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
-
-            Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
-        }
+        public static void AssertAETConfigModelsEqual(IEnumerable<AETConfigModel> expectedAETConfigModels, IEnumerable<AETConfigModel> actualAETConfigModels) =>
+            Assert.IsTrue(OrderAETConfigModels(expectedAETConfigModels).SequenceEqual(OrderAETConfigModels(actualAETConfigModels)));
 
         [TestCategory("ConfigurationProvider")]
-        [Description("Creates a list of AET config models, saves them to one file per called/calling pair, and checks they all load correctly.")]
+        [Description("Creates a list of AET config models, saves it to a file or folder, and checks it loads correctly.")]
+        [DataRow(false, false, false, false, DisplayName = "Load folder AETConfigModels")]
+        [DataRow(false, false, false, true, DisplayName = "Load folder AETConfigModels, split files")]
+        [DataRow(false, false, true, false, DisplayName = "Load folder AETConfigModels, ignore junk")]
+        [DataRow(false, true, false, false, DisplayName = "Reload folder AETConfigModels")]
+        [DataRow(false, true, true, false, DisplayName = "Reload folder AETConfigModels, ignore junk")]
+        [DataRow(true, false, false, false, DisplayName = "Load file AETConfigModels")]
+        [DataRow(true, true, false, false, DisplayName = "Reload file AETConfigModels")]
         [TestMethod]
-        public void TestLoadAETConfigConcatenate()
+        public void TestLoadAETConfigModels(bool useFile, bool reload, bool addJunk, bool multipleFiles)
         {
             var configurationDirectory = CreateTemporaryDirectory().FullName;
             var random = new Random();
 
-            var aetConfigFolder = Path.Combine(configurationDirectory, AETConfigProvider.AETConfigFolderName);
-            Directory.CreateDirectory(aetConfigFolder);
+            var saveAETConfigModels = useFile ?
+                SaveFileAETConfigModels(configurationDirectory) :
+                SaveFolderAETConfigModels(configurationDirectory, addJunk, multipleFiles);
 
             var expectedAETConfigModels = RandomArray(random, 3, 10, RandomAETConfigModel);
-            for (var i = 0; i < expectedAETConfigModels.Length; i++)
+            saveAETConfigModels.Invoke(random, expectedAETConfigModels);
+
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory, useFile))
             {
-                var expectedAETConfig = new[] { expectedAETConfigModels[i] };
-                Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", i));
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
+
+                if (reload)
+                {
+                    var configReloadedCount = 0;
+
+                    aetConfigProvider.ConfigChanged += (s, e) =>
+                    {
+                        Interlocked.Increment(ref configReloadedCount);
+                    };
+
+                    var expectedAETConfigModels2 = RandomArray(random, 3, 10, RandomAETConfigModel);
+                    saveAETConfigModels.Invoke(random, expectedAETConfigModels2);
+
+                    SpinWait.SpinUntil(() => configReloadedCount > (addJunk ? 4 : 0), TimeSpan.FromSeconds(10));
+
+                    AssertAETConfigModelsEqual(expectedAETConfigModels2, aetConfigProvider.Config);
+                }
             }
-
-            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
-
-            Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
         }
 
         [TestCategory("ConfigurationProvider")]
@@ -682,10 +816,10 @@
                 Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", i), true);
             }
 
-            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
-
-            Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory))
+            {
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
+            }
         }
 
         [TestCategory("ConfigurationProvider")]
@@ -727,10 +861,10 @@
                 }
             }
 
-            var aetConfigProvider = new AETConfigProvider(BaseTestLogger, configurationDirectory);
-            var actualAETConfigModels = aetConfigProvider.GetAETConfigs().ToArray();
-
-            Assert.IsTrue(expectedAETConfigModels.SequenceEqual(actualAETConfigModels));
+            using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory))
+            {
+                AssertAETConfigModelsEqual(expectedAETConfigModels, aetConfigProvider.Config);
+            }
         }
     }
 }

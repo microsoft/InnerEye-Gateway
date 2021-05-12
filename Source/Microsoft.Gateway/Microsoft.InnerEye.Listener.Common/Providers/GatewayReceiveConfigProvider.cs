@@ -1,18 +1,15 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Models;
 
     /// <summary>
-    /// Monitor a JSON file containing a GatewayReceiveConfig.
+    /// Monitor a JSON file containing a <see cref="GatewayReceiveConfig"/>.
     /// </summary>
     public class GatewayReceiveConfigProvider : BaseConfigProvider<GatewayReceiveConfig>
     {
         /// <summary>
-        /// File name for JSON file containing a GatewayReceiveConfig.
+        /// File name for JSON file containing a <see cref="GatewayReceiveConfig"/>.
         /// </summary>
         public static readonly string GatewayReceiveConfigFileName = "GatewayReceiveConfig.json";
 
@@ -24,26 +21,9 @@
         public GatewayReceiveConfigProvider(
             ILogger logger,
             string configurationsPathRoot) : base(logger,
-                Path.Combine(configurationsPathRoot, GatewayReceiveConfigFileName))
+                configurationsPathRoot, GatewayReceiveConfigFileName)
         {
         }
-
-        /// <summary>
-        /// Load GatewayReceiveConfig from a JSON file.
-        /// </summary>
-        /// <returns>Loaded GatewayReceiveConfig.</returns>
-        public GatewayReceiveConfig GatewayReceiveConfig()
-        {
-            Load();
-            return Result;
-        }
-
-        /// <summary>
-        /// Update GatewayReceiveConfig file, according to an update callback function.
-        /// </summary>
-        /// <param name="updater">Callback to update the settings. Return new settings for update, or the same object to not update.</param>
-        public void Update(Func<GatewayReceiveConfig, GatewayReceiveConfig> updater) =>
-            UpdateFile(updater, EqualityComparer<GatewayReceiveConfig>.Default);
 
         /// <summary>
         /// Set ServiceSettings.RunAsConsole.
@@ -53,24 +33,24 @@
             Update(gatewayReceiveConfig => gatewayReceiveConfig.With(new ServiceSettings(runAsConsole)));
 
         /// <summary>
-        /// Load ServiceSettings from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ServiceSettings"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ServiceSettings.</returns>
+        /// <returns>Cached <see cref="ServiceSettings"/>.</returns>
         public ServiceSettings ServiceSettings() =>
-            GatewayReceiveConfig().ServiceSettings;
+            Config.ServiceSettings;
 
         /// <summary>
-        /// Load ConfigurationServiceConfig from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ConfigurationServiceConfig"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ConfigurationServiceConfig.</returns>
+        /// <returns>Cached <see cref="ConfigurationServiceConfig"/>.</returns>
         public ConfigurationServiceConfig ConfigurationServiceConfig() =>
-            GatewayReceiveConfig().ConfigurationServiceConfig;
+            Config.ConfigurationServiceConfig;
 
         /// <summary>
-        /// Load ReceiveServiceConfig from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="ReceiveServiceConfig"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
-        /// <returns>Loaded ReceiveServiceConfig.</returns>
+        /// <returns>Cached <see cref="ReceiveServiceConfig"/>.</returns>
         public ReceiveServiceConfig ReceiveServiceConfig() =>
-            GatewayReceiveConfig().ReceiveServiceConfig;
+            Config.ReceiveServiceConfig;
     }
 }

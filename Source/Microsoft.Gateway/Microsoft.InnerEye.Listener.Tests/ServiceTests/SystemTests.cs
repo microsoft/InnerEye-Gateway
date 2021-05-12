@@ -8,10 +8,10 @@
     using Dicom;
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
     using Microsoft.InnerEye.Listener.Tests.Common.Helpers;
-    using Microsoft.InnerEye.Listener.Tests.Models;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -23,6 +23,14 @@
         [TestMethod]
         public async Task ProcessorServiceRestartTest()
         {
+            var configurationDirectory = CreateTemporaryDirectory().FullName;
+
+            var expectedGatewayProcessorConfig1 = TestGatewayProcessorConfigProvider.Config.With(
+                configurationServiceConfig: new ConfigurationServiceConfig(
+                configurationRefreshDelaySeconds: 1));
+
+            ConfigurationProviderTests.Serialise(expectedGatewayProcessorConfig1, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
+
             var tempFolder = CreateTemporaryDirectory();
 
             foreach (var file in new DirectoryInfo(@"Images\1ValidSmall\").GetFiles())
@@ -30,21 +38,7 @@
                 file.CopyTo(Path.Combine(tempFolder.FullName, file.Name));
             }
 
-            var mockConfigurationServiceConfigProvider = new MockConfigurationProvider<ConfigurationServiceConfig>();
-
-            var configurationServiceConfig1 = new ConfigurationServiceConfig(
-                configurationRefreshDelaySeconds: 1);
-
-            var configurationServiceConfig2 = new ConfigurationServiceConfig(
-                configurationServiceConfig1.ConfigCreationDateTime.AddSeconds(5),
-                configurationServiceConfig1.ApplyConfigDateTime.AddSeconds(10));
-
-            mockConfigurationServiceConfigProvider.ConfigurationQueue.Enqueue(configurationServiceConfig1);
-            mockConfigurationServiceConfigProvider.ConfigurationQueue.Enqueue(configurationServiceConfig2);
-
-            var resultDirectory = CreateTemporaryDirectory();
-
-            using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(resultDirectory.FullName)))
+            using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(CreateTemporaryDirectory().FullName)))
             {
                 var eventCount = 0;
                 var folderPath = string.Empty;
@@ -64,9 +58,10 @@
                 using (var uploadService = CreateUploadService(client))
                 using (var uploadQueue = uploadService.UploadQueue)
                 using (var downloadService = CreateDownloadService(client))
+                using (var gatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(configurationDirectory))
                 using (var configurationService = CreateConfigurationService(
                     client,
-                    mockConfigurationServiceConfigProvider.GetConfiguration,
+                    gatewayProcessorConfigProvider.ConfigurationServiceConfig,
                     downloadService,
                     uploadService,
                     pushService))
@@ -75,6 +70,14 @@
                     configurationService.Start();
 
                     uploadQueue.Clear(); // Clear the message queue
+
+                    // Save a new config, this should be picked up and the services restart in 10 seconds.
+                    var expectedGatewayProcessorConfig2 = TestGatewayProcessorConfigProvider.Config.With(
+                        configurationServiceConfig: new ConfigurationServiceConfig(
+                            expectedGatewayProcessorConfig1.ConfigurationServiceConfig.ConfigCreationDateTime.AddSeconds(5),
+                            expectedGatewayProcessorConfig1.ConfigurationServiceConfig.ApplyConfigDateTime.AddSeconds(10)));
+
+                    ConfigurationProviderTests.Serialise(expectedGatewayProcessorConfig2, configurationDirectory, GatewayProcessorConfigProvider.GatewayProcessorConfigFileName);
 
                     SpinWait.SpinUntil(() => pushService.StartCount == 2);
                     SpinWait.SpinUntil(() => uploadService.StartCount == 2);
