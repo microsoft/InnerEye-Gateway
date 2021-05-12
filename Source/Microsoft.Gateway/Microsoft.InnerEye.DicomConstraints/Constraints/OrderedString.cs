@@ -62,12 +62,18 @@
         /// <summary>
         /// implicitly convert value to an OrderString with CulureInvariantCaseSensitive comparison
         /// </summary>
-        /// <param name="value"></param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "TBD")]
+        /// <param name="value">Value to convert.</param>
         public static implicit operator OrderedString(string value)
         {
-            return new OrderedString(value);
+            return FromString(value);
         }
+
+        /// <summary>
+        /// Convert from a string to an OrderString with CulureInvariantCaseSensitive comparison.
+        /// </summary>
+        /// <param name="value">Value to convert.</param>
+        /// <returns>New <see cref="OrderedString"/>.</returns>
+        public static OrderedString FromString(string value) => new OrderedString(value);
 
         /// <summary>
         /// IComparable implementation
