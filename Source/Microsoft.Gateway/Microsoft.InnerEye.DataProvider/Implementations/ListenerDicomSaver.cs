@@ -7,8 +7,8 @@
     using System.Linq;
     using System.Security;
 
-    using global::Dicom;
-    using global::Dicom.Network;
+    using Dicom;
+    using Dicom.Network;
 
     using Microsoft.InnerEye.Listener.DataProvider.Interfaces;
     using Microsoft.InnerEye.Listener.DataProvider.Models;

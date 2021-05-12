@@ -10,8 +10,9 @@
     /// <summary>
     /// Encodes the requirement on a tag existing in a dataset
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue", Justification = "TBD")]
+#pragma warning disable CA1008 // Enums should have zero value
     public enum TagRequirement : int
+#pragma warning restore CA1008 // Enums should have zero value
     {
         /// <summary>
         /// The tag must be present and the conditions on the tag must pass

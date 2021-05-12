@@ -83,7 +83,7 @@
 
             if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
-                var currentExecutionLocation = (new DirectoryInfo(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
+                var currentExecutionLocation = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
                 filePath = currentExecutionLocation + filePath;
             }
 
@@ -96,7 +96,7 @@
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(path));
 
-            var currentExecutionLocation = (new DirectoryInfo(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
+            var currentExecutionLocation = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
 
             Assert.IsNotNull(StoreSCUPath, "storescu.exe not found on system PATH");
             var fileName = StoreSCUPath;

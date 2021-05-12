@@ -54,12 +54,12 @@
 
             await dicomClient.AddRequestAsync(new DicomCEchoRequest
             {
-                OnResponseReceived = ((request, response) =>
+                OnResponseReceived = (request, response) =>
                 {
                     // The Dicom Client send method waits until the response received has finished.
                     // Do not put any async code in here as it will not wait.
                     result = GetStatus(response.Status);
-                })
+                }
             }).ConfigureAwait(false);
 
             try

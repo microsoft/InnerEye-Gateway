@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading;
 
@@ -59,8 +58,12 @@
         /// <summary>
         /// The current SQLite connection for this transaction.
         /// </summary>
-        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "False negative.")]
+        /// <remarks>
+        /// This is disposed in DisposeCurrentConnection, which is called from Dispose(disposing).
+        /// </remarks>
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private SqliteConnection _sqliteConnection;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         /// <summary>
         /// The renew lease timer (or null if no transaction has started).

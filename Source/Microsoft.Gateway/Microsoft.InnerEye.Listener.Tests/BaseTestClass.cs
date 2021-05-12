@@ -47,7 +47,7 @@
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
-        protected Microsoft.Extensions.Logging.ILoggerFactory LoggerFactory { get; }
+        protected ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// Logger for common use.

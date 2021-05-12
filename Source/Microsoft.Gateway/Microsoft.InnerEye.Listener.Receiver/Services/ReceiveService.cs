@@ -247,8 +247,9 @@
         /// </summary>
         /// <param name="presentationContextCollection">The presentation context collection.</param>
         /// <returns>The human readable string.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Could be used for detailed logging.")]
+#pragma warning disable IDE0051 // Remove unused private members
         private static string PresentationContextsToLogString(DicomPresentationContextCollection presentationContextCollection)
+#pragma warning restore IDE0051 // Remove unused private members
         {
             var stringBuilder = new StringBuilder();
 
