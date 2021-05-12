@@ -34,55 +34,55 @@
 
                 var configurationsPathRoot = ConfigurationService.FindRelativeDirectory(relativePaths, loggerFactory.CreateLogger("Main"));
 
-                var aetConfigurationProvider = new AETConfigProvider(
-                    loggerFactory.CreateLogger("ModelSettings"),
-                    configurationsPathRoot);
+                using (var aetConfigurationProvider = new AETConfigProvider(
+                        loggerFactory.CreateLogger("ModelSettings"),
+                        configurationsPathRoot))
+                using (var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
+                        loggerFactory.CreateLogger("ProcessorSettings"),
+                        configurationsPathRoot))
+                {
+                    var segmentationClientLogger = loggerFactory.CreateLogger("SegmentationClient");
 
-                var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
-                    loggerFactory.CreateLogger("ProcessorSettings"),
-                    configurationsPathRoot);
-
-                var segmentationClientLogger = loggerFactory.CreateLogger("SegmentationClient");
-
-                // The ProjectInstaller.cs uses the service name to install the service.
-                // If you change it please update the ProjectInstaller.cs
-                ServiceHelpers.RunServices(
-                ServiceName,
-                gatewayProcessorConfigProvider.ServiceSettings(),
-                new ConfigurationService(
-                    gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
-                    gatewayProcessorConfigProvider.ConfigurationServiceConfig,
-                    loggerFactory.CreateLogger("ConfigurationService"),
-                    new UploadService(
+                    // The ProjectInstaller.cs uses the service name to install the service.
+                    // If you change it please update the ProjectInstaller.cs
+                    ServiceHelpers.RunServices(
+                    ServiceName,
+                    gatewayProcessorConfigProvider.ServiceSettings(),
+                    new ConfigurationService(
                         gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
-                        aetConfigurationProvider.GetAETConfigs,
-                        GatewayMessageQueue.UploadQueuePath,
-                        GatewayMessageQueue.DownloadQueuePath,
-                        GatewayMessageQueue.DeleteQueuePath,
-                        gatewayProcessorConfigProvider.DequeueServiceConfig,
-                        loggerFactory.CreateLogger("UploadService"),
-                        instances: 2),
-                    new DownloadService(
-                        gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
-                        GatewayMessageQueue.DownloadQueuePath,
-                        GatewayMessageQueue.PushQueuePath,
-                        GatewayMessageQueue.DeleteQueuePath,
-                        gatewayProcessorConfigProvider.DownloadServiceConfig,
-                        gatewayProcessorConfigProvider.DequeueServiceConfig,
-                        loggerFactory.CreateLogger("DownloadService"),
-                        instances: 1),
-                    new PushService(
-                        aetConfigurationProvider.GetAETConfigs,
-                        new DicomDataSender(),
-                        GatewayMessageQueue.PushQueuePath,
-                        GatewayMessageQueue.DeleteQueuePath,
-                        gatewayProcessorConfigProvider.DequeueServiceConfig,
-                        loggerFactory.CreateLogger("PushService"),
-                        instances: 1),
-                    new DeleteService(
-                        GatewayMessageQueue.DeleteQueuePath,
-                        gatewayProcessorConfigProvider.DequeueServiceConfig,
-                        loggerFactory.CreateLogger("DeleteService"))));
+                        gatewayProcessorConfigProvider.ConfigurationServiceConfig,
+                        loggerFactory.CreateLogger("ConfigurationService"),
+                        new UploadService(
+                            gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
+                            aetConfigurationProvider.AETConfigModels,
+                            GatewayMessageQueue.UploadQueuePath,
+                            GatewayMessageQueue.DownloadQueuePath,
+                            GatewayMessageQueue.DeleteQueuePath,
+                            gatewayProcessorConfigProvider.DequeueServiceConfig,
+                            loggerFactory.CreateLogger("UploadService"),
+                            instances: 2),
+                        new DownloadService(
+                            gatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(segmentationClientLogger),
+                            GatewayMessageQueue.DownloadQueuePath,
+                            GatewayMessageQueue.PushQueuePath,
+                            GatewayMessageQueue.DeleteQueuePath,
+                            gatewayProcessorConfigProvider.DownloadServiceConfig,
+                            gatewayProcessorConfigProvider.DequeueServiceConfig,
+                            loggerFactory.CreateLogger("DownloadService"),
+                            instances: 1),
+                        new PushService(
+                            aetConfigurationProvider.AETConfigModels,
+                            new DicomDataSender(),
+                            GatewayMessageQueue.PushQueuePath,
+                            GatewayMessageQueue.DeleteQueuePath,
+                            gatewayProcessorConfigProvider.DequeueServiceConfig,
+                            loggerFactory.CreateLogger("PushService"),
+                            instances: 1),
+                        new DeleteService(
+                            GatewayMessageQueue.DeleteQueuePath,
+                            gatewayProcessorConfigProvider.DequeueServiceConfig,
+                            loggerFactory.CreateLogger("DeleteService"))));
+                }
             }
         }
     }

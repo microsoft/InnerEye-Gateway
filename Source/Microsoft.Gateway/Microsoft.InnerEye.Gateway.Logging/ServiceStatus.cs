@@ -57,6 +57,11 @@
         NewConfigurationError,
 
         /// <summary>
+        /// Configuration files have changed.
+        /// </summary>
+        NewConfigurationDetetected,
+
+        /// <summary>
         /// Error in ping.
         /// </summary>
         PingError,

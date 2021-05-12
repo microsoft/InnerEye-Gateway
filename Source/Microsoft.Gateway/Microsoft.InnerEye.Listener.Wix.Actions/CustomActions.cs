@@ -53,40 +53,42 @@ namespace Microsoft.InnerEye.Listener.Wix.Actions
 #endif
 
             // Make sure that the applications are run as services.
-            var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(
-                null,
-                ConfigInstallDirectory);
-            gatewayProcessorConfigProvider.SetRunAsConsole(false);
-
-            var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
-                null,
-                ConfigInstallDirectory);
-            gatewayReceiveConfigProvider.SetRunAsConsole(false);
-
-            // Check if the installer is running unattended - lets skip the UI if true
-            if (session.CustomActionData[UILevelCustomActionKey] == "2")
+            using (var gatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(null, ConfigInstallDirectory))
             {
-                return ActionResult.Success;
-            }
+                gatewayProcessorConfigProvider.SetRunAsConsole(false);
 
-            // In the context of the installer, this may have a different SecurityProtocol to the application.
-            // In testing it was: SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls
-            // but it may vary. In order to value the uri and license key, we need TLS 1.2
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-
-            // First time install so lets display a form to grab the license key.
-            using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
-            {
-                var licenseKeyDialogResult = form.ShowDialog();
-
-                switch (licenseKeyDialogResult)
+                using (var gatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(
+                    null,
+                    ConfigInstallDirectory))
                 {
-                    case DialogResult.Cancel:
-                        return ActionResult.UserExit;
-                    case DialogResult.No:
-                        return ActionResult.NotExecuted;
-                    default:
-                        return ActionResult.Success;
+                    gatewayReceiveConfigProvider.SetRunAsConsole(false);
+                }
+
+                // Check if the installer is running unattended - lets skip the UI if true
+                if (session.CustomActionData[UILevelCustomActionKey] == "2")
+                {
+                    return ActionResult.Success;
+                }
+
+                // In the context of the installer, this may have a different SecurityProtocol to the application.
+                // In testing it was: SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls
+                // but it may vary. In order to value the uri and license key, we need TLS 1.2
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
+                // First time install so lets display a form to grab the license key.
+                using (var form = new LicenseKeyForm(gatewayProcessorConfigProvider))
+                {
+                    var licenseKeyDialogResult = form.ShowDialog();
+
+                    switch (licenseKeyDialogResult)
+                    {
+                        case DialogResult.Cancel:
+                            return ActionResult.UserExit;
+                        case DialogResult.No:
+                            return ActionResult.NotExecuted;
+                        default:
+                            return ActionResult.Success;
+                    }
                 }
             }
         }

@@ -34,7 +34,7 @@
     /// The base test class.
     /// </summary>
     [TestClass]
-    public class BaseTestClass
+    public class BaseTestClass : IDisposable
     {
         /// <summary>
         /// List of chars to use for random string generation.
@@ -44,12 +44,12 @@
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
-        protected readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+        private readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Logger for common use.
         /// </summary>
-        protected readonly ILogger _baseTestLogger;
+        private readonly ILogger _baseTestLogger;
 
         /// <summary>
         /// Gets or sets the test context.
@@ -110,7 +110,12 @@
         /// <summary>
         /// GatewayReceiveConfigProvider as loaded from _basePathConfigs.
         /// </summary>
-        private GatewayReceiveConfigProvider _testGatewayReceiveConfigProvider;
+        protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
+
+        /// <summary>
+        /// Disposed flag for IDisposable.
+        /// </summary>
+        private bool disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseTestClass"/> class.
@@ -125,9 +130,9 @@
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
             Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
 
-            _testAETConfigProvider = new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), _basePathConfigs);
-            TestGatewayProcessorConfigProvider = new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
-            _testGatewayReceiveConfigProvider = new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), _basePathConfigs);
+            _testAETConfigProvider = CreateAETConfigProvider(_basePathConfigs);
+            TestGatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(_basePathConfigs);
+            TestGatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(_basePathConfigs);
         }
 
         [TestInitialize]
@@ -169,6 +174,35 @@
 
             TryKillAnyZombieProcesses();
         }
+
+        /// <summary>
+        /// Create a new <see cref="AETConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config folder.</param>
+        /// <param name="useFile">True to use config file, false to use folder of files.</param>
+        /// <returns>New <see cref="AETConfigProvider"/>.</returns>
+        protected AETConfigProvider CreateAETConfigProvider(
+            string configurationsPathRoot,
+            bool useFile = false) =>
+                new AETConfigProvider(_loggerFactory.CreateLogger("ModelSettings"), configurationsPathRoot, useFile);
+
+        /// <summary>
+        /// Create a new <see cref="GatewayProcessorConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config file.</param>
+        /// <returns>New <see cref="GatewayProcessorConfigProvider"/>.</returns>
+        protected GatewayProcessorConfigProvider CreateGatewayProcessorConfigProvider(
+            string configurationsPathRoot) =>
+                new GatewayProcessorConfigProvider(_loggerFactory.CreateLogger("ProcessorSettings"), configurationsPathRoot);
+
+        /// <summary>
+        /// Create a new <see cref="GatewayReceiveConfigProvider"/> based on the given folder.
+        /// </summary>
+        /// <param name="configurationsPathRoot">Path to folder containing config file.</param>
+        /// <returns>New <see cref="GatewayReceiveConfigProvider"/>.</returns>
+        protected GatewayReceiveConfigProvider CreateGatewayReceiveConfigProvider(
+            string configurationsPathRoot) =>
+                new GatewayReceiveConfigProvider(_loggerFactory.CreateLogger("ReceiveSettings"), configurationsPathRoot);
 
         protected void WriteDicomFileForBuildPackage(string fileName, DicomFile dicomFile)
         {
@@ -312,7 +346,7 @@
         }
 
         protected AETConfigModel GetTestAETConfigModel() =>
-            _testAETConfigProvider.GetAETConfigs().First();
+            _testAETConfigProvider.Config.First();
 
         /// <summary>
         /// Create ReceiveServiceConfig from test files, but overwrite the port and rootDicomFolder.
@@ -324,7 +358,7 @@
             int port,
             DirectoryInfo rootDicomFolder = null)
         {
-            var gatewayConfig = _testGatewayReceiveConfigProvider.GatewayReceiveConfig().ReceiveServiceConfig;
+            var gatewayConfig = TestGatewayReceiveConfigProvider.Config.ReceiveServiceConfig;
 
             return gatewayConfig.With(
                 new DicomEndPoint(gatewayConfig.GatewayDicomEndPoint.Title, port, gatewayConfig.GatewayDicomEndPoint.Ip),
@@ -522,7 +556,7 @@
         protected PushService CreatePushService(
             Func<IEnumerable<AETConfigModel>> aetConfigProvider = null) =>
                 new PushService(
-                    aetConfigProvider ?? _testAETConfigProvider.GetAETConfigs,
+                    aetConfigProvider ?? _testAETConfigProvider.AETConfigModels,
                     new DicomDataSender(),
                     TestPushQueuePath,
                     TestDeleteQueuePath,
@@ -560,7 +594,7 @@
             int instances = 1) =>
                 new UploadService(
                     innerEyeSegmentationClient != null ? () => innerEyeSegmentationClient : TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient(),
-                    aetConfigProvider ?? _testAETConfigProvider.GetAETConfigs,
+                    aetConfigProvider ?? _testAETConfigProvider.AETConfigModels,
                     TestUploadQueuePath,
                     TestDownloadQueuePath,
                     TestDeleteQueuePath,
@@ -824,5 +858,35 @@
         /// </summary>
         public static readonly Func<DicomTag, Random, DicomItem> RandomDicomTime = (tag, random) =>
             new DicomTime(tag, DateTime.UtcNow.AddSeconds(random.NextDouble() * 1000.0));
+
+        /// <summary>
+        /// Disposes of all managed resources.
+        /// </summary>
+        /// <param name="disposing">If we are disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _testAETConfigProvider.Dispose();
+                TestGatewayProcessorConfigProvider.Dispose();
+                TestGatewayReceiveConfigProvider.Dispose();
+            }
+
+            disposedValue = true;
+        }
+
+        /// <summary>
+        /// Implements the disposable pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

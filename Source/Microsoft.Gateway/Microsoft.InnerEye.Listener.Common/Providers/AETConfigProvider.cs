@@ -6,17 +6,17 @@
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Monitor a JSON file containing a list of AETConfigModels.
+    /// Monitor a JSON file or folder containing a list of <see cref="AETConfigModel"/>.
     /// </summary>
-    public class AETConfigProvider : BaseConfigProvider<List<AETConfigModel>>
+    public class AETConfigProvider : BaseConfigProvider<IEnumerable<AETConfigModel>>
     {
         /// <summary>
-        /// File name for JSON file containing a list of AETConfigModels.
+        /// File name for JSON file containing a list of <see cref="AETConfigModel"/>.
         /// </summary>
         public static readonly string AETConfigFileName = "GatewayModelRulesConfig.json";
 
         /// <summary>
-        /// Folder name for folder containing JSON files, each containing a list of AETConfigModels.
+        /// Folder name for folder containing JSON files, each containing a list of <see cref="AETConfigModel"/>.
         /// </summary>
         public static readonly string AETConfigFolderName = "GatewayModelRulesConfig";
 
@@ -30,25 +30,18 @@
             ILogger logger,
             string configurationsPathRoot,
             bool useFile = false) : base(logger,
-            Path.Combine(configurationsPathRoot, useFile ? AETConfigFileName : AETConfigFolderName))
+            Path.Combine(configurationsPathRoot, useFile ? string.Empty : AETConfigFolderName),
+            useFile ? AETConfigFileName : string.Empty,
+            MergeModels)
         {
         }
 
         /// <summary>
-        /// Lookup list of AETConfigModels from a JSON file.
+        /// Helper to create a <see cref="Func{TResult}"/> for returning list of <see cref="AETConfigModel"/> from cache.
         /// </summary>
-        /// <returns>List of AETConfigModels.</returns>
-        public IEnumerable<AETConfigModel> GetAETConfigs()
-        {
-            Load();
-
-            _t = _ts != null ? MergeModels(_ts) : _t;
-
-            // no need to keep two copies of all the config data.
-            _ts = null;
-
-            return _t;
-        }
+        /// <returns>Cached list of <see cref="AETConfigModel"/>.</returns>
+        public IEnumerable<AETConfigModel> AETConfigModels() =>
+            Config;
 
         /// <summary>
         /// Merge a list of lists of AET config models into one list.
@@ -64,7 +57,7 @@
         /// </remarks>
         /// <param name="modelLists">List of lists of AET config models.</param>
         /// <returns>List of AET config models.</returns>
-        private static List<AETConfigModel> MergeModels(IEnumerable<List<AETConfigModel>> modelLists)
+        private static List<AETConfigModel> MergeModels(IEnumerable<IEnumerable<AETConfigModel>> modelLists)
         {
             var mergedModels = new List<AETConfigModel>();
 
