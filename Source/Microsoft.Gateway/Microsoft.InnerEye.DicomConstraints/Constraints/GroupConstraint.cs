@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using Dicom;
     using Newtonsoft.Json;
@@ -32,33 +31,23 @@
         /// <summary>
         /// Construct a new constrain given a list of constraints and a operator to combine them
         /// </summary>
-        /// <param name="constraints"></param>
-        /// <param name="op"></param>
-        [JsonConstructor]
-        public GroupConstraint(DicomConstraint[] constraints, LogicalOperator op)
+        /// <param name="constraints">List of constraints.</param>
+        /// <param name="op">How to combine constraints.</param>
+        public GroupConstraint(IReadOnlyList<DicomConstraint> constraints, LogicalOperator op)
         {
             Constraints = constraints ?? throw new ArgumentNullException(nameof(constraints));
             Op = op;
         }
 
-        internal GroupConstraint()
-        {
-            Constraints = Array.Empty<DicomConstraint>();
-            Op = LogicalOperator.And;
-        }
-
         /// <summary>
         /// The ordered list of constraints to apply to the dataset
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "TBD")]
-        [Required]
-        public DicomConstraint[] Constraints { get; }
+        public IReadOnlyList<DicomConstraint> Constraints { get; }
 
         /// <summary>
         /// The operator for combining Constraints
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
-        [Required]
         public LogicalOperator Op { get; }
 
         /// <summary>
@@ -98,7 +87,7 @@
         public override int GetHashCode()
         {
             var hashCode = 985604525;
-            hashCode = hashCode * -1521134295 + EqualityComparer<DicomConstraint[]>.Default.GetHashCode(Constraints);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyList<DicomConstraint>>.Default.GetHashCode(Constraints);
             hashCode = hashCode * -1521134295 + Op.GetHashCode();
             return hashCode;
         }

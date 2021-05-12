@@ -54,7 +54,9 @@
                     serviceController.Start();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Trace.WriteLine(string.Format(CultureInfo.InvariantCulture, "Failed to start service {0} with exception {1}", Program.ServiceName, e));
             }

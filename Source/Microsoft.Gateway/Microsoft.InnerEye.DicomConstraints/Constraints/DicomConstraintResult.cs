@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.InnerEye.DicomConstraints
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Dicom constraint result.
@@ -52,7 +53,6 @@
         /// <value>
         /// The child results.
         /// </value>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "TBD")]
-        public DicomConstraintResult[] ChildResults { get; }
+        public IReadOnlyList<DicomConstraintResult> ChildResults { get; }
     }
 }
