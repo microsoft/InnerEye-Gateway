@@ -166,17 +166,17 @@ dotnet_diagnostic.IDE0036.severity = silent
 # IDE0042: Deconstruct variable declaration
 dotnet_diagnostic.IDE0042.severity = suggestion
 
+# IDE0046: Convert to conditional expression
+dotnet_diagnostic.IDE0046.severity = suggestion
+
+# IDE0048: Add parentheses for clarity
+dotnet_diagnostic.IDE0048.severity = silent
+
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = suggestion
+
 # IDE0065: Misplaced using directive
 csharp_using_directive_placement = inside_namespace
 
 # IDE0065: Misplaced using directive
 dotnet_diagnostic.IDE0065.severity = silent
-
-# IDE0048: Add parentheses for clarity
-dotnet_diagnostic.IDE0048.severity = silent
-
-# IDE0046: Convert to conditional expression
-dotnet_diagnostic.IDE0046.severity = suggestion
-
-# IDE0058: Expression value is never used
-dotnet_diagnostic.IDE0058.severity = suggestion

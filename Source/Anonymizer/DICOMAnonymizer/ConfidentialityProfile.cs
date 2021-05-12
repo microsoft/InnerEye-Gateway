@@ -352,7 +352,7 @@
         /// <param name="item">A valid confidentiality profile line</param>
         /// <param name="options">The security profile options</param>
         /// <returns></returns>
-        private Tuple<string, AnonFunc> parseProfileItem(string item, SecurityProfileOptions options)
+        private Tuple<string, AnonFunc> ParseProfileItem(string item, SecurityProfileOptions options)
         {
             SecurityProfileActions? action = null;
             var parts = item.Split(';');
@@ -411,9 +411,8 @@
             {
                 foreach (var item in RegexProfile)
                 {
-                    var t = parseProfileItem(item, _options);
+                    var t = ParseProfileItem(item, _options);
                     var tag = new Regex(t.Item1, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                    var action = t.Item2;
 
                     regexActions[tag] = t.Item2;
                 }
@@ -430,9 +429,8 @@
             {
                 foreach (var item in TagProfile)
                 {
-                    var t = parseProfileItem(item, _options);
+                    var t = ParseProfileItem(item, _options);
                     var tag = DicomTag.Parse(t.Item1);
-                    var action = t.Item2;
 
                     tagActions[tag] = t.Item2;
                 }
@@ -514,8 +512,9 @@
         {
             item = item ?? throw new ArgumentNullException(nameof(item));
 
-            var element = (item as DicomElement);
-            if (element == null)
+#pragma warning disable CA1508 // Avoid dead conditional code
+            if (!(item is DicomElement element))
+#pragma warning restore CA1508 // Avoid dead conditional code
             {
                 throw new InvalidOperationException($"ReplaceUID can not handle type: {item.GetType()}");
             }
@@ -555,7 +554,7 @@
             if (vr.IsString)
             {
                 // TODO: Needed to create a DicomItem with the correct VR
-                return (new DicomDataset()).AddOrUpdate(item.Tag, "ANONYMOUS").First();
+                return new DicomDataset().AddOrUpdate(item.Tag, "ANONYMOUS").First();
             }
             else
             {
@@ -569,8 +568,7 @@
         [Description("Keeps the examined item but sets its value to be empty.")]
         public static DicomItem BlankElement(DicomDataset oldds, IReadOnlyList<TagOrIndex> path, DicomItem item)
         {
-            var element = (item as DicomElement);
-            if (element == null)
+            if (!(item is DicomElement element))
             {
                 return item;
             }
@@ -589,11 +587,10 @@
                 return new DicomTime(element.Tag, new DicomDateRange());
             }
 
-            var stringElement = element as DicomStringElement;
-            if (stringElement != null)
+            if (element is DicomStringElement)
             {
                 // TODO: Needed to create a DicomItem with the correct VR
-                return (new DicomDataset()).AddOrUpdate(element.Tag, string.Empty).First();
+                return new DicomDataset().AddOrUpdate(element.Tag, string.Empty).First();
             }
 
             if (IsOtherElement(element)) // Replaces with an empty array
@@ -602,7 +599,7 @@
                 var t = (DicomItem)ctor.Invoke(new object[] { element.Tag });
 
                 // TODO: Needed to create a DicomItem with the correct VR
-                return (new DicomDataset()).AddOrUpdate(element.Tag, t).First();
+                return new DicomDataset().AddOrUpdate(element.Tag, t).First();
             }
 
             var valueType = ElementValueType(element); // Replace with the default value
@@ -612,7 +609,7 @@
                 var t = (DicomItem)ctor.Invoke(new[] { element.Tag, Activator.CreateInstance(valueType) });
 
                 // TODO: Needed to create a DicomItem with the correct VR
-                return (new DicomDataset()).AddOrUpdate(element.Tag, t).First();
+                return new DicomDataset().AddOrUpdate(element.Tag, t).First();
             }
 
             throw new InvalidOperationException($"Missed type: {item.GetType()}");

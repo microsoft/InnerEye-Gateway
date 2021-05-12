@@ -8,7 +8,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using Dicom;
-    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
     public class AnonymizeEngine
     {
@@ -149,6 +149,7 @@
                     return ds;
                 case Mode.blank:
                     return new DicomDataset();
+                case Mode.clone:
                 default:
                     throw new InvalidOperationException();
             }
@@ -395,10 +396,10 @@
             report.Add("Current Configuration:");
             tmp_report.Reverse<List<string>>().ToList().ForEach(l => report.AddRange(l));
 
-            (new Dictionary<string, Dictionary<string, SortedDictionary<string, List<string>>>> {
+            new Dictionary<string, Dictionary<string, SortedDictionary<string, List<string>>>> {
                 { "Regex", GroupTagsByTagFuncsAndTagHandler(_regexFuncs.Select(p => new KeyValuePair<AnonFunc, string>(p.Value, p.Key.ToString()))) },
                 { "Tag", GroupTagsByTagFuncsAndTagHandler(_tagFuncs.Select(p => new KeyValuePair<AnonFunc, string>(p.Value, TagName(p.Key)))) }
-            }).ToList()
+            }.ToList()
             .ForEach(type_groups =>
             {
                 var type = type_groups.Key;
