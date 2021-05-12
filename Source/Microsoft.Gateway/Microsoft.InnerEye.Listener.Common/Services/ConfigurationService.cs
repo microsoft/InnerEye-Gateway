@@ -1,5 +1,4 @@
-﻿
-namespace Microsoft.InnerEye.Listener.Common.Services
+﻿namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
     using System.Collections.Generic;

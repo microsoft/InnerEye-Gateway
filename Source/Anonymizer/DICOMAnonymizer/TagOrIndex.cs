@@ -1,8 +1,8 @@
-﻿using System.Globalization;
-using Dicom;
-
-namespace DICOMAnonymizer
+﻿namespace DICOMAnonymizer
 {
+    using System.Globalization;
+    using Dicom;
+
     public class TagOrIndex
     {
         public bool IsTag { get; }

@@ -1,10 +1,10 @@
-﻿using Dicom;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static DICOMAnonymizer.AnonymizeEngine;
-using static DICOMAnonymizer.ConfidentialityProfile;
-
-namespace DICOMAnonymizer.Tests
+﻿namespace DICOMAnonymizer.Tests
 {
+    using Dicom;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static DICOMAnonymizer.AnonymizeEngine;
+    using static DICOMAnonymizer.ConfidentialityProfile;
+
     [TestClass]
     public class ConfidentialityProfileTests
     {

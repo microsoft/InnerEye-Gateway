@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using DICOMAnonymizer.Tools;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace DICOMAnonymizer.Tests
+﻿namespace DICOMAnonymizer.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Xml.Linq;
+    using DICOMAnonymizer.Tools;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class SpecTests
     {

@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Dicom;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static DICOMAnonymizer.AnonymizeEngine;
-using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
-
-namespace DICOMAnonymizer.Tests
+﻿namespace DICOMAnonymizer.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Reflection;
+    using System.Text.RegularExpressions;
+    using Dicom;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static DICOMAnonymizer.AnonymizeEngine;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
+
     [TestClass]
     public class AnonymizerEngineTests
     {

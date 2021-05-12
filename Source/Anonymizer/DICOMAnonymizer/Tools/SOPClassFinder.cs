@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace DICOMAnonymizer.Tools
+﻿namespace DICOMAnonymizer.Tools
 {
+    using System.Collections.Generic;
+
     public enum SOPClass
     {
         ComputedRadiographyImageStorage,
