@@ -184,7 +184,7 @@
             var sopInstanceUID = dicomFile.FileMetaInfo.MediaStorageSOPInstanceUID;
             Assert.AreEqual(DicomTransferSyntax.ImplicitVRLittleEndian, dicomFile.FileMetaInfo.TransferSyntax);
 
-            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<Dicom.DicomUID>(DicomTag.SOPClassUID));
+            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPClassUID));
             Assert.AreEqual(sopInstanceUID, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPInstanceUID));
 
             var expectedDate = $"{testDateTime.Year}{testDateTime.Month:D2}{testDateTime.Day:D2}";
