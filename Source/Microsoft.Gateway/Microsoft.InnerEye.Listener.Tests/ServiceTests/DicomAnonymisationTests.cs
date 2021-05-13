@@ -30,25 +30,21 @@
             var image = @"Images\LargeSeriesWithContour";
             var tempFolder = CreateTemporaryDirectory();
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var configType = AETConfigType.ModelWithResultDryRun;
             var dryRunFolder = DryRunFolders.GetFolder(configType);
 
             var testAETConfigModel = GetTestAETConfigModel();
 
             var newTestAETConfigModel = testAETConfigModel.With(
-                aetConfig: new ClientAETConfig(
-                    new AETConfig(
-                        configType,
-                        testAETConfigModel.AETConfig.Config.ModelsConfig),
-                    testAETConfigModel.AETConfig.Destination,
-                    false));
+                aetConfig: testAETConfigModel.AETConfig.With(
+                    config: testAETConfigModel.AETConfig.Config.With(
+                        aetConfigType: configType)));
 
             var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
 
             var receivePort = 160;
 
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
             using (var downloadService = CreateDownloadService(segmentationClient))
@@ -77,7 +73,7 @@
                 SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 1);
 
                 // Wait for all files to save.
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 var originalSlice = DicomFile.Open(new DirectoryInfo(image).GetFiles().First().FullName);
 
@@ -99,18 +95,18 @@
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID));
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyID));
 
-                    Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 3).StartsWith("InnerEye Model Created:"));
-                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 4).StartsWith("InnerEye Version:"));
+                    Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 2).StartsWith("InnerEye AI Model ID:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 3).StartsWith("InnerEye Model Created:", StringComparison.Ordinal));
+                    Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 4).StartsWith("InnerEye Version:", StringComparison.Ordinal));
 
                     Assert.AreEqual("1.2.840.10008.5.1.4.1.1.481.3", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SOPClassUID));
-                    Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
-                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
+                    Assert.AreEqual($"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month:D2}{DateTime.UtcNow.Day:D2}", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
+                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2", StringComparison.Ordinal));
                     Assert.AreEqual("511091532", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesNumber, string.Empty));
                     Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesDescription, string.Empty));
-                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2"));
+                    Assert.IsTrue(dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty).StartsWith("1.2.826.0.1.3680043.2", StringComparison.Ordinal));
                     Assert.AreEqual("ANONYM", dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.OperatorsName, string.Empty));
 
                     VerifyDicomFile(file.FullName);
@@ -128,68 +124,64 @@
         {
             var tempFolder = CreateTemporaryDirectory();
 
+            var configType = AETConfigType.ModelDryRun;
+            var dryRunFolder = DryRunFolders.GetFolder(configType);
+
+            var testAETConfigModel = GetTestAETConfigModel();
+
+            var newTestAETConfigModel = testAETConfigModel.With(
+                aetConfig: testAETConfigModel.AETConfig.With(
+                    config: new AETConfig(
+                        configType,
+                        null)));
+
+            var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
+
+            var receivePort = 161;
+
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
+            using (var deleteService = CreateDeleteService())
+            using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
+            using (var downloadService = CreateDownloadService(segmentationClient))
+            using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
+            using (var receiveService = CreateReceiveService(receivePort, tempFolder))
             {
-                var configType = AETConfigType.ModelDryRun;
-                var dryRunFolder = DryRunFolders.GetFolder(configType);
+                deleteService.Start();
+                pushService.Start();
+                downloadService.Start();
+                uploadService.Start();
+                receiveService.Start();
 
-                var segmentationClient = GetMockInnerEyeSegmentationClient();
+                DcmtkHelpers.SendFolderUsingDCMTK(
+                    @"Images\1ValidSmall",
+                    receivePort,
+                    ScuProfile.LEExplicitCT,
+                    TestContext,
+                    applicationEntityTitle: newTestAETConfigModel.CallingAET,
+                    calledAETitle: newTestAETConfigModel.CalledAET);
 
-                var testAETConfigModel = GetTestAETConfigModel();
-                var newTestAETConfigModel = testAETConfigModel.With(
-                    aetConfig: new ClientAETConfig(
-                        new AETConfig(
-                            configType,
-                            null),
-                        testAETConfigModel.AETConfig.Destination,
-                        false));
+                SpinWait.SpinUntil(() => tempFolder.GetDirectories().FirstOrDefault(x => x.FullName.Contains(dryRunFolder)) != null);
 
-                var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
+                var dryRunFolderDirectory = tempFolder.GetDirectories().First(x => x.FullName.Contains(dryRunFolder)).GetDirectories().First();
 
-                var receivePort = 161;
+                // Wait until we have all image files.
+                SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 20);
 
-                using (var deleteService = CreateDeleteService())
-                using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient))
-                using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
+                // Wait for all files to save.
+                await Task.Delay(200).ConfigureAwait(false);
+
+                var savedSampleFile = false;
+
+                foreach (var file in dryRunFolderDirectory.GetFiles())
                 {
-                    deleteService.Start();
-                    pushService.Start();
-                    downloadService.Start();
-                    uploadService.Start();
-                    receiveService.Start();
+                    var dicomFile = DicomFile.Open(file.FullName);
 
-                    DcmtkHelpers.SendFolderUsingDCMTK(
-                        @"Images\1ValidSmall",
-                        receivePort,
-                        ScuProfile.LEExplicitCT,
-                        TestContext,
-                        applicationEntityTitle: newTestAETConfigModel.CallingAET,
-                        calledAETitle: newTestAETConfigModel.CalledAET);
+                    AssertDicomFileIsAnonymised(dicomFile);
 
-                    SpinWait.SpinUntil(() => tempFolder.GetDirectories().FirstOrDefault(x => x.FullName.Contains(dryRunFolder)) != null);
-
-                    var dryRunFolderDirectory = tempFolder.GetDirectories().First(x => x.FullName.Contains(dryRunFolder)).GetDirectories().First();
-
-                    // Wait until we have all image files.
-                    SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 20);
-
-                    // Wait for all files to save.
-                    await Task.Delay(200);
-
-                    var savedSampleFile = false;
-
-                    foreach (var file in dryRunFolderDirectory.GetFiles())
+                    if (!savedSampleFile)
                     {
-                        var dicomFile = DicomFile.Open(file.FullName);
-
-                        AssertDicomFileIsAnonymised(dicomFile);
-
-                        if (!savedSampleFile)
-                        {
-                            WriteDicomFileForBuildPackage("AnonymisedCT.dcm", dicomFile);
-                            savedSampleFile = true;
-                        }
+                        WriteDicomFileForBuildPackage("AnonymisedCT.dcm", dicomFile);
+                        savedSampleFile = true;
                     }
                 }
             }
@@ -205,103 +197,101 @@
         {
             var tempFolder = CreateTemporaryDirectory();
 
+            var configType = AETConfigType.ModelDryRun;
+            var dryRunFolder = DryRunFolders.GetFolder(configType);
+
+            var testAETConfigModel = GetTestAETConfigModel();
+
+            var newTestAETConfigModel = testAETConfigModel.With(
+                aetConfig: testAETConfigModel.AETConfig.With(
+                    config: new AETConfig(
+                        configType,
+                        null)));
+
+            var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
+
+            var receivePort = 162;
+
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
+            using (var deleteService = CreateDeleteService())
+            using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
+            using (var downloadService = CreateDownloadService(segmentationClient))
+            using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
+            using (var receiveService = CreateReceiveService(receivePort, tempFolder))
             {
-                var configType = AETConfigType.ModelDryRun;
-                var dryRunFolder = DryRunFolders.GetFolder(configType);
+                deleteService.Start();
+                pushService.Start();
+                downloadService.Start();
+                uploadService.Start();
+                receiveService.Start();
 
-                var segmentationClient = GetMockInnerEyeSegmentationClient();
+                DcmtkHelpers.SendFolderUsingDCMTK(
+                    @"Images\1ValidSmall",
+                    receivePort,
+                    ScuProfile.LEExplicitRTCT,
+                    TestContext,
+                    applicationEntityTitle: newTestAETConfigModel.CallingAET,
+                    calledAETitle: newTestAETConfigModel.CalledAET);
 
-                var testAETConfigModel = GetTestAETConfigModel();
-                var newTestAETConfigModel = testAETConfigModel.With(
-                    aetConfig: new ClientAETConfig(
-                        new AETConfig(
-                            configType,
-                            null),
-                        testAETConfigModel.AETConfig.Destination,
-                        false));
+                SpinWait.SpinUntil(() => tempFolder.GetDirectories().FirstOrDefault(x => x.FullName.Contains(dryRunFolder)) != null);
 
-                var aetConfigProvider = new MockAETConfigProvider(newTestAETConfigModel);
+                var dryRunFolderDirectory = tempFolder.GetDirectories().First(x => x.FullName.Contains(dryRunFolder)).GetDirectories().First();
 
-                var receivePort = 162;
+                // Wait until we have all image files.
+                SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 1);
 
-                using (var deleteService = CreateDeleteService())
-                using (var pushService = CreatePushService(aetConfigProvider.AETConfigModels))
-                using (var downloadService = CreateDownloadService(segmentationClient))
-                using (var uploadService = CreateUploadService(segmentationClient, aetConfigProvider.AETConfigModels))
-                using (var receiveService = CreateReceiveService(receivePort, tempFolder))
+                // Wait for all files to save.
+                await Task.Delay(1000).ConfigureAwait(false);
+
+                var savedSampleFile = false;
+
+                foreach (var file in dryRunFolderDirectory.GetFiles())
                 {
-                    deleteService.Start();
-                    pushService.Start();
-                    downloadService.Start();
-                    uploadService.Start();
-                    receiveService.Start();
+                    var dicomFile = DicomFile.Open(file.FullName);
 
-                    DcmtkHelpers.SendFolderUsingDCMTK(
-                        @"Images\1ValidSmall",
-                        receivePort,
-                        ScuProfile.LEExplicitRTCT,
-                        TestContext,
-                        applicationEntityTitle: newTestAETConfigModel.CallingAET,
-                        calledAETitle: newTestAETConfigModel.CalledAET);
+                    AssertDicomFileIsAnonymised(dicomFile);
 
-                    SpinWait.SpinUntil(() => tempFolder.GetDirectories().FirstOrDefault(x => x.FullName.Contains(dryRunFolder)) != null);
-
-                    var dryRunFolderDirectory = tempFolder.GetDirectories().First(x => x.FullName.Contains(dryRunFolder)).GetDirectories().First();
-
-                    // Wait until we have all image files.
-                    SpinWait.SpinUntil(() => dryRunFolderDirectory.GetFiles().Length == 1);
-
-                    // Wait for all files to save.
-                    await Task.Delay(1000);
-
-                    var savedSampleFile = false;
-
-                    foreach (var file in dryRunFolderDirectory.GetFiles())
+                    if (!savedSampleFile)
                     {
-                        var dicomFile = DicomFile.Open(file.FullName);
-
-                        AssertDicomFileIsAnonymised(dicomFile);
-
-                        if (!savedSampleFile)
-                        {
-                            WriteDicomFileForBuildPackage("AnonymisedRT.dcm", dicomFile);
-                            savedSampleFile = true;
-                        }
+                        WriteDicomFileForBuildPackage("AnonymisedRT.dcm", dicomFile);
+                        savedSampleFile = true;
                     }
                 }
             }
         }
 
-        private void VerifyDicomFile(string path)
+        private static void VerifyDicomFile(string path)
         {
             var verifierPath = Path.Combine("Assets", "dicom3tools", "dciodvfy.exe");
             Assert.IsNotNull(verifierPath, "DICOM verifier executable (dciodvfy.exe) not found on system PATH");
 
-            var process = new Process();
-            process.StartInfo.FileName = verifierPath;
-            process.StartInfo.Arguments = path;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardError = true;
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = verifierPath;
+                process.StartInfo.Arguments = path;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardError = true;
 
-            process.Start();
-            var standardError = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+                process.Start();
+                var standardError = process.StandardError.ReadToEnd();
+                process.WaitForExit();
 
-            // Ignore empty contours
-            var output = standardError
-                .Replace("Error - Bad Sequence number of Items 0 (1-n Required by Module definition) Element=<ContourSequence> Module=<ROIContour>", string.Empty)
-                .Replace("Error - Bad attribute Value Multiplicity Type 3 Optional Element=<ContourSequence> Module=<ROIContour>", string.Empty)
-                .ToLower();
+                // Ignore empty contours
+                var output = standardError
+                    .Replace("Error - Bad Sequence number of Items 0 (1-n Required by Module definition) Element=<ContourSequence> Module=<ROIContour>", string.Empty)
+                    .Replace("Error - Bad attribute Value Multiplicity Type 3 Optional Element=<ContourSequence> Module=<ROIContour>", string.Empty)
+                    .ToUpperInvariant();
 
-            Assert.IsFalse(output.Contains("error"));
+                Assert.IsFalse(output.Contains("ERROR"));
+            }
         }
 
-        private void AssertDicomFileIsAnonymised(DicomFile dicomFile)
+        private static void AssertDicomFileIsAnonymised(DicomFile dicomFile)
         {
             // Check the software version gets added
             var softwareVersion = dicomFile.Dataset.GetString(DicomTag.SoftwareVersions);
 
-            Assert.IsTrue(softwareVersion.StartsWith("Microsoft InnerEye Gateway:"));
+            Assert.IsTrue(softwareVersion.StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
 
             var acceptedTags = new List<DicomTag>()
             {
@@ -477,6 +467,8 @@
         /// <param name="dicomFiles">DicomFiles to update.</param>
         public static void AddRandomTags(Random random, IEnumerable<DicomFile> dicomFiles)
         {
+            dicomFiles = dicomFiles ?? throw new ArgumentNullException(nameof(dicomFiles));
+
             foreach (var dicomTagRandomiserPair in DicomTagRandomisers)
             {
                 foreach (var dicomTag in dicomTagRandomiserPair.Item1)
@@ -544,7 +536,7 @@
             string sourceImageFileName,
             IEnumerable<TagReplacement> tagReplacements)
         {
-            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll);
+            var originalDicomFile = await DicomFile.OpenAsync(sourceImageFileName, FileReadOption.ReadAll).ConfigureAwait(false);
             // Make a copy of the existing DicomDataset
             var originalDataset = originalDicomFile.Dataset.Clone();
 
@@ -604,6 +596,11 @@
             IEnumerable<TagReplacement> tagReplacements,
             bool sameModalities)
         {
+            originalDicomFile = originalDicomFile ?? throw new ArgumentNullException(nameof(originalDicomFile));
+            deanonymizedDicomFile = deanonymizedDicomFile ?? throw new ArgumentNullException(nameof(deanonymizedDicomFile));
+            topLevelReplacements = topLevelReplacements ?? throw new ArgumentNullException(nameof(topLevelReplacements));
+            tagReplacements = tagReplacements ?? throw new ArgumentNullException(nameof(tagReplacements));
+
             var sourceDataset = originalDicomFile.Dataset;
             var deanonymizedDataset = deanonymizedDicomFile.Dataset;
 
@@ -717,7 +714,7 @@
             var random = new Random();
             var sourceImageFileName = new DirectoryInfo(@"Images\1ValidSmall").GetFiles().First().FullName;
 
-            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>());
+            await TestDataSetAnonymizeDeanonymize(random, sourceImageFileName, Array.Empty<TagReplacement>()).ConfigureAwait(false);
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
@@ -731,7 +728,7 @@
             await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
-                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists));
+                CreateTestTagReplacements(random, TagReplacementOperation.AppendIfExists)).ConfigureAwait(false);
         }
 
         [TestCategory("DicomAnonymisationDCMTK")]
@@ -745,7 +742,7 @@
             await TestDataSetAnonymizeDeanonymize(
                 random,
                 sourceImageFileName,
-                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists));
+                CreateTestTagReplacements(random, TagReplacementOperation.UpdateIfExists)).ConfigureAwait(false);
         }
     }
 }

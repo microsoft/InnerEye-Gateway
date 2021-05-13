@@ -1,9 +1,9 @@
 ﻿namespace Microsoft.InnerEye.DicomConstraints
 {
+    using System.Runtime.Serialization;
     using Dicom;
     using Newtonsoft.Json;
     using NJsonSchema.Converters;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// Impose a constraint on a DICOM dataset

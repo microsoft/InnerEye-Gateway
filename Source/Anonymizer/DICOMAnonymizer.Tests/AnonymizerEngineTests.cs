@@ -1,33 +1,34 @@
-﻿using Dicom;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using static DICOMAnonymizer.AnonymizeEngine;
-using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
-
-namespace DICOMAnonymizer.Tests
+﻿namespace DICOMAnonymizer.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Reflection;
+    using System.Text.RegularExpressions;
+    using Dicom;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static DICOMAnonymizer.AnonymizeEngine;
+    using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
+
     [TestClass]
     public class AnonymizerEngineTests
     {
-        private AnonymizeEngine GetAnonEngine(Mode m)
+        private static AnonymizeEngine GetAnonEngine(Mode m)
         {
             return (AnonymizeEngine)Activator.CreateInstance(typeof(AnonymizeEngine), BindingFlags.Instance | BindingFlags.NonPublic, null, new object[] { m, true }, null, null);
         }
 
-        private class TestHanlder : ITagHandler
+        private class TestHandler : ITagHandler
         {
-            public int State { get; set; } = 0;
+            public int State { get; set; }
 
-            public TestHanlder()
+            public TestHandler()
             {
                 tagh = new Dictionary<DicomTag, AnonFunc>();
                 regh = new Dictionary<Regex, AnonFunc>();
             }
 
-            public TestHanlder(Dictionary<DicomTag, AnonFunc> tagh, Dictionary<Regex, AnonFunc> regh)
+            public TestHandler(Dictionary<DicomTag, AnonFunc> tagh, Dictionary<Regex, AnonFunc> regh)
             {
                 this.tagh = tagh;
                 this.regh = regh;
@@ -51,7 +52,7 @@ namespace DICOMAnonymizer.Tests
         public void IgnoreNullReturnsInActions()
         {
             var anon = new AnonymizeEngine(Mode.inplace);
-            var th = new TestHanlder(null, null);
+            var th = new TestHandler(null, null);
 
             anon.RegisterHandler(th);
             anon.ForceRegisterHandler(th);
@@ -62,7 +63,7 @@ namespace DICOMAnonymizer.Tests
         public void RegisterHandlerShouldNotAllowOverwriting()
         {
             var anon = GetAnonEngine(Mode.inplace);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return y; } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return y; } } }, null);
 
             anon.RegisterHandler(th);
             anon.RegisterHandler(th);
@@ -72,7 +73,7 @@ namespace DICOMAnonymizer.Tests
         public void ForceRegisterHandlerShouldAllowOverwriting()
         {
             var anon = GetAnonEngine(Mode.clone);
-            var th = new TestHanlder();
+            var th = new TestHandler();
 
             // Execute the empty function
             anon.RegisterHandler(th);
@@ -80,7 +81,7 @@ namespace DICOMAnonymizer.Tests
             var ds = new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"));
             anon.Anonymize(ds);
 
-            th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { throw new Exception("Hello"); } } }, null);
+            th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { throw new ArgumentException("Hello"); } } }, null);
             anon.ForceRegisterHandler(th);
 
             // Execute the throwing function
@@ -88,7 +89,7 @@ namespace DICOMAnonymizer.Tests
             {
                 anon.Anonymize(ds);
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 Assert.AreEqual("Hello", e.Message);
             }
@@ -103,7 +104,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.inplace);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
             anon.RegisterHandler(th);
 
             anon.Anonymize(ds);
@@ -114,7 +115,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesBlank_UndeclaredTagsShouldBeRemoved()
+        public void NestedSequencesBlankUndeclaredTagsShouldBeRemoved()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -122,7 +123,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.blank);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
             anon.RegisterHandler(th);
 
             var nds = anon.Anonymize(ds);
@@ -138,7 +139,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesBlank_DeclaredTagsShouldBeKept()
+        public void NestedSequencesBlankDeclaredTagsShouldBeKept()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -146,7 +147,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.blank);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() {
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() {
                 { DicomTag.RTROIObservationsSequence,  (x, s, y) => { return y; } },
                 { DicomTag.SOPInstanceUID,  (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } }
             }, null);
@@ -166,7 +167,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesClone_UndeclaredTagsShouldBeKept()
+        public void NestedSequencesCloneUndeclaredTagsShouldBeKept()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -174,7 +175,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.clone);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } } }, null);
             anon.RegisterHandler(th);
 
             var nds = anon.Anonymize(ds);
@@ -192,7 +193,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesClone_OneDeclaredTagShouldBeRemoved()
+        public void NestedSequencesCloneOneDeclaredTagShouldBeRemoved()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -200,7 +201,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.clone);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() {
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() {
                 { DicomTag.RTROIObservationsSequence,  (x, s, y) => { return null; } },
                 { DicomTag.SOPInstanceUID,  (x, s, y) => { return new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "3.2.1"); } }
             }, null);
@@ -219,7 +220,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesClone_RemovalAllExceptSequence()
+        public void NestedSequencesCloneRemovalAllExceptSequence()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -227,7 +228,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.clone);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return null; } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, (x, s, y) => { return null; } } }, null);
             anon.RegisterHandler(th);
 
             var nds = anon.Anonymize(ds);
@@ -244,7 +245,7 @@ namespace DICOMAnonymizer.Tests
         }
 
         [TestMethod]
-        public void NestedSequencesBlank_RemovalAllExceptSequence()
+        public void NestedSequencesBlankRemovalAllExceptSequence()
         {
             var ds = new DicomDataset(
                 new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"),
@@ -252,7 +253,7 @@ namespace DICOMAnonymizer.Tests
                     new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"))));
 
             var anon = GetAnonEngine(Mode.blank);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.RTROIObservationsSequence, (x, s, y) => { return y; } } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.RTROIObservationsSequence, (x, s, y) => { return y; } } }, null);
             anon.RegisterHandler(th);
 
             var nds = anon.Anonymize(ds);
@@ -272,7 +273,7 @@ namespace DICOMAnonymizer.Tests
         public void HandlerOverwriteReporting()
         {
             var anon = GetAnonEngine(Mode.clone);
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() {
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() {
                     { DicomTag.RTROIObservationsSequence,  (x, s, y) => { return y; } },
                     { DicomTag.SOPInstanceUID,  (x, s, y) => { return y; } }
                 },
@@ -284,7 +285,7 @@ namespace DICOMAnonymizer.Tests
             var report = anon.ForceRegisterHandler(th);
 
             Assert.AreEqual(4, report.Count);
-            var exp = DicomTag.RTROIObservationsSequence.DictionaryEntry.Name + " " + DicomTag.RTROIObservationsSequence.ToString().ToUpper();
+            var exp = DicomTag.RTROIObservationsSequence.DictionaryEntry.Name + " " + DicomTag.RTROIObservationsSequence.ToString().ToUpper(CultureInfo.InvariantCulture);
             Assert.AreEqual(exp, report[0]);
             Assert.AreEqual(".*", report[2]);
         }
@@ -377,7 +378,7 @@ namespace DICOMAnonymizer.Tests
             var ds = new DicomDataset(new DicomUniqueIdentifier(DicomTag.SOPInstanceUID, "1.2.3"));
             var anon = GetAnonEngine(Mode.clone);
             AnonFunc f = (o, s, i) => { return null; };
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
             anon.RegisterHandler(th);
 
             anon.Anonymize(ds);
@@ -399,7 +400,7 @@ namespace DICOMAnonymizer.Tests
 
             var anon = GetAnonEngine(Mode.inplace);
 
-            int d = 0;
+            var d = 0;
             AnonFunc f = (o, s, i) =>
             {
                 if (d == 0)
@@ -424,7 +425,7 @@ namespace DICOMAnonymizer.Tests
                 }
                 return i;
             };
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
             anon.RegisterHandler(th);
 
             anon.Anonymize(ds);
@@ -436,7 +437,7 @@ namespace DICOMAnonymizer.Tests
         {
             var anon = new AnonymizeEngine(Mode.clone);
             AnonFunc f = (o, s, i) => { return null; };
-            var th = new TestHanlder(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
+            var th = new TestHandler(new Dictionary<DicomTag, AnonFunc>() { { DicomTag.SOPInstanceUID, f } }, null);
             anon.RegisterHandler(th);
         }
     }

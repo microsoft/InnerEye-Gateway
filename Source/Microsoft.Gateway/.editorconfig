@@ -65,43 +65,43 @@ csharp_preserve_single_line_statements = true
 #Style - Code block preferences
 
 #prefer curly braces even for one line of code
-csharp_prefer_braces = true:suggestion
+csharp_prefer_braces = true:error
 
 #Style - expression bodied member options
 
 #prefer block bodies for constructors
 csharp_style_expression_bodied_constructors = false:suggestion
 #prefer block bodies for methods
-csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_methods = false:silent
 #prefer expression-bodied members for properties
 csharp_style_expression_bodied_properties = true:suggestion
 
 #Style - expression level options
 
 #prefer out variables to be declared inline in the argument list of a method call when possible
-csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_inlined_variable_declaration = true:error
 #prefer tuple names to ItemX properties
-dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_explicit_tuple_names = true:error
 #prefer the language keyword for member access expressions, instead of the type name, for types that have a keyword to represent them
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
 #Style - Expression-level  preferences
 
 #prefer default(T) over default
-csharp_prefer_simple_default_expression = false:suggestion
+csharp_prefer_simple_default_expression = false:error
 #prefer objects to be initialized using object initializers when possible
-dotnet_style_object_initializer = true:suggestion
+dotnet_style_object_initializer = true:error
 #prefer inferred tuple element names
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 
 #Style - implicit and explicit types
 
 #prefer var over explicit type in all cases, unless overridden by another code style rule
-csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_elsewhere = true:error
 #prefer var is used to declare variables with built-in system types such as int
-csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_for_built_in_types = true:error
 #prefer var when the type is already mentioned on the right-hand side of a declaration expression
-csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_when_type_is_apparent = true:error
 
 #Style - language keyword and framework type options
 
@@ -116,17 +116,17 @@ csharp_style_pattern_local_over_anonymous_function = false:suggestion
 #Style - modifier options
 
 #prefer accessibility modifiers to be declared except for public interface members. This will currently not differ from always and will act as future proofing for if C# adds default interface methods.
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 
 #Style - Modifier preferences
 
 #when this rule is set to a list of modifiers, prefer the specified ordering.
-csharp_preferred_modifier_order = public,private,protected,internal,static,readonly,async,override,sealed,virtual,abstract:suggestion
+csharp_preferred_modifier_order = public,private,protected,internal,static,readonly,async,override,sealed,virtual,abstract:silent
 
 #Style - Pattern matching
 
 #prefer pattern matching instead of is expression with type casts
-csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:error
 
 #Style - qualification options
 
@@ -137,131 +137,46 @@ dotnet_style_qualification_for_method = false:suggestion
 #prefer properties not to be prefaced with this. or Me. in Visual Basic
 dotnet_style_qualification_for_property = false:suggestion
 
+# Default severity for all analyzer diagnostics
+dotnet_analyzer_diagnostic.severity = error
+
 # CA1014: Mark assemblies with CLSCompliant
 dotnet_diagnostic.CA1014.severity = none
 
-# CA1024: Use properties where appropriate
-dotnet_diagnostic.CA1024.severity = suggestion
-
-# CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = suggestion
-
-# CA1051: Do not declare visible instance fields
-dotnet_diagnostic.CA1051.severity = suggestion
-
-# CA1052: Static holder types should be Static or NotInheritable
-dotnet_diagnostic.CA1052.severity = suggestion
-
-# CA1062: Validate arguments of public methods
-dotnet_diagnostic.CA1062.severity = suggestion
-
-# CA1200: Avoid using cref tags with a prefix
-dotnet_diagnostic.CA1200.severity = suggestion
-
-# CA1304: Specify CultureInfo
-dotnet_diagnostic.CA1304.severity = suggestion
-
-# CA1305: Specify IFormatProvider
-dotnet_diagnostic.CA1305.severity = suggestion
-
-# CA1310: Specify StringComparison for correctness
-dotnet_diagnostic.CA1310.severity = suggestion
-
-# CA1508: Avoid dead conditional code
-dotnet_diagnostic.CA1508.severity = suggestion
-
-# CA1711: Identifiers should not have incorrect suffix
-dotnet_diagnostic.CA1711.severity = suggestion
-
-# CA1725: Parameter names should match base declaration
-dotnet_diagnostic.CA1725.severity = suggestion
-
-# CA1801: Review unused parameters
-dotnet_diagnostic.CA1801.severity = suggestion
-
-# CA1805: Do not initialize unnecessarily
-dotnet_diagnostic.CA1805.severity = suggestion
-
-# CA1812: Avoid uninstantiated internal classes
-dotnet_diagnostic.CA1812.severity = suggestion
-
-# CA1816: Dispose methods should call SuppressFinalize
-dotnet_diagnostic.CA1816.severity = suggestion
-
-# CA1819: Properties should not return arrays
-dotnet_diagnostic.CA1819.severity = suggestion
-
-# CA1822: Mark members as static
-dotnet_diagnostic.CA1822.severity = suggestion
-
-# CA1825: Avoid zero-length array allocations
-dotnet_diagnostic.CA1825.severity = suggestion
-
-# CA1834: Consider using 'StringBuilder.Append(char)' when applicable
-dotnet_diagnostic.CA1834.severity = suggestion
-
-# CA2000: Dispose objects before losing scope
-dotnet_diagnostic.CA2000.severity = suggestion
-
-# CA2007: Consider calling ConfigureAwait on the awaited task
-dotnet_diagnostic.CA2007.severity = suggestion
-
-# CA2016: Forward the 'CancellationToken' parameter to methods that take one
-dotnet_diagnostic.CA2016.severity = suggestion
-
-# CA2101: Specify marshaling for P/Invoke string arguments
-dotnet_diagnostic.CA2101.severity = suggestion
-
-# CA2200: Rethrow to preserve stack details
-dotnet_diagnostic.CA2200.severity = suggestion
-
-# CA2201: Do not raise reserved exception types
-dotnet_diagnostic.CA2201.severity = suggestion
-
-# CA2208: Instantiate argument exceptions correctly
-dotnet_diagnostic.CA2208.severity = suggestion
-
-# CA2213: Disposable fields should be disposed
-dotnet_diagnostic.CA2213.severity = suggestion
-
-# CA2227: Collection properties should be read only
-dotnet_diagnostic.CA2227.severity = suggestion
-
-# CA2234: Pass system uri objects instead of strings
-dotnet_diagnostic.CA2234.severity = suggestion
+dotnet_code_quality.ca1711.allowed_suffixes = Queue
 
 # CA5359: Do Not Disable Certificate Validation
 dotnet_diagnostic.CA5359.severity = suggestion
 
-# CA5392: Use DefaultDllImportSearchPaths attribute for P/Invokes
-dotnet_diagnostic.CA5392.severity = suggestion
-
 # CA5394: Do not use insecure randomness
 dotnet_diagnostic.CA5394.severity = suggestion
 
-# IDE0004: Remove Unnecessary Cast
-dotnet_diagnostic.IDE0004.severity = error
+# IDE0010: Add missing cases
+dotnet_diagnostic.IDE0010.severity = suggestion
 
-# IDE0005: Using directive is unnecessary.
-dotnet_diagnostic.IDE0005.severity = error
+# IDE0022: Use block body for methods
+dotnet_diagnostic.IDE0022.severity = silent
 
-# IDE0035: Remove unreachable code.
-dotnet_diagnostic.IDE0035.severity = error
+# IDE0032: Use auto property
+dotnet_diagnostic.IDE0032.severity = suggestion
 
-# IDE0051: Remove unused private members
-dotnet_diagnostic.IDE0051.severity = error
+# IDE0036: Order modifiers
+dotnet_diagnostic.IDE0036.severity = silent
 
-# IDE0052: Remove unread private members
-dotnet_diagnostic.IDE0052.severity = error
+# IDE0042: Deconstruct variable declaration
+dotnet_diagnostic.IDE0042.severity = suggestion
+
+# IDE0046: Convert to conditional expression
+dotnet_diagnostic.IDE0046.severity = suggestion
+
+# IDE0048: Add parentheses for clarity
+dotnet_diagnostic.IDE0048.severity = silent
 
 # IDE0058: Expression value is never used
 dotnet_diagnostic.IDE0058.severity = suggestion
 
-# IDE0059: Unnecessary assignment of a value
-dotnet_diagnostic.IDE0059.severity = suggestion
+# IDE0065: Misplaced using directive
+csharp_using_directive_placement = inside_namespace
 
-# IDE0060: Remove unused parameter
-dotnet_diagnostic.IDE0060.severity = suggestion
-
-# IDE0080: Remove unnecessary suppression operator
-dotnet_diagnostic.IDE0080.severity = error
+# IDE0065: Misplaced using directive
+dotnet_diagnostic.IDE0065.severity = silent

@@ -7,13 +7,10 @@
     using System.Linq;
     using System.Net.Sockets;
     using System.Threading.Tasks;
-
     using Dicom.Network;
-    using DicomClient = Dicom.Network.Client.DicomClient;
-
     using Interfaces;
-
     using Models;
+    using DicomClient = Dicom.Network.Client.DicomClient;
 
     /// <summary>
     /// A wrapper for sending data over Dicom.
@@ -57,17 +54,17 @@
 
             await dicomClient.AddRequestAsync(new DicomCEchoRequest
             {
-                OnResponseReceived = ((request, response) =>
+                OnResponseReceived = (request, response) =>
                 {
                     // The Dicom Client send method waits until the response received has finished.
                     // Do not put any async code in here as it will not wait.
                     result = GetStatus(response.Status);
-                })
-            });
+                }
+            }).ConfigureAwait(false);
 
             try
             {
-                await dicomClient.SendAsync();
+                await dicomClient.SendAsync().ConfigureAwait(false);
             }
             catch (SocketException e)
             {
@@ -75,7 +72,9 @@
 
                 Trace.TraceError($"[{GetType().Name}] A socket exception occured during the Dicom echo. Failed to get a response. Exception: {e}");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Trace.TraceError($"[{GetType().Name}] An unkown exception occured during the Dicom echo. Exception: {e}");
             }
@@ -105,11 +104,6 @@
                 peerApplicationEntityPort,
                 peerApplicationEntityIPAddress);
 
-            if (dicomFiles == null)
-            {
-                throw new ArgumentNullException(nameof(dicomFiles));
-            }
-
             var result = new List<Tuple<Dicom.DicomFile, DicomOperationResult>>();
 
             var dicomClient = CreateDicomClient(
@@ -137,16 +131,18 @@
                         },
                     };
 
-                    await dicomClient.AddRequestAsync(dicomStoreRequest);
+                    await dicomClient.AddRequestAsync(dicomStoreRequest).ConfigureAwait(false);
                     filesToSend++;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Trace.TraceWarning($"[DicomCStoreRequest] Could not send Dicom Dataset: {dicomFile}. Exception: {e}");
                 }
             }
 
-            await dicomClient.SendAsync();
+            await dicomClient.SendAsync().ConfigureAwait(false);
 
             // Add any missing results
             foreach (var dicomFile in dicomFiles)

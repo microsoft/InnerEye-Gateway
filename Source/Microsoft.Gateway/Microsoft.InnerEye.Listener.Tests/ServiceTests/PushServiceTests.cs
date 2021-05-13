@@ -81,7 +81,7 @@
                 StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
                 var dataSender = new DicomDataSender();
-                var echoResult = await dataSender.DicomEchoAsync("RListener", applicationEntity.Title, applicationEntity.Port, applicationEntity.IpAddress);
+                var echoResult = await dataSender.DicomEchoAsync("RListener", applicationEntity.Title, applicationEntity.Port, applicationEntity.IpAddress).ConfigureAwait(false);
 
                 // Check echo
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);
@@ -153,7 +153,7 @@
                     "RListener",
                     destination.Title,
                     destination.Port,
-                    destination.Ip);
+                    destination.Ip).ConfigureAwait(false);
 
                 // Check echo
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);

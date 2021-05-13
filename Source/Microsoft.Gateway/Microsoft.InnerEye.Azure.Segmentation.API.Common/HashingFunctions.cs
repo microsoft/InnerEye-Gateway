@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
 {
+    using System.Globalization;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -22,11 +23,11 @@
                 var stringBuilder = new StringBuilder();
 
                 // This is to to create hashes that are valid UIs, w/o leading zeros. Potential future improvements - different hashing algorithms depending on VR
-                stringBuilder.Append("1");
+                stringBuilder.Append('1');
 
                 foreach (var hashedByte in hashData)
                 {
-                    stringBuilder.Append(hashedByte.ToString("d2"));
+                    stringBuilder.Append(hashedByte.ToString("d2", CultureInfo.InvariantCulture));
                 }
 
                 return stringBuilder.ToString().Substring(0, length);

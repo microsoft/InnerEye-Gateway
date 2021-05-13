@@ -20,6 +20,8 @@
         /// <param name="testContext">The current test context.</param>
         public static void AppendTestResult(string path, TestContext testContext)
         {
+            testContext = testContext ?? throw new ArgumentNullException(nameof(testContext));
+
             var testResult = CreateTestResult(testContext).ToString();
 
             if (!File.Exists(path))
@@ -48,7 +50,9 @@
             {
                 File.AppendAllLines(path, lines);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 if (retryCount >= 0)
                 {

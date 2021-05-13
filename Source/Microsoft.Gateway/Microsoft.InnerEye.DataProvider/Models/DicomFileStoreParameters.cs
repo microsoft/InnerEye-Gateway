@@ -51,6 +51,6 @@
         /// Gets a DICOM saver that will be used to serialize accepted DicomFiles received
         /// from the network peer. 
         /// </summary>
-	    public IDicomSaver DicomSaver { get; }
+        public IDicomSaver DicomSaver { get; }
     }
 }

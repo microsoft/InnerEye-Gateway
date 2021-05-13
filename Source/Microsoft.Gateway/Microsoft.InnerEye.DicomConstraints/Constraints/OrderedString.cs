@@ -13,7 +13,6 @@
         /// <summary>
         /// CulureInvariantCaseSensitive
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Culure", Justification = "TBD")]
         CulureInvariantCaseSensitive = 0,
 
         /// <summary>
@@ -25,7 +24,6 @@
     /// <summary>
     /// A simple string wrapper that can be used for string comparisons with the BaseOrderConstraint class.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1036:OverrideMethodsOnComparableTypes", Justification = "TBD")]
     public class OrderedString : IComparable, IInitializable<string>, IEquatable<OrderedString>
     {
         /// <summary>
@@ -62,18 +60,26 @@
         public StringComparisonType ComparisonType { get; }
 
         /// <summary>
-        /// implicitely convert value to an OrderString with CulureInvariantCaseSensitive comparison
+        /// implicitly convert value to an OrderString with CulureInvariantCaseSensitive comparison
         /// </summary>
-        /// <param name="value"></param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "TBD")]
-        public static implicit operator OrderedString(string value) => new OrderedString(value);
+        /// <param name="value">Value to convert.</param>
+        public static implicit operator OrderedString(string value)
+        {
+            return FromString(value);
+        }
+
+        /// <summary>
+        /// Convert from a string to an OrderString with CulureInvariantCaseSensitive comparison.
+        /// </summary>
+        /// <param name="value">Value to convert.</param>
+        /// <returns>New <see cref="OrderedString"/>.</returns>
+        public static OrderedString FromString(string value) => new OrderedString(value);
 
         /// <summary>
         /// IComparable implementation
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1800:DoNotCastUnnecessarily", Justification = "TBD")]
         public int CompareTo(object obj)
         {
             if (obj is OrderedString)
@@ -141,6 +147,30 @@
         public static bool operator !=(OrderedString left, OrderedString right)
         {
             return !(left == right);
+        }
+
+        /// <inheritdoc/>
+        public static bool operator <(OrderedString left, OrderedString right)
+        {
+            return left is null ? !(right is null) : left.CompareTo(right) < 0;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator <=(OrderedString left, OrderedString right)
+        {
+            return left is null || left.CompareTo(right) <= 0;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator >(OrderedString left, OrderedString right)
+        {
+            return !(left is null) && left.CompareTo(right) > 0;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator >=(OrderedString left, OrderedString right)
+        {
+            return left is null ? right is null : left.CompareTo(right) >= 0;
         }
     }
 }

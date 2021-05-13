@@ -139,13 +139,13 @@
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "Microsoft.InnerEye.DicomConstraints.Tests.currenttypes.json";
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream))
             {
-                StreamReader reader = new StreamReader(stream);
-                string result = reader.ReadToEnd();
+                var result = reader.ReadToEnd();
 
                 var constraintGroup = JsonConvert.DeserializeObject<GroupConstraint>(result);
-                DicomDataset ds = new DicomDataset();
+                var ds = new DicomDataset();
                 constraintGroup.Check(ds);
             }
         }

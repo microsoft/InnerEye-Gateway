@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -139,7 +140,7 @@
             }
 
             var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationDetetected,
-                string.Format("Settings have changed: {0}", e.FullPath));
+                string.Format(CultureInfo.InvariantCulture, "Settings have changed: {0}", e.FullPath));
             logEntry.Log(_logger, LogLevel.Information);
 
             if (!Load())
@@ -196,7 +197,7 @@
             else
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
-                    string.Format("Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
+                    string.Format(CultureInfo.InvariantCulture, "Settings is neither a file nor a folder: {0}", _settingsFileOrFolderName));
                 logEntry.Log(_logger, LogLevel.Error);
 
                 return false;
@@ -210,9 +211,11 @@
         /// <param name="equalityComparer">Optional, how to compare objects.</param>
         public (T, bool) Update(Func<T, T> updater, IEqualityComparer<T> equalityComparer = null)
         {
+            updater = updater ?? throw new ArgumentNullException(nameof(updater));
+
             if (!File.Exists(_settingsFileOrFolderName))
             {
-                throw new NotImplementedException(string.Format("Can only update single settings files: {0}", _settingsFileOrFolderName));
+                throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, "Can only update single settings files: {0}", _settingsFileOrFolderName));
             }
 
             var loadJsonResult = LoadFile(_settingsFileOrFolderName);
@@ -251,7 +254,7 @@
             catch (JsonSerializationException e)
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
-                    string.Format("Unable to parse settings file {0}", path));
+                    string.Format(CultureInfo.InvariantCulture, "Unable to parse settings file {0}", path));
                 logEntry.Log(_logger, LogLevel.Error, e);
 
                 return new LoadJsonResult(true, false, default(T));
@@ -259,7 +262,7 @@
             catch (IOException e)
             {
                 var logEntry = LogEntry.Create(ServiceStatus.NewConfigurationError,
-                    string.Format("Unable to load settings file {0}", path));
+                    string.Format(CultureInfo.InvariantCulture, "Unable to load settings file {0}", path));
                 logEntry.Log(_logger, LogLevel.Error, e);
 
                 return new LoadJsonResult(false, false, default(T));

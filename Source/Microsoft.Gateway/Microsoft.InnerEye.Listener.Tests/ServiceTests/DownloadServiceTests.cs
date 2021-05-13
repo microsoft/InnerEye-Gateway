@@ -13,6 +13,7 @@
     using Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Models;
     using Microsoft.InnerEye.Listener.Common;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -27,7 +28,6 @@
         };
 
         [TestCategory("DownloadService")]
-        [Ignore("Integration test, relies on live API")]
         [Description("Test the happy end to end path of the download service using the live segmentation service.")]
         [Timeout(240 * 1000)]
         [TestMethod]
@@ -35,7 +35,7 @@
         {
             var resultDirectory = CreateTemporaryDirectory();
 
-            var (segmentationId, modelId, data) = await StartRealSegmentationAsync(@"Images\1ValidSmall\");
+            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 140, "localhost");
 
             // Create a Data receiver to receive the RT struct result
@@ -52,8 +52,9 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
+                using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
-                using (var downloadService = CreateDownloadService())
+                using (var downloadService = CreateDownloadService(mockSegmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 {
                     pushService.Start();
@@ -80,18 +81,18 @@
 
                 dicomDataReceiver.StopServer();
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                 Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                 var files = new DirectoryInfo(folderPath).GetFiles();
 
                 // Check we have a file
                 Assert.AreEqual(1, files.Length);
 
-                var dicomFile = await DicomFile.OpenAsync(files[0].FullName);
+                var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
-
-                TryDeleteDirectory(folderPath);
             }
         }
 
@@ -103,11 +104,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
-
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
                                                 .Select(x => DicomFile.Open(x.FullName))
@@ -115,10 +111,14 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationProgressResult = new ModelResult(100, "An API error.", null);
+
                 downloadService.Start();
 
                 Assert.IsTrue(downloadService.IsExecutionThreadRunning);
@@ -154,11 +154,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationResultException = new Exception();
-
             var resultsDirectory = CreateTemporaryDirectory();
 
             // Copy files to result directory
@@ -172,10 +167,14 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 141, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var downloadService = CreateDownloadService(mockSegmentationClient, GetTestDequeueServiceConfig(maximumQueueMessageAgeSeconds: 1)))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationResultException = new SegmentationClientException("Segmentation error");
+
                 deleteService.Start();
                 downloadService.Start();
 
@@ -210,11 +209,6 @@
         {
             var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
 
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Set the client to always return 50%
-            mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
-
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
                                                 .Select(x => DicomFile.Open(x.FullName))
@@ -222,9 +216,13 @@
 
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 142, "127.0.0.1");
 
+            using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
             using (var downloadService = CreateDownloadService(mockSegmentationClient))
             using (var downloadQueue = downloadService.DownloadQueue)
             {
+                // Set the client to always return 50%
+                mockSegmentationClient.SegmentationProgressResult = new ModelResult(50, string.Empty, null);
+
                 TransactionalEnqueue(
                        downloadQueue,
                        new DownloadQueueItem(
@@ -304,13 +302,8 @@
         [TestMethod]
         public async Task DownloadServiceNoApiConnection()
         {
-            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\");
+            var (segmentationId, modelId, data) = await StartFakeSegmentationAsync(@"Images\1ValidSmall\").ConfigureAwait(false);
             var applicationEntity = new GatewayApplicationEntity("RListenerTest", 144, "127.0.0.1");
-
-            var mockSegmentationClient = GetMockInnerEyeSegmentationClient();
-
-            // Fake a no response when getting progress
-            mockSegmentationClient.SegmentationResultException = new HttpRequestException();
 
             // Create a Data receiver to receive the RT struct result
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(CreateTemporaryDirectory().FullName)))
@@ -326,11 +319,15 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, applicationEntity.Port);
 
+                using (var mockSegmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService(mockSegmentationClient))
                 using (var downloadQueue = downloadService.DownloadQueue)
                 using (var deadLetterQueue = downloadService.DeadletterMessageQueue)
                 {
+                    // Fake a no response when getting progress
+                    mockSegmentationClient.SegmentationResultException = new HttpRequestException();
+
                     pushService.Start();
                     downloadService.Start();
 
@@ -352,7 +349,7 @@
                             isDryRun: false));
 
                     // Wait
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
 
                     // Null the exception from the mock client
                     mockSegmentationClient.SegmentationResultException = null;
@@ -370,18 +367,18 @@
 
                 dicomDataReceiver.StopServer();
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                 Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
                 var files = new DirectoryInfo(folderPath).GetFiles();
 
                 // Check we have a file
                 Assert.AreEqual(1, files.Length);
 
-                var dicomFile = await DicomFile.OpenAsync(files[0].FullName);
+                var dicomFile = await DicomFile.OpenAsync(files[0].FullName).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
-
-                TryDeleteDirectory(folderPath);
             }
         }
     }

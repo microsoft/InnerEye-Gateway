@@ -138,13 +138,13 @@
 
                 try
                 {
-                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken);
+                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken).ConfigureAwait(false);
 
                     // If the directory does not exist we cannot process this queue item.
                     // Lets log but remove this queue item.
                     if (Directory.Exists(queueItem.AssociationFolderPath))
                     {
-                        await ProcessUploadQueueItem(queueItem, transaction);
+                        await ProcessUploadQueueItem(queueItem, transaction).ConfigureAwait(false);
 
                         // Enqueue the message to delete the association folder
                         CleanUp(queueItem, transaction);
@@ -152,7 +152,7 @@
                     else
                     {
                         LogError(LogEntry.Create(AssociationStatus.UploadErrorAssocationFolderDeleted, uploadQueueItem: queueItem),
-                                 new Exception("The association folder has been deleted."));
+                                 new ProcessorServiceException("The association folder has been deleted."));
                     }
 
                     transaction.Commit();
@@ -170,7 +170,9 @@
                     transaction.Abort();
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.UploadError, uploadQueueItem: queueItem),
                              e);
@@ -225,7 +227,7 @@
                 case AETConfigType.ModelWithResultDryRun:
                     // Load all DICOM files in the received folder.
                     var dicomFiles = ReadDicomFiles(uploadQueueItem.AssociationFolderPath, uploadQueueItem);
-                    await ProcessModelConfig(dicomFiles, uploadQueueItem, queueTransaction, clientConfiguration);
+                    await ProcessModelConfig(dicomFiles, uploadQueueItem, queueTransaction, clientConfiguration).ConfigureAwait(false);
 
                     break;
                 // ML Model dry run
@@ -235,7 +237,7 @@
                         anonymisationProtocolId: _innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
                         anonymisationProtocol: _innerEyeSegmentationClient.SegmentationAnonymisationProtocol,
                         uploadQueueItem: uploadQueueItem,
-                        aETConfigType: clientConfiguration.Config.AETConfigType);
+                        aETConfigType: clientConfiguration.Config.AETConfigType).ConfigureAwait(false);
 
                     break;
             }
@@ -275,7 +277,7 @@
                     anonymisationProtocolId: anonymisationProtocolId,
                     anonymisationProtocol: anonymisationProtocol);
 
-                await SaveDicomFilesAsync(resultFolderPath, anonymizedDicomFile);
+                await SaveDicomFilesAsync(resultFolderPath, anonymizedDicomFile).ConfigureAwait(false);
 
                 // This item has been saved, we can now delete this file
                 EnqueueMessage(new DeleteQueueItem(uploadQueueItem, filePath), _deleteQueuePath);
@@ -301,7 +303,7 @@
             if (modelMatchResult.Matched)
             {
                 var model = modelMatchResult.Result;
-                var queueItem = await StartSegmentationAsync(model.ChannelData, uploadQueueItem, model.ModelId, model.TagReplacements.ToArray(), clientConfiguration);
+                var queueItem = await StartSegmentationAsync(model.ChannelData, uploadQueueItem, model.ModelId, model.TagReplacements.ToArray(), clientConfiguration).ConfigureAwait(false);
 
                 EnqueueMessage(queueItem, _downloadQueuePath, queueTransaction);
             }
@@ -313,7 +315,7 @@
                 LogError(LogEntry.Create(AssociationStatus.UploadErrorTagsDoNotMatch,
                              uploadQueueItem: uploadQueueItem,
                              failedDicomTags: string.Join(",", failedDicomTags.Select(x => x.DictionaryEntry.Name))),
-                         new Exception("Failed to find a model for the received Dicom data."));
+                         new ProcessorServiceException("Failed to find a model for the received Dicom data."));
             }
         }
 
@@ -392,7 +394,7 @@
                                                         _innerEyeSegmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
 
             // Start the segmentation
-            var (segmentationId, postedImages) = await _innerEyeSegmentationClient.StartSegmentationAsync(modelGuid, channelData);
+            var (segmentationId, postedImages) = await _innerEyeSegmentationClient.StartSegmentationAsync(modelGuid, channelData).ConfigureAwait(false);
 
             LogInformation(LogEntry.Create(AssociationStatus.Uploaded,
                                uploadQueueItem: uploadQueueItem,

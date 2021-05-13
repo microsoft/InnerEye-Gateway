@@ -13,7 +13,7 @@
         /// <summary>
         /// If the operation returned an error.
         /// </summary>
-		Error,
+        Error,
 
         /// <summary>
         /// If the operation did not get a response from the receiver.

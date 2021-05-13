@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -24,6 +26,7 @@
     using Microsoft.InnerEye.Listener.DataProvider.Implementations;
     using Microsoft.InnerEye.Listener.Processor.Services;
     using Microsoft.InnerEye.Listener.Receiver.Services;
+    using Microsoft.InnerEye.Listener.Tests.DataProviderTests;
     using Microsoft.InnerEye.Listener.Tests.Models;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -44,12 +47,19 @@
         /// <summary>
         /// LoggerFactory for creating more ILoggers.
         /// </summary>
-        private readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+        private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Logger for common use.
         /// </summary>
         private readonly ILogger _baseTestLogger;
+
+        /// <summary>
+        /// Debug output stream for fo-dicom.
+        /// </summary>
+        private readonly DebugOutStream debugOutStream;
+
+        private bool disposedValue;
 
         /// <summary>
         /// Gets or sets the test context.
@@ -100,7 +110,7 @@
         /// <summary>
         /// AET configs as loaded from _basePathConfigs.
         /// </summary>
-        private AETConfigProvider _testAETConfigProvider;
+        private readonly AETConfigProvider _testAETConfigProvider;
 
         /// <summary>
         /// GatewayProcessorConfigProvider as loaded from _basePathConfigs.
@@ -113,11 +123,6 @@
         protected GatewayReceiveConfigProvider TestGatewayReceiveConfigProvider { get; }
 
         /// <summary>
-        /// Disposed flag for IDisposable.
-        /// </summary>
-        private bool disposedValue;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BaseTestClass"/> class.
         /// </summary>
         public BaseTestClass()
@@ -128,7 +133,8 @@
             _baseTestLogger = _loggerFactory.CreateLogger("BaseTest");
 
             // Set a logger for fo-dicom network operations so that they show up in VS output when debugging
-            Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DataProviderTests.DebugTextWriter()));
+            debugOutStream = new DebugOutStream();
+            Dicom.Log.LogManager.SetImplementation(new Dicom.Log.TextWriterLogManager(new DebugTextWriter(debugOutStream)));
 
             _testAETConfigProvider = CreateAETConfigProvider(_basePathConfigs);
             TestGatewayProcessorConfigProvider = CreateGatewayProcessorConfigProvider(_basePathConfigs);
@@ -206,6 +212,8 @@
 
         protected void WriteDicomFileForBuildPackage(string fileName, DicomFile dicomFile)
         {
+            dicomFile = dicomFile ?? throw new ArgumentNullException(nameof(dicomFile));
+
             var path = GetBuildPackageResultPath(fileName, "AnonymisationProtocols");
 
             dicomFile.Save(path);
@@ -214,7 +222,7 @@
             TestContext.WriteLine($"Written Dicom file to path: {path}");
         }
 
-        protected DequeueServiceConfig GetTestDequeueServiceConfig(
+        protected static DequeueServiceConfig GetTestDequeueServiceConfig(
             uint maximumQueueMessageAgeSeconds = 100,
             uint deadLetterMoveFrequencySeconds = 1) =>
                 new DequeueServiceConfig(maximumQueueMessageAgeSeconds, deadLetterMoveFrequencySeconds);
@@ -246,7 +254,9 @@
                     File.WriteAllBytes(resultPath, contents);
                     TestContext.AddResultFile(resultPath);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _baseTestLogger.LogError(e, $"Failed to convert file to HTML. File {markdownFile}");
                 }
@@ -325,7 +335,7 @@
 
         protected DirectoryInfo CreateTemporaryDirectory()
         {
-            var result = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $@"InnerEyeListenerTestsTemp\{Guid.NewGuid().ToString()}"));
+            var result = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $@"InnerEyeListenerTestsTemp\{Guid.NewGuid()}"));
             temporaryDirectories.Add(result.FullName);
 
             return result;
@@ -367,6 +377,8 @@
 
         protected static void TransactionalEnqueue<T>(IMessageQueue InnerEyeMessageQueue, T value)
         {
+            InnerEyeMessageQueue = InnerEyeMessageQueue ?? throw new ArgumentNullException(nameof(InnerEyeMessageQueue));
+
             using (var queueTransaction = InnerEyeMessageQueue.CreateQueueTransaction())
             {
                 try
@@ -385,6 +397,8 @@
 
         protected static T TransactionalDequeue<T>(IMessageQueue messageQueue, int timeoutMs = 2000)
         {
+            messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+
             var startTime = DateTime.UtcNow;
 
             while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
@@ -404,6 +418,8 @@
 
         protected static T TryDequeue<T>(IMessageQueue messageQueue, IQueueTransaction messageQueueTransaction, int timeoutMs = 2000)
         {
+            messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+
             var startTime = DateTime.UtcNow;
 
             while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
@@ -412,7 +428,7 @@
                 {
                     return messageQueue.DequeueNextMessage<T>(messageQueueTransaction);
                 }
-                catch (Exception)
+                catch (MessageQueueReadException)
                 {
                     Task.WaitAll(Task.Delay(500));
                 }
@@ -421,20 +437,13 @@
             throw new MessageQueueReadException("Failed to transactional dequeue.");
         }
 
-        protected void TryDeleteDirectory(string directory)
+        private static void TryDeleteDirectory(string directory)
         {
             var directoryInfo = new DirectoryInfo(directory);
 
             if (directoryInfo.Exists)
             {
-                try
-                {
-                    directoryInfo.Delete(true);
-                }
-                catch (Exception e)
-                {
-                    TestContext.WriteLine($"Failed to delete directory {directory} with exception {e}");
-                }
+                directoryInfo.Delete(true);
             }
         }
 
@@ -443,10 +452,12 @@
         /// </summary>
         /// <param name="dicomDataReceiver">Dicom data receiver.</param>
         /// <param name="port">Port.</param>
-        protected void StartDicomDataReceiver(
+        protected static void StartDicomDataReceiver(
             ListenerDataReceiver dicomDataReceiver,
             int port)
         {
+            dicomDataReceiver = dicomDataReceiver ?? throw new ArgumentNullException(nameof(dicomDataReceiver));
+
             var started = dicomDataReceiver.StartServer(port, BuildAcceptedSopClassesAndTransferSyntaxes, TimeSpan.FromSeconds(2));
             Assert.IsTrue(started);
             Assert.IsTrue(dicomDataReceiver.IsListening);
@@ -613,12 +624,12 @@
                 var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
                 var modelId = matchedModel.Result.ModelId;
 
-                var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
+                var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
                     matchedModel.Result.ModelId,
-                    matchedModel.Result.ChannelData);
+                    matchedModel.Result.ChannelData).ConfigureAwait(false);
 
-                var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
-                return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                return (segmentationId, modelId, referenceDicomFiles);
             }
         }
 
@@ -626,19 +637,20 @@
         {
             var dicomFiles = new DirectoryInfo(filesPath).GetFiles().Select(x => DicomFile.Open(x.FullName)).ToArray();
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
+            {
+                var testAETConfigModel = GetTestAETConfigModel();
 
-            var testAETConfigModel = GetTestAETConfigModel();
+                var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
+                var modelId = matchedModel.Result.ModelId;
 
-            var matchedModel = ApplyAETModelConfigProvider.ApplyAETModelConfig(testAETConfigModel.AETConfig.Config.ModelsConfig, dicomFiles);
-            var modelId = matchedModel.Result.ModelId;
+                var (segmentationId, postedImages) = await segmentationClient.StartSegmentationAsync(
+                    matchedModel.Result.ModelId,
+                    matchedModel.Result.ChannelData).ConfigureAwait(false);
 
-            var startSegmentationResult = await segmentationClient.StartSegmentationAsync(
-                matchedModel.Result.ModelId,
-                matchedModel.Result.ChannelData);
-
-            var referenceDicomFiles = startSegmentationResult.postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
-            return (startSegmentationResult.segmentationId, modelId, referenceDicomFiles);
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                return (segmentationId, modelId, referenceDicomFiles);
+            }
         }
 
         protected static void WaitUntilNoMessagesOnQueue(IMessageQueue queue, int timeoutMs = 60000)
@@ -672,6 +684,8 @@
 
         protected static void Enqueue<T>(IMessageQueue queue, T message, bool clearQueue)
         {
+            queue = queue ?? throw new ArgumentNullException(nameof(queue));
+
             if (clearQueue)
             {
                 queue.Clear();
@@ -695,7 +709,7 @@
                 {
                     process.Kill();
                 }
-                catch (Exception e)
+                catch (Win32Exception e)
                 {
                     TestContext.WriteLine($"Failed to kill process {process.Id}, {process.ProcessName} with exception {e}");
                 }
@@ -707,7 +721,12 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random bool.</returns>
-        public static bool RandomBool(Random random) => random.Next(2) == 1;
+        public static bool RandomBool(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return random.Next(2) == 1;
+        }
 
         /// <summary>
         /// Generate a random enum.
@@ -717,8 +736,9 @@
         /// <returns>Random element of enum T.</returns>
         public static T RandomEnum<T>(Random random)
         {
-            var values = Enum.GetValues(typeof(T));
+            random = random ?? throw new ArgumentNullException(nameof(random));
 
+            var values = Enum.GetValues(typeof(T));
             return (T)values.GetValue(random.Next(values.Length));
         }
 
@@ -730,6 +750,8 @@
         /// <returns>Random string.</returns>
         public static string RandomString(Random random, int length = 6)
         {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
             var s = new StringBuilder(length);
 
             for (var i = 0; i < length; i++)
@@ -754,8 +776,12 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random unsigned short.</returns>
-        public static ushort RandomUShort(Random random) =>
-            (ushort)random.Next(0, 65535);
+        public static ushort RandomUShort(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return (ushort)random.Next(0, 65535);
+        }
 
         /// <summary>
         /// Generate random list of <see cref="T"/>.
@@ -768,6 +794,9 @@
         /// <returns>New list of ModelConstraintsConfig.</returns>
         public static T[] RandomArray<T>(Random random, int maxDepth, int count, Func<Random, int, T> createRandomT)
         {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+            createRandomT = createRandomT ?? throw new ArgumentNullException(nameof(createRandomT));
+
             var list = new T[count];
 
             for (var i = 0; i < count; i++)
@@ -786,8 +815,13 @@
         /// <param name="maxDepth">Limit nesting on group tags.</param>
         /// <param name="createRandomTs">List of functions taking Random, returning T.</param>
         /// <returns>New random T.</returns>
-        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs) =>
-            createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+        public static T RandomItem<T>(Random random, int maxDepth, Func<Random, int, T>[] createRandomTs)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+            createRandomTs = createRandomTs ?? throw new ArgumentNullException(nameof(createRandomTs));
+
+            return createRandomTs[random.Next(0, createRandomTs.Length)].Invoke(random, maxDepth);
+        }
 
         /// <summary>
         /// Acceptable Dicom PatientSex codes.s
@@ -816,7 +850,7 @@
         /// Func to create a random DicomAgeString.
         /// </summary>
         public static readonly Func<DicomTag, Random, DicomItem> RandomDicomAgeString = (tag, random) =>
-            new DicomAgeString(tag, string.Format("{0:D3}Y", random.Next(18, 100)));
+            new DicomAgeString(tag, string.Format(CultureInfo.InvariantCulture, "{0:D3}Y", random.Next(18, 100)));
 
         /// <summary>
         /// Func to create a random DicomPersonName.
@@ -872,6 +906,8 @@
 
             if (disposing)
             {
+                _loggerFactory.Dispose();
+                debugOutStream.Dispose();
                 _testAETConfigProvider.Dispose();
                 TestGatewayProcessorConfigProvider.Dispose();
                 TestGatewayReceiveConfigProvider.Dispose();
@@ -885,6 +921,7 @@
         /// </summary>
         public void Dispose()
         {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(true);
             GC.SuppressFinalize(this);
         }

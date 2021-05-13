@@ -44,17 +44,17 @@
         public ServiceStatus? ServiceStatus { get; }
 
         /// <summary>
-        /// DICOM association unique identifier, <see cref="Models.QueueItemBase.AssociationGuid"/>.
+        /// DICOM association unique identifier, <see cref="QueueItemBase.AssociationGuid"/>.
         /// </summary>
         public Guid? AssociationGuid { get; }
 
         /// <summary>
-        /// Message queue dequeue count, <see cref="Models.QueueItemBase.DequeueCount"/>
+        /// Message queue dequeue count, <see cref="QueueItemBase.DequeueCount"/>
         /// </summary>
         public int? MessageQueueDequeueCount { get; }
 
         /// <summary>
-        /// DICOM association start time, <see cref="Models.QueueItemBase.AssociationDateTime"/>.
+        /// DICOM association start time, <see cref="QueueItemBase.AssociationDateTime"/>.
         /// </summary>
         public DateTime? AssociationDateTime { get; }
 
@@ -64,22 +64,22 @@
         public double? ElapsedMilliseconds { get; }
 
         /// <summary>
-        /// DICOM association calling application entity title, <see cref="Models.AssociationQueueItemBase.CallingApplicationEntityTitle"/>.
+        /// DICOM association calling application entity title, <see cref="AssociationQueueItemBase.CallingApplicationEntityTitle"/>.
         /// </summary>
         public string CallingApplicationEntityTitle { get; }
 
         /// <summary>
-        /// DICOM association called application entity title, <see cref="Models.AssociationQueueItemBase.CalledApplicationEntityTitle"/>.
+        /// DICOM association called application entity title, <see cref="AssociationQueueItemBase.CalledApplicationEntityTitle"/>.
         /// </summary>
         public string CalledApplicationEntityTitle { get; }
 
         /// <summary>
-        /// Download segmentation identifier. Created during upload and copied to <see cref="Models.DownloadQueueItem.SegmentationID"/>.
+        /// Download segmentation identifier. Created during upload and copied to <see cref="DownloadQueueItem.SegmentationID"/>.
         /// </summary>
         public string SegmentationId { get; }
 
         /// <summary>
-        /// Segmentation model identifier, <see cref="Models.DownloadQueueItem.ModelId"/>.
+        /// Segmentation model identifier, <see cref="DownloadQueueItem.ModelId"/>.
         /// </summary>
         public string ModelId { get; }
 
@@ -94,8 +94,8 @@
         public string DownloadError { get; }
 
         /// <summary>
-        /// Path to directory or file, will be one of: <see cref="Models.DeleteQueueItem.Paths"/> or
-        /// <see cref="Models.PushQueueItem.FilePaths"/> or a file in the folder <see cref="Models.UploadQueueItem.AssociationFolderPath"/>.
+        /// Path to directory or file, will be one of: <see cref="DeleteQueueItem.Paths"/> or
+        /// <see cref="PushQueueItem.FilePaths"/> or a file in the folder <see cref="UploadQueueItem.AssociationFolderPath"/>.
         /// </summary>
         public string Path { get; }
 
@@ -110,17 +110,17 @@
         public string SourceMessageQueuePath { get; }
 
         /// <summary>
-        /// Destination IP address, <see cref="Models.PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Ip (not imported here).
+        /// Destination IP address, <see cref="PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Ip (not imported here).
         /// </summary>
         public string DestinationIp { get; }
 
         /// <summary>
-        /// Destination title, <see cref="Models.PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Title (not imported here).
+        /// Destination title, <see cref="PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Title (not imported here).
         /// </summary>
         public string DestinationTitle { get; }
 
         /// <summary>
-        /// Destination port, <see cref="Models.PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Port (not imported here).
+        /// Destination port, <see cref="PushQueueItem.DestinationApplicationEntity"/> or DicomEndPoint.Port (not imported here).
         /// </summary>
         public int? DestinationPort { get; }
 
@@ -164,7 +164,7 @@
         /// </summary>
         /// <returns>New LogEntry of type Initialize.</returns>
         public static LogEntry CreateInitialize() =>
-            new LogEntry(Logging.LogEntryType.Initialize);
+            new LogEntry(LogEntryType.Initialize);
 
         /// <summary>
         /// Shorthand for creating an association status log entry.
@@ -202,7 +202,7 @@
             string failedDicomTags = null,
             (object progressCode, string remoteHost, int remotePort, string uid, string version, string logPresentation)? dicomDataReceiverProgress = null) =>
                 new LogEntry(
-                    Logging.LogEntryType.AssociationStatus,
+                    LogEntryType.AssociationStatus,
                     information: information,
                     associationStatus: associationStatus,
                     queueItemBase: queueItemBase,
@@ -228,7 +228,7 @@
         public static LogEntry Create(
             ServiceStatus serviceStatus,
             string information = null) =>
-                new LogEntry(Logging.LogEntryType.ServiceStatus, information: information, serviceStatus: serviceStatus);
+                new LogEntry(LogEntryType.ServiceStatus, information: information, serviceStatus: serviceStatus);
 
         /// <summary>
         /// Shorthand for creating a message queue status log entry.
@@ -246,7 +246,7 @@
             string destinationMessageQueuePath = null,
             string sourceMessageQueuePath = null) =>
                 new LogEntry(
-                    Logging.LogEntryType.MessageQueueStatus,
+                    LogEntryType.MessageQueueStatus,
                     information: information,
                     messageQueueStatus: messageQueueStatus,
                     queueItemBase: queueItemBase,
@@ -359,7 +359,7 @@
         /// <param name="logger">Logger.</param>
         /// <param name="logLevel">Log level.</param>
         /// <param name="exception">Optional exception.</param>
-        public void Log(ILogger logger, Microsoft.Extensions.Logging.LogLevel logLevel, Exception exception = null) =>
+        public void Log(ILogger logger, LogLevel logLevel, Exception exception = null) =>
             logger?.Log(logLevel, ToEventId(), this, exception, LogEntryFormatter);
 
         /// <summary>

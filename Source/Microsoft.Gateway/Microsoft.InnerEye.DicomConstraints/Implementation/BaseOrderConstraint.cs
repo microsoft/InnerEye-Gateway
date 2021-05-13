@@ -38,7 +38,7 @@
                 var datasetValue = dataSet.GetValue<TExtract>(t, ordinal);
 
                 // CompareTo is < 0 | 0 | > 0
-                int r = v.CompareTo(selector.SelectValue(datasetValue));
+                var r = v.CompareTo(selector.SelectValue(datasetValue));
                 r = (r < 0) ? 4 : (r > 0) ? 1 : 2;
 
                 return new DicomConstraintResult((r & (int)order) != 0, constraint);

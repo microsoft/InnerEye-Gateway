@@ -1,7 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -19,7 +18,7 @@
         /// <summary>
         /// Callback for gateway processor config.
         /// </summary>
-        private Func<DequeueServiceConfig> _getDequeueServiceConfig;
+        private readonly Func<DequeueServiceConfig> _getDequeueServiceConfig;
 
         /// <summary>
         /// The dequeue queue path.
@@ -132,7 +131,7 @@
             catch (MessageQueueReadException)
             {
                 // Delay here before throw the exception up the next level to delay message queue reads.
-                await Task.Delay(DequeueServiceConfig.DequeueTimeout, cancellationToken);
+                await Task.Delay(DequeueServiceConfig.DequeueTimeout, cancellationToken).ConfigureAwait(false);
                 throw;
             }
             catch (MessageQueuePermissionsException e)
@@ -155,7 +154,6 @@
         /// <param name="queueItem">The queue item.</param>
         /// <param name="queueTransaction">The message queue transaction.</param>
         /// <param name="oldQueueItemAction">Action when the queue item is old and will be removed from the queues (including the dead letter queue).</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected void HandleExceptionForTransaction(T queueItem, IQueueTransaction queueTransaction, Action oldQueueItemAction = null)
         {
             if (queueTransaction == null)
@@ -201,12 +199,14 @@
                     LogError(LogEntry.Create(MessageQueueStatus.TooOldForDeadLetterError,
                                  queueItemBase: queueItem,
                                  sourceMessageQueuePath: _dequeueQueuePath),
-                             new Exception("Message dequeued too many times. Remove from all queues."));
+                             new ServiceBaseException("Message dequeued too many times. Remove from all queues."));
                 }
 
                 queueTransaction.Commit();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(MessageQueueStatus.TransactionExceptionHandlerError,
                              queueItemBase: queueItem,
@@ -284,7 +284,9 @@
                         // Abort on a write exception
                         transaction.Abort();
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         LogError(LogEntry.Create(MessageQueueStatus.MoveError,
                                      information: "Failed to dequeue a message from the dead letter queue",

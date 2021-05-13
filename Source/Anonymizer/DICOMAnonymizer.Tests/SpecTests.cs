@@ -1,16 +1,16 @@
-﻿using DICOMAnonymizer.Tools;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-
-namespace DICOMAnonymizer.Tests
+﻿namespace DICOMAnonymizer.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Xml.Linq;
+    using DICOMAnonymizer.Tools;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class SpecTests
     {
@@ -52,20 +52,20 @@ namespace DICOMAnonymizer.Tests
         [TestMethod]
         public void CheckConfidentialityProfileWithLatestOnline()
         {
-            var specUrl = @"http://dicom.nema.org/medical/dicom/current/source/docbook/part15/part15.xml";
+            var specUrl = new Uri(@"http://dicom.nema.org/medical/dicom/current/source/docbook/part15/part15.xml", UriKind.Absolute);
 
-            WebRequest request = WebRequest.Create(specUrl);
+            var request = WebRequest.Create(specUrl);
             request.Method = "HEAD";
             var etag = request.GetResponse().Headers["etag"].Replace(':', '-');
 
-            if (!etag.Equals("\"7732d244af7d21-0\""))
+            if (!etag.Equals("\"7732d244af7d21-0\"", StringComparison.Ordinal))
             {
-                WebClient client = new WebClient();
+                using (var client = new WebClient())
                 using (var reader = new StreamReader(client.OpenRead(specUrl)))
                 {
-                    string onlineSpec = reader.ReadToEnd();
+                    var onlineSpec = reader.ReadToEnd();
 
-                    string localSpec = File.ReadAllText(cProfPath);
+                    var localSpec = File.ReadAllText(cProfPath);
                     Assert.AreEqual(localSpec, onlineSpec);
                 }
 
@@ -77,20 +77,20 @@ namespace DICOMAnonymizer.Tests
         [TestMethod]
         public void CheckServiceClassWithLatestOnline()
         {
-            var specUrl = @"http://dicom.nema.org/medical/dicom/current/source/docbook/part04/part04.xml";
+            var specUrl = new Uri(@"http://dicom.nema.org/medical/dicom/current/source/docbook/part04/part04.xml", UriKind.Absolute);
 
-            WebRequest request = WebRequest.Create(specUrl);
+            var request = WebRequest.Create(specUrl);
             request.Method = "HEAD";
             var etag = request.GetResponse().Headers["etag"].Replace(':', '-');
 
-            if (!etag.Equals("\"bf03da46f7d21-0\""))
+            if (!etag.Equals("\"bf03da46f7d21-0\"", StringComparison.Ordinal))
             {
-                WebClient client = new WebClient();
+                using (var client = new WebClient())
                 using (var reader = new StreamReader(client.OpenRead(specUrl)))
                 {
-                    string onlineSpec = reader.ReadToEnd();
+                    var onlineSpec = reader.ReadToEnd();
 
-                    string localSpec = File.ReadAllText(serClassSpecPath);
+                    var localSpec = File.ReadAllText(serClassSpecPath);
                     Assert.AreEqual(localSpec, onlineSpec);
                 }
 
@@ -101,15 +101,15 @@ namespace DICOMAnonymizer.Tests
         [TestMethod]
         public void DefaultConfidentialityProfile()
         {
-            Func<XAttribute, bool> byID = y => y.Name.LocalName.Equals("id");
+            Func<XAttribute, bool> byID = y => y.Name.LocalName.Equals("id", StringComparison.Ordinal);
             Func<XElement, string> tableName = y => y.Attributes().Where(byID).First().Value;
 
             var table = cProfXML.Descendants()
-                .Where(x => x.Name.LocalName.Equals("table"))
-                .Where(x => tableName(x).Equals("table_E.1-1"))
+                .Where(x => x.Name.LocalName.Equals("table", StringComparison.Ordinal))
+                .Where(x => tableName(x).Equals("table_E.1-1", StringComparison.Ordinal))
                 .First();
             // Make sure our table has 14 columns
-            Assert.AreEqual(14, table.Element(ns + "thead").Descendants().Where(x => x.Name.LocalName.Equals("para")).Count());
+            Assert.AreEqual(14, table.Element(ns + "thead").Descendants().Where(x => x.Name.LocalName.Equals("para", StringComparison.Ordinal)).Count());
 
             var rows = table.Element(ns + "tbody").Elements(ns + "tr");
             Assert.AreEqual(278, rows.Count());
@@ -118,27 +118,27 @@ namespace DICOMAnonymizer.Tests
             var regProf = new List<string>(4);
             foreach (var row in rows)
             {
-                bool isTag = false;
-                StringBuilder sb = new StringBuilder();
+                var isTag = false;
+                var sb = new StringBuilder();
                 var clms = row.Elements().ToList();
 
                 var parenthesis = new[] { '(', ')' };
                 var tag = clms[1].Value.Trim(parenthesis);
 
                 // tags might be dirty or might need to be converted into regex
-                if (tag.Equals("50xx,xxxx"))
+                if (tag.Equals("50xx,xxxx", StringComparison.Ordinal))
                 {
                     tag = "50[0-9A-F]{2},[0-9A-F]{4}";
                 }
-                else if (tag.Equals("60xx,4000"))
+                else if (tag.Equals("60xx,4000", StringComparison.Ordinal))
                 {
                     tag = "60[0-9A-F]{2},4000";
                 }
-                else if (tag.Equals("60xx,3000"))
+                else if (tag.Equals("60xx,3000", StringComparison.Ordinal))
                 {
                     tag = "60[0-9A-F]{2},3000";
                 }
-                else if (tag.Equals("gggg,eeee) where gggg is odd"))
+                else if (tag.Equals("gggg,eeee) where gggg is odd", StringComparison.Ordinal))
                 {
                     tag = "[0-9A-F]{3}[13579BDF],[0-9A-F]{4}";
                 }
@@ -149,13 +149,13 @@ namespace DICOMAnonymizer.Tests
                         tag = tag.Replace(" ", string.Empty);
                     }
 
-                    Regex r = new Regex("[0-9A-F]{4},[0-9A-F]{4}");
+                    var r = new Regex("[0-9A-F]{4},[0-9A-F]{4}");
                     Assert.IsTrue(r.IsMatch(tag));
                     isTag = true;
                 }
                 sb.Append(tag);
 
-                for (int i = 4; i < clms.Count; i++)
+                for (var i = 4; i < clms.Count; i++)
                 {
                     sb.Append(";" + clms[i].Value);
                 }
@@ -179,15 +179,15 @@ namespace DICOMAnonymizer.Tests
         [TestMethod]
         public void SOPClasses()
         {
-            Func<XAttribute, bool> byID = y => y.Name.LocalName.Equals("id");
+            Func<XAttribute, bool> byID = y => y.Name.LocalName.Equals("id", StringComparison.Ordinal);
             Func<XElement, string> tableName = y => y.Attributes().Where(byID).First().Value;
 
             var table = serClassSpecXML.Descendants()
-                .Where(x => x.Name.LocalName.Equals("table"))
-                .Where(x => tableName(x).Equals("table_B.5-1"))
+                .Where(x => x.Name.LocalName.Equals("table", StringComparison.Ordinal))
+                .Where(x => tableName(x).Equals("table_B.5-1", StringComparison.Ordinal))
                 .First();
             // Make sure our table has 3 columns
-            Assert.AreEqual(3, table.Element(ns + "thead").Descendants().Where(x => x.Name.LocalName.Equals("para")).Count());
+            Assert.AreEqual(3, table.Element(ns + "thead").Descendants().Where(x => x.Name.LocalName.Equals("para", StringComparison.Ordinal)).Count());
 
             var rows = table.Element(ns + "tbody").Elements(ns + "tr");
             Assert.AreEqual(129, rows.Count());
@@ -213,7 +213,7 @@ namespace DICOMAnonymizer.Tests
             Assert.IsTrue(Enumerable.SequenceEqual(specSOPNames, enumNames));
 
             // Check conversions from name -> code, and vice versa
-            for (int i = 0; i < specSOPNames.Count; i++)
+            for (var i = 0; i < specSOPNames.Count; i++)
             {
                 var name = SOPClassFinder.SOPClassName(specSOPCodes[i]);
                 Assert.AreEqual(specSOPNames[i], name.ToString());

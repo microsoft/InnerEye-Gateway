@@ -1,13 +1,12 @@
 ﻿namespace Microsoft.InnerEye.Gateway.Sqlite
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
-
-    using SQLitePCL;
-
     using Microsoft.Data.Sqlite;
     using Microsoft.InnerEye.Gateway.Sqlite.Extensions;
+    using SQLitePCL;
 
     public class SqliteManager
     {
@@ -20,12 +19,12 @@
         /// <summary>
         /// The connection string to the database.
         /// </summary>
-        public readonly string DatabaseConnectionString;
+        public string DatabaseConnectionString { get; }
 
         /// <summary>
         /// The table name.
         /// </summary>
-        public readonly string _tableName;
+        private readonly string _tableName;
 
         /// <summary>
         /// Exception message format for null or whitespace parameters.
@@ -44,7 +43,7 @@
 
         public SqliteManager(string tableName, string databaseConnectionStringFormat, (string ColumnName, string ColumnDataType)[] columns)
         {
-            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException(nameof(tableName));
+            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException("tableName should be non-empty", nameof(tableName));
 
             DatabaseConnectionStringFormat = databaseConnectionStringFormat;
             Columns = columns;
@@ -74,11 +73,11 @@
         /// <exception cref="SqliteException">If we fail to open a connection to the database.</exception>
         public void CreateTableIfNotExists()
         {
-            string createTableIfNotExistsCommandFormat = "CREATE TABLE IF NOT EXISTS [{0}] " + $"({string.Join(", ", Columns.Select(x => $"{x.ColumnName} {x.ColumnDataType}"))})";
+            var createTableIfNotExistsCommandFormat = "CREATE TABLE IF NOT EXISTS [{0}] " + $"({string.Join(", ", Columns.Select(x => $"{x.ColumnName} {x.ColumnDataType}"))})";
 
             SqliteExtensions.ExecuteNonQueryNewConnection(
                connectionString: DatabaseConnectionString,
-               commandText: string.Format(createTableIfNotExistsCommandFormat, _tableName));
+               commandText: string.Format(CultureInfo.InvariantCulture, createTableIfNotExistsCommandFormat, _tableName));
         }
 
         /// <summary>
@@ -96,7 +95,7 @@
                 Directory.CreateDirectory(path);
             }
 
-            return string.Format(DatabaseConnectionStringFormat, path);
+            return string.Format(CultureInfo.InvariantCulture, DatabaseConnectionStringFormat, path);
         }
     }
 }

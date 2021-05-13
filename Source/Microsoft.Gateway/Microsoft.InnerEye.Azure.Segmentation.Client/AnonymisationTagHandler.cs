@@ -4,17 +4,13 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
-
     using Dicom;
-
     using DICOMAnonymizer;
-
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
-
-    using static DICOMAnonymizer.AnonymizeEngine;
 
     using AnonFunc = System.Func<Dicom.DicomDataset, System.Collections.Generic.List<DICOMAnonymizer.TagOrIndex>, Dicom.DicomItem, Dicom.DicomItem>;
 
@@ -92,7 +88,7 @@
         /// <value>
         /// The deidentification string.
         /// </value>
-        protected string DeidentificationMethodString => string.Format(TagHandlerDeidentificationNameFormat, _assemblyVersion, _anonymisationProtocolId);
+        protected string DeidentificationMethodString => string.Format(CultureInfo.InvariantCulture, TagHandlerDeidentificationNameFormat, _assemblyVersion, _anonymisationProtocolId);
 
         [Description("Uses SHA512 to generate a new 64 char length Unique Identifier.")]
         public static DicomItem LongHashID(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
@@ -122,9 +118,8 @@
         public static DicomItem RandomiseDateTime(DicomDataset oldds, List<TagOrIndex> path, DicomItem item)
         {
             var dateTime = TryGetDateTime(oldds, item.Tag);
-            string patientId;
 
-            oldds.TryGetString(DicomTag.PatientID, out patientId);
+            oldds.TryGetString(DicomTag.PatientID, out var patientId);
 
             if (!dateTime.HasValue || string.IsNullOrWhiteSpace(patientId))
             {
@@ -235,8 +230,7 @@
                 throw new ArgumentNullException(nameof(newds));
             }
 
-            var values = new string[] { };
-            newds.TryGetValues(DicomTag.DeidentificationMethod, out values);
+            newds.TryGetValues(DicomTag.DeidentificationMethod, out string[] values);
 
             var dicomDatasetDeidentificationMethods = values?.ToList() ?? new List<string>();
 

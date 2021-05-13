@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -102,11 +103,15 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random ConfigurationServiceConfig.</returns>
-        public static ConfigurationServiceConfig RandomConfigurationServiceConfig(Random random) =>
-            new ConfigurationServiceConfig(
+        public static ConfigurationServiceConfig RandomConfigurationServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new ConfigurationServiceConfig(
                 DateTime.UtcNow.AddSeconds(5),
                 DateTime.UtcNow.AddSeconds(10),
                 random.Next(61, 3600));
+        }
 
         /// <summary>
         /// Generate random <see cref="GatewayReceiveConfig"/>.
@@ -134,16 +139,24 @@
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random DequeueServiceConfig.</returns>
-        public static DequeueServiceConfig RandomDequeueServiceConfig(Random random) =>
-            new DequeueServiceConfig(random.Next(202, 299), random.Next(302, 399));
+        public static DequeueServiceConfig RandomDequeueServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new DequeueServiceConfig(random.Next(202, 299), random.Next(302, 399));
+        }
 
         /// <summary>
         /// Generate random <see cref="DownloadServiceConfig"/>.
         /// </summary>
         /// <param name="random">Random.</param>
         /// <returns>Random DownloadServiceConfig.</returns>
-        public static DownloadServiceConfig RandomDownloadServiceConfig(Random random) =>
-            new DownloadServiceConfig(random.Next(2, 99), random.Next(102, 199));
+        public static DownloadServiceConfig RandomDownloadServiceConfig(Random random)
+        {
+            random = random ?? throw new ArgumentNullException(nameof(random));
+
+            return new DownloadServiceConfig(random.Next(2, 99), random.Next(102, 199));
+        }
 
         /// <summary>
         /// Generate random <see cref="GatewayProcessorConfig"/>.
@@ -711,7 +724,7 @@
                     for (var i = 0; i < aetConfigModels.Length; i++)
                     {
                         var expectedAETConfig = new[] { aetConfigModels[i] };
-                        Serialise(expectedAETConfig, folder, string.Format("test{0}.json", i + 1));
+                        Serialise(expectedAETConfig, folder, string.Format(CultureInfo.InvariantCulture, "test{0}.json", i + 1));
                     }
                 }
                 else
@@ -786,12 +799,12 @@
             // just loop until it has the right type.
             var expectedAETConfigModels = RandomArray(random, 3, 1, RandomAETConfigModel);
             while (expectedAETConfigModels[0].AETConfig.Config.ModelsConfig == null ||
-                expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Length == 0)
+                expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Count == 0)
             {
                 expectedAETConfigModels = RandomArray(random, 3, 1, RandomAETConfigModel);
             }
 
-            for (var i = 0; i < expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Length; i++)
+            for (var i = 0; i < expectedAETConfigModels[0].AETConfig.Config.ModelsConfig.Count; i++)
             {
                 // Clone the expected AET config model taking only the ith models config.
                 var expectedAETConfig0 = expectedAETConfigModels[0].With(
@@ -800,7 +813,7 @@
                             modelsConfig: new[] { expectedAETConfigModels[0].AETConfig.Config.ModelsConfig[i] })));
 
                 var expectedAETConfig = new[] { expectedAETConfig0 };
-                Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", i), true);
+                Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", i), true);
             }
 
             using (var aetConfigProvider = CreateAETConfigProvider(configurationDirectory))
@@ -828,7 +841,7 @@
                 {
                     // If this model has ModelsConfig then create a new AET config model for each of the 
                     // models config.
-                    for (var i = 0; i < expectedAETConfigModels[j].AETConfig.Config.ModelsConfig.Length; i++)
+                    for (var i = 0; i < expectedAETConfigModels[j].AETConfig.Config.ModelsConfig.Count; i++)
                     {
                         // Clone the expected AET config model taking only the ith models config.
                         var expectedAETConfig0 = expectedAETConfigModels[j].With(
@@ -837,14 +850,14 @@
                                     modelsConfig: new[] { expectedAETConfigModels[j].AETConfig.Config.ModelsConfig[i] })));
 
                         var expectedAETConfig = new[] { expectedAETConfig0 };
-                        Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}_{1}.json", j, i), true);
+                        Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}_{1}.json", j, i), true);
                     }
                 }
                 else
                 {
                     // No ModelsConfig so just clone at the base.
                     var expectedAETConfig = new[] { expectedAETConfigModels[j] };
-                    Serialise(expectedAETConfig, aetConfigFolder, string.Format("GatewayModelRulesConfig{0}.json", j), true);
+                    Serialise(expectedAETConfig, aetConfigFolder, string.Format(CultureInfo.InvariantCulture, "GatewayModelRulesConfig{0}.json", j), true);
                 }
             }
 

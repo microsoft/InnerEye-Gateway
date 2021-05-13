@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Listener.Common.Providers
 {
     using System;
+    using System.Globalization;
     using Microsoft.Extensions.Logging;
     using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Gateway.Logging;
@@ -107,10 +108,10 @@
 
                 if (string.IsNullOrEmpty(licenseKey))
                 {
-                    var message = string.Format("License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
+                    var message = string.Format(CultureInfo.InvariantCulture, "License key for the service `{0}` has not been set correctly in environment variable `{1}`. It needs to be a system variable.",
                         processorSettings.InferenceUri, processorSettings.LicenseKeyEnvVar);
                     var logEntry = LogEntry.Create(ServiceStatus.Starting);
-                    logEntry.Log(logger, Microsoft.Extensions.Logging.LogLevel.Error, new Exception(message));
+                    logEntry.Log(logger, LogLevel.Error, new ConfigurationException(message));
                 }
 
                 return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);

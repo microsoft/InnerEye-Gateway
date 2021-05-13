@@ -54,7 +54,7 @@
 
                 try
                 {
-                    deleteQueueItem = await DequeueNextMessageAsync(transaction, cancellationToken);
+                    deleteQueueItem = await DequeueNextMessageAsync(transaction, cancellationToken).ConfigureAwait(false);
 
                     // Delete every path in the queue item. Each path could be a directory or a file.
                     foreach (var path in deleteQueueItem.Paths)
@@ -80,7 +80,9 @@
                     transaction.Abort();
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.DeleteError,
                                  deleteQueueItem: deleteQueueItem),

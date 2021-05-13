@@ -74,7 +74,7 @@
         /// <param name="constraintResult">if set to <c>true</c> [constraint result].</param>
         /// <param name="dicomConstraintResult">The dicom constraint result.</param>
         /// <returns>The collection of Dicom tags from the constraint results for the specified result type.</returns>
-        private IEnumerable<DicomTag> GetDicomConstraintsDicomTags(bool constraintResult, params DicomConstraintResult[] dicomConstraintResult)
+        private static IEnumerable<DicomTag> GetDicomConstraintsDicomTags(bool constraintResult, IReadOnlyList<DicomConstraintResult> dicomConstraintResult)
         {
             var result = new List<DicomTag>();
 

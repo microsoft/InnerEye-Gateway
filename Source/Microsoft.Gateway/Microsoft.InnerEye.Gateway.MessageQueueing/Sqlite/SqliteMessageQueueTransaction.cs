@@ -53,12 +53,17 @@
         /// <summary>
         /// If this instance is disposed.
         /// </summary>
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// The current SQLite connection for this transaction.
         /// </summary>
+        /// <remarks>
+        /// This is disposed in DisposeCurrentConnection, which is called from Dispose(disposing).
+        /// </remarks>
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private SqliteConnection _sqliteConnection;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         /// <summary>
         /// The renew lease timer (or null if no transaction has started).
@@ -174,6 +179,7 @@
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

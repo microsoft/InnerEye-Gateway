@@ -79,7 +79,7 @@
                  dequeueCount)
         {
             DestinationApplicationEntity = destinationApplicationEntity;
-            FilePaths = filePaths ?? new string[0];
+            FilePaths = filePaths;
         }
 
         /// <summary>

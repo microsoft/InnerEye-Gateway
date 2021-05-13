@@ -1,11 +1,12 @@
-﻿using Dicom;
-
-namespace DICOMAnonymizer
+﻿namespace DICOMAnonymizer
 {
+    using System.Globalization;
+    using Dicom;
+
     public class TagOrIndex
     {
-        public bool IsTag { get; } = false;
-        public DicomTag Tag { get; set; } = null;
+        public bool IsTag { get; }
+        public DicomTag Tag { get; set; }
         public int Index { get; set; } = -1;
 
         public TagOrIndex(DicomTag tag)
@@ -26,7 +27,7 @@ namespace DICOMAnonymizer
             {
                 return Tag.ToString();
             }
-            return Index.ToString();
+            return Index.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

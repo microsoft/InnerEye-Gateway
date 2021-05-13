@@ -7,8 +7,8 @@
     using System.Linq;
     using System.Security;
 
-    using global::Dicom;
-    using global::Dicom.Network;
+    using Dicom;
+    using Dicom.Network;
 
     using Microsoft.InnerEye.Listener.DataProvider.Interfaces;
     using Microsoft.InnerEye.Listener.DataProvider.Models;
@@ -202,7 +202,9 @@
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Trace.TraceError(FormatLogStatement(string.Format(
                     CultureInfo.InvariantCulture,

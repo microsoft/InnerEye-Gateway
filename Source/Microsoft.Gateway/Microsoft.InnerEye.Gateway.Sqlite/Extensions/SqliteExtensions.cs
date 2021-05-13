@@ -1,8 +1,7 @@
 ﻿namespace Microsoft.InnerEye.Gateway.Sqlite.Extensions
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
-
+    using System.Globalization;
     using Microsoft.Data.Sqlite;
     using Microsoft.InnerEye.Gateway.Sqlite.Exceptions;
     using Newtonsoft.Json;
@@ -25,17 +24,18 @@
         /// <returns>The number of rows modified by the non-query.</returns>
         /// <exception cref="ArgumentException">The connection string or command text is null or whitespace.</exception>
         /// <exception cref="SqliteException">If we fail to open a connection to the database.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public static int ExecuteNonQueryNewConnection(string connectionString, string commandText)
         {
-            connectionString = string.IsNullOrWhiteSpace(connectionString) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(connectionString)), nameof(connectionString)) : connectionString;
-            commandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+            connectionString = string.IsNullOrWhiteSpace(connectionString) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(connectionString)), nameof(connectionString)) : connectionString;
+            commandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
 
             using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                 using (var command = new SqliteCommand(commandText, connection))
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                 {
                     // Use the extension method to execute the non query (this handles retry logic)
                     return command.ExecuteNonQueryWithRetry(commandText);
@@ -53,7 +53,6 @@
         /// <exception cref="ArgumentException">If the command text is null or white space.</exception>
         /// <exception cref="ArgumentNullException">If the SQLite command is null.</exception>
         /// <exception cref="MessageQueueWriteException">Failed to execute the non query.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public static int ExecuteNonQueryWithRetry(this SqliteCommand command, string commandText, int retryCount = 3)
         {
             if (command == null)
@@ -61,7 +60,9 @@
                 throw new ArgumentNullException(nameof(command));
             }
 
-            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             try
             {
@@ -91,7 +92,6 @@
         /// <exception cref="ArgumentException">If the command text is null or white space.</exception>
         /// <exception cref="ArgumentNullException">If the SQLite command is null.</exception>
         /// <exception cref="MessageQueueReadException">If we fail to read anything from the first row/ column.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public static T ExecuteScalarWithRetry<T>(this SqliteCommand command, string commandText, int retryCount = 3)
         {
             if (command == null)
@@ -99,7 +99,9 @@
                 throw new ArgumentNullException(nameof(command));
             }
 
-            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+            command.CommandText = string.IsNullOrWhiteSpace(commandText) ? throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, NullOrWhitespaceParameterExceptionMessageFormat, nameof(commandText)), nameof(commandText)) : commandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
             try
             {
@@ -110,7 +112,7 @@
                     throw new SqliteReadException($"Failed to execute scalar command: {commandText}.");
                 }
 
-                return JsonConvert.DeserializeObject<T>(Convert.ToString(result));
+                return JsonConvert.DeserializeObject<T>(Convert.ToString(result, CultureInfo.InvariantCulture));
             }
             // Only catch SQLite exceptions
             catch (SqliteException e)

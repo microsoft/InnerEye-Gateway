@@ -41,6 +41,8 @@
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            request = request ?? throw new ArgumentNullException(nameof(request));
+
             var i = 0;
             HttpResponseMessage httpResponseMessage = null;
 
@@ -48,7 +50,7 @@
             {
                 try
                 {
-                    httpResponseMessage = await base.SendAsync(request, cancellationToken);
+                    httpResponseMessage = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Only retry on unknown exceptions or service unvailable.
                     if (httpResponseMessage.StatusCode != HttpStatusCode.ServiceUnavailable)
@@ -56,7 +58,9 @@
                         return httpResponseMessage;
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, with exception {e}");
                 }
@@ -68,7 +72,7 @@
 
                 i++;
                 Trace.TraceWarning($"Retrying Method: {request.Method}, RequestUri: {request.RequestUri}, retry count = {i}");
-                await Task.Delay(RetryDelayInMilliseconds);
+                await Task.Delay(RetryDelayInMilliseconds, cancellationToken).ConfigureAwait(false);
             }
 
             throw new OperationCanceledException(cancellationToken);

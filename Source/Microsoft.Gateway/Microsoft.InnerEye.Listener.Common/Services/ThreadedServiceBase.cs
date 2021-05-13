@@ -50,12 +50,12 @@
         /// <summary>
         /// If this instance is disposed.
         /// </summary>
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         /// <summary>
         /// If the main execution thread is running.
         /// </summary>
-        private bool _isRunning = false;
+        private bool _isRunning;
 
         /// <summary>
         /// The software version string for appending to Dicom files the Gateway verison that modified/ saved the file.
@@ -124,7 +124,9 @@
 
                 LogInformation(LogEntry.Create(ServiceStatus.Started));
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StartError), e);
 
@@ -144,7 +146,9 @@
             {
                 _cancellationTokenSource?.Cancel();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StoppingError,
                              information: "Cancellation token source cancel exception."),
@@ -156,7 +160,9 @@
                 // Will only wait 10 seconds for all tasks to finish nicely
                 Task.WaitAll(_executionTasks.Where(x => x != null).ToArray(), TimeSpan.FromSeconds(10));
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(ServiceStatus.StoppingError,
                              information: "Unknown exception waiting for all execution tasks to end."),
@@ -204,7 +210,9 @@
                 {
                     queue.Value.Dispose();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(MessageQueueStatus.DisposeError,
                                  sourceMessageQueuePath: queue.Value.QueuePath),
@@ -260,7 +268,9 @@
                     EnqueueMessage(message, messageQueuePath, transaction);
                     transaction.Commit();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.BaseEnqueueMessageError,
                                  queueItemBase: message),
@@ -439,7 +449,7 @@
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions, string.Join(@"\", newSoftwareVersions));
 
-                await dicomFile.SaveAsync(filePath);
+                await dicomFile.SaveAsync(filePath).ConfigureAwait(false);
 
                 filePaths.Add(filePath);
             }
@@ -464,7 +474,9 @@
             {
                 return Directory.EnumerateFiles(directoryPath);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(AssociationStatus.BaseEnumerateDirectoryError,
                             queueItemBase: queueItemBase,
@@ -472,7 +484,7 @@
                          e);
             }
 
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         /// <summary>
@@ -500,6 +512,8 @@
         /// <returns>The collection of DICOM files.</returns>
         protected IEnumerable<DicomFile> ReadDicomFiles(IEnumerable<string> filePaths, QueueItemBase queueItemBase)
         {
+            filePaths = filePaths ?? throw new ArgumentNullException(nameof(filePaths));
+
             foreach (var filePath in filePaths)
             {
                 var dicomFile = TryOpenDicomFile(filePath, queueItemBase);
@@ -528,7 +542,9 @@
             {
                 return DicomFile.Open(filePath);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogError(LogEntry.Create(AssociationStatus.BaseOpenDicomFileError,
                             queueItemBase: queueItemBase,
@@ -561,7 +577,9 @@
                         LogError(LogEntry.Create(ServiceStatus.ExecuteError), e);
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(ServiceStatus.ExecuteError), e);
                 }
@@ -573,14 +591,14 @@
         /// </summary>
         /// <param name="logEntry">Log entry.</param>
         protected void LogInformation(LogEntry logEntry) =>
-            logEntry.Log(_logger, LogLevel.Information);
+            logEntry?.Log(_logger, LogLevel.Information);
 
         /// <summary>
         /// Logs the event at trace level.
         /// </summary>
         /// <param name="logEntry">Log entry.</param>
         protected void LogTrace(LogEntry logEntry) =>
-            logEntry.Log(_logger, LogLevel.Trace);
+            logEntry?.Log(_logger, LogLevel.Trace);
 
         /// <summary>
         /// Logs the error.
@@ -588,6 +606,6 @@
         /// <param name="logEntry">Log entry.</param>
         /// <param name="exception">Exception.</param>
         protected void LogError(LogEntry logEntry, Exception exception) =>
-            logEntry.Log(_logger, LogLevel.Error, exception);
+            logEntry?.Log(_logger, LogLevel.Error, exception);
     }
 }

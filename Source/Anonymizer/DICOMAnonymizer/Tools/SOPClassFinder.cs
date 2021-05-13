@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace DICOMAnonymizer.Tools
+﻿namespace DICOMAnonymizer.Tools
 {
+    using System.Collections.Generic;
+
     public enum SOPClass
     {
         ComputedRadiographyImageStorage,
@@ -27,7 +27,9 @@ namespace DICOMAnonymizer.Tools
         MultiframeGrayscaleByteSecondaryCaptureImageStorage,
         MultiframeGrayscaleWordSecondaryCaptureImageStorage,
         MultiframeTrueColorSecondaryCaptureImageStorage,
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         _12leadECGWaveformStorage,
+#pragma warning restore CA1707 // Identifiers should not contain underscores
         GeneralECGWaveformStorage,
         AmbulatoryECGWaveformStorage,
         HemodynamicWaveformStorage,
@@ -135,7 +137,7 @@ namespace DICOMAnonymizer.Tools
         RTBrachyApplicationSetupDeliveryInstructionStorage,
     }
 
-    public class SOPClassFinder
+    public static class SOPClassFinder
     {
 
         #region SOP Class Dictionaries
@@ -410,15 +412,13 @@ namespace DICOMAnonymizer.Tools
 
         public static SOPClass? SOPClassName(string code)
         {
-            SOPClass? v = null;
-            _sopCodeMap.TryGetValue(code, out v);
+            _sopCodeMap.TryGetValue(code, out var v);
             return v;
         }
 
         public static string SOPClassCode(SOPClass sop)
         {
-            string v = null;
-            _sopNameMap.TryGetValue(sop, out v);
+            _sopNameMap.TryGetValue(sop, out var v);
             return v;
         }
     }

@@ -74,14 +74,10 @@
         /// Gets the accepted Sop classes and transfer syntaxes.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<DicomUID, DicomTransferSyntax[]> AcceptedSopClassesAndTransferSyntaxes {
-            get {
-                return AcceptedSopClassesAndTransferSyntaxesUIDs
-                    .ToDictionary(
-                    keyValue => DicomUID.Parse(keyValue.Key),
-                    keyValue => keyValue.Value.Select(x => DicomTransferSyntax.Parse(x)).ToArray());
-            }
-        }
+        public Dictionary<DicomUID, DicomTransferSyntax[]> AcceptedSopClassesAndTransferSyntaxes =>
+            AcceptedSopClassesAndTransferSyntaxesUIDs.ToDictionary(
+                keyValue => DicomUID.Parse(keyValue.Key),
+                keyValue => keyValue.Value.Select(x => DicomTransferSyntax.Parse(x)).ToArray());
 
         /// <summary>
         /// Gets the accepted Sop classes and transfer syntaxes.

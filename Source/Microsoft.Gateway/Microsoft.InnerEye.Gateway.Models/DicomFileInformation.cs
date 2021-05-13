@@ -25,10 +25,10 @@
         [JsonConstructor]
         public DicomFileInformation(string patientId, string studyInstanceUid, string seriesInstanceUid, string dicomModality)
         {
-            PatientId = string.IsNullOrWhiteSpace(patientId) ? throw new ArgumentException(nameof(patientId)) : patientId;
-            StudyInstanceUid = string.IsNullOrWhiteSpace(studyInstanceUid) ? throw new ArgumentException(nameof(studyInstanceUid)) : studyInstanceUid;
-            SeriesInstanceUid = string.IsNullOrWhiteSpace(seriesInstanceUid) ? throw new ArgumentException(nameof(seriesInstanceUid)) : seriesInstanceUid;
-            DicomModality = string.IsNullOrWhiteSpace(dicomModality) ? throw new ArgumentException(nameof(dicomModality)) : dicomModality;
+            PatientId = string.IsNullOrWhiteSpace(patientId) ? throw new ArgumentException("patientId should be non-empty", nameof(patientId)) : patientId;
+            StudyInstanceUid = string.IsNullOrWhiteSpace(studyInstanceUid) ? throw new ArgumentException("studyInstanceUid should be non-empty", nameof(studyInstanceUid)) : studyInstanceUid;
+            SeriesInstanceUid = string.IsNullOrWhiteSpace(seriesInstanceUid) ? throw new ArgumentException("seriesInstanceUid should be non-empty", nameof(seriesInstanceUid)) : seriesInstanceUid;
+            DicomModality = string.IsNullOrWhiteSpace(dicomModality) ? throw new ArgumentException("dicomModality should be non-empty", nameof(dicomModality)) : dicomModality;
 
             _hashCode = $"{PatientId}-{StudyInstanceUid}-{SeriesInstanceUid}-{DicomModality}".GetHashCode();
         }
@@ -121,11 +121,11 @@
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="Object" />, is equal to this instance.
+        /// Determines whether the specified <see cref="object" />, is equal to this instance.
         /// </summary>
-        /// <param name="obj">The <see cref="Object" /> to compare with this instance.</param>
+        /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
         /// <returns>
-        ///   <c>true</c> if the specified <see cref="Object" /> is equal to this instance; otherwise, <c>false</c>.
+        ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj)
         {

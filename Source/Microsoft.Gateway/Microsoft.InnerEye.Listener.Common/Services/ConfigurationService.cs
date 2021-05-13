@@ -1,8 +1,8 @@
-﻿
-namespace Microsoft.InnerEye.Listener.Common.Services
+﻿namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -13,6 +13,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
     using Microsoft.InnerEye.Azure.Segmentation.Client;
     using Microsoft.InnerEye.Gateway.Logging;
     using Microsoft.InnerEye.Gateway.Models;
+    using Microsoft.InnerEye.Listener.Common.Providers;
 
     /// <summary>
     /// The receive configuration service, used for starting and stopping the receive service base on configuration changes,
@@ -53,6 +54,8 @@ namespace Microsoft.InnerEye.Listener.Common.Services
         /// <returns>Full path to existing directory or Empty if none exist.</returns>
         public static string FindRelativeDirectory(IEnumerable<string> relativePaths, ILogger logger)
         {
+            relativePaths = relativePaths ?? throw new ArgumentNullException(nameof(relativePaths));
+
             var parentDirectory = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
 
             foreach (var relativePath in relativePaths)
@@ -62,7 +65,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
                 if (Directory.Exists(configurationPath))
                 {
                     var logEntry = LogEntry.Create(ServiceStatus.Starting,
-                        string.Format("Settings location: {0}", configurationPath));
+                        string.Format(CultureInfo.InvariantCulture, "Settings location: {0}", configurationPath));
                     logEntry.Log(logger, LogLevel.Information);
 
                     return configurationPath;
@@ -70,7 +73,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
             }
 
             var logEntry2 = LogEntry.Create(ServiceStatus.Starting);
-            logEntry2.Log(logger, LogLevel.Error, new Exception("Cannot find configuration directory."));
+            logEntry2.Log(logger, LogLevel.Error, new ConfigurationException("Cannot find configuration directory."));
 
             return string.Empty;
         }
@@ -140,9 +143,9 @@ namespace Microsoft.InnerEye.Listener.Common.Services
         {
             // Check we can still ping with the license key
             // This call will stop this service if the license key is invalid.
-            await PingAsync();
+            await PingAsync().ConfigureAwait(false);
 
-            await Task.Delay(_configurationServiceConfig.ConfigurationRefreshDelay, cancellationToken);
+            await Task.Delay(_configurationServiceConfig.ConfigurationRefreshDelay, cancellationToken).ConfigureAwait(false);
 
             var config = _getConfigurationServiceConfig();
 
@@ -206,7 +209,7 @@ namespace Microsoft.InnerEye.Listener.Common.Services
             {
                 if (_innerEyeSegmentationClient != null)
                 {
-                    await _innerEyeSegmentationClient.PingAsync();
+                    await _innerEyeSegmentationClient.PingAsync().ConfigureAwait(false);
                 }
             }
             catch (AuthenticationException e)

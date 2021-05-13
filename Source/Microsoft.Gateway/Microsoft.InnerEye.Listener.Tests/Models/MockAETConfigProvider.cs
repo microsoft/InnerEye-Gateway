@@ -8,7 +8,7 @@
     /// </summary>
     public class MockAETConfigProvider
     {
-        private IEnumerable<AETConfigModel> _aetConfigModels;
+        private readonly IEnumerable<AETConfigModel> _aetConfigModels;
 
         public IEnumerable<AETConfigModel> AETConfigModels() => _aetConfigModels;
 

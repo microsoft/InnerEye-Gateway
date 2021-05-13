@@ -39,14 +39,14 @@
             {
                 using (var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()())
                 {
-                    await segmentationClient.PingAsync();
+                    await segmentationClient.PingAsync().ConfigureAwait(false);
                 }
             }
             catch (AuthenticationException)
             {
                 Assert.Fail("Invalid product key. Check ProcessorSettings.LicenseKeyEnvVar in TestConfigurations/GatewayProcessorConfig.json and the corresponding system environment variable.");
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
                 Assert.Fail("Unable to connect to inference service uri. Check ProcessorSettings.InferenceUri in TestConfigurations/GatewayProcessorConfig.json.");
             }
@@ -120,7 +120,7 @@
                     testAETConfigModel.CallingAET,
                     testAETConfigModel.CalledAET,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
                 Assert.IsTrue(echoResult == DicomOperationResult.Success);
 
                 // Send the image stack
@@ -151,7 +151,7 @@
 
                 var receivedFilePath = receivedFiles.First().FullName;
 
-                var dicomFile = await DicomFile.OpenAsync(receivedFilePath, FileReadOption.ReadAll);
+                var dicomFile = await DicomFile.OpenAsync(receivedFilePath, FileReadOption.ReadAll).ConfigureAwait(false);
 
                 Assert.IsNotNull(dicomFile);
 
@@ -178,21 +178,23 @@
         /// <param name="modelId">Expected modelId.</param>
         public static void AssertIsDicomRtFile(DateTime testDateTime, DicomFile dicomFile, string modelId)
         {
+            dicomFile = dicomFile ?? throw new ArgumentNullException(nameof(dicomFile));
+
             Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.FileMetaInfo.MediaStorageSOPClassUID);
             var sopInstanceUID = dicomFile.FileMetaInfo.MediaStorageSOPInstanceUID;
             Assert.AreEqual(DicomTransferSyntax.ImplicitVRLittleEndian, dicomFile.FileMetaInfo.TransferSyntax);
 
-            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<Dicom.DicomUID>(DicomTag.SOPClassUID));
+            Assert.AreEqual(DicomUID.RTStructureSetStorage, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPClassUID));
             Assert.AreEqual(sopInstanceUID, dicomFile.Dataset.GetSingleValue<DicomUID>(DicomTag.SOPInstanceUID));
 
-            var expectedDate = $"{testDateTime.Year}{testDateTime.Month.ToString("D2")}{testDateTime.Day.ToString("D2")}";
+            var expectedDate = $"{testDateTime.Year}{testDateTime.Month:D2}{testDateTime.Day:D2}";
             Assert.AreEqual(expectedDate, dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDate));
             Assert.AreEqual("RTSTRUCT", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Modality));
             Assert.AreEqual("Microsoft Corporation", dicomFile.Dataset.GetSingleValue<string>(DicomTag.Manufacturer));
             Assert.AreEqual("NOT FOR CLINICAL USE", dicomFile.Dataset.GetSingleValue<string>(DicomTag.SeriesDescription));
             Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.OperatorsName, string.Empty));
 
-            Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:"));
+            Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
             Assert.AreEqual(modelId, dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1));
 
             Assert.AreEqual(string.Empty, dicomFile.Dataset.GetSingleValueOrDefault(DicomTag.SeriesNumber, string.Empty));

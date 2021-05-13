@@ -15,6 +15,7 @@
 
     using DICOMAnonymizer;
     using Microsoft.InnerEye.Azure.Segmentation.API.Common;
+    using Microsoft.InnerEye.Listener.Common.Providers;
     using static DICOMAnonymizer.AnonymizeEngine;
 
     /// <summary>
@@ -166,9 +167,11 @@
             }
             finally
             {
+#pragma warning disable CA1508 // Avoid dead conditional code
                 httpHandler?.Dispose();
                 retryHandler?.Dispose();
                 client?.Dispose();
+#pragma warning restore CA1508 // Avoid dead conditional code
             }
         }
 
@@ -205,7 +208,7 @@
             IEnumerable<DicomFile> referenceDicomFiles,
             IEnumerable<TagReplacement> userReplacements)
         {
-            var modelResult = await SegmentationResultAsync(modelId, segmentationId);
+            var modelResult = await SegmentationResultAsync(modelId, segmentationId).ConfigureAwait(false);
             if (modelResult.DicomResult != null)
             {
                 var anonymizedDicomFile = DeanonymizeDicomFile(
@@ -232,24 +235,24 @@
            string modelId,
            string segmentationId)
         {
-            var response = await _client.GetAsync($@"/v1/model/results/{segmentationId}");
+            var response = await _client.GetAsync(new Uri($@"/v1/model/results/{segmentationId}", UriKind.Relative)).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
-                var message = await response.Content.ReadAsStringAsync();
+                var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 return new ModelResult(50, message, null);
             }
             else if (response.StatusCode == HttpStatusCode.OK)
             {
-                var zipStream = await response.Content.ReadAsByteArrayAsync();
-                using (ZipArchive archive = new ZipArchive(new MemoryStream(zipStream)))
+                var zipStream = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                using (var archive = new ZipArchive(new MemoryStream(zipStream)))
                 {
                     if (archive.Entries.Count != 1)
                     {
                         throw new NotSupportedException("Only 1 file is supported");
                     }
 
-                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    foreach (var entry in archive.Entries)
                     {
                         using (var stream = entry.Open())
                         {
@@ -267,7 +270,7 @@
                 throw new ArgumentException($"SegmentationId run not found {segmentationId} for model {modelId}");
             }
 
-            throw new Exception(response.ReasonPhrase);
+            throw new SegmentationClientException(response.ReasonPhrase);
         }
 
         /// <inheritdoc />
@@ -282,7 +285,7 @@
 
             if (channelIdsAndDicomFiles.Any(x => !x.DicomFiles.Any()))
             {
-                throw new ArgumentException(nameof(channelIdsAndDicomFiles), "No dicomFiles in some channelId");
+                throw new ArgumentException("No dicomFiles in some channelId", nameof(channelIdsAndDicomFiles));
             }
 
             // Anonymise data
@@ -293,29 +296,32 @@
                 channels: anonymisedDicomData,
                 compressionLevel: DicomCompressionHelpers.DefaultCompressionLevel);
 
-            // POST
-            var response = await _client.PostAsync($@"/v1/model/start/{modelId}", new ByteArrayContent(dataZipped));
-
-            if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
+            using (var content = new ByteArrayContent(dataZipped))
             {
-                throw new ArgumentException(response.ReasonPhrase);
-            }
+                // POST
+                var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), content).ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception(response.ReasonPhrase);
-            }
+                if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
+                {
+                    throw new ArgumentException(response.ReasonPhrase);
+                }
 
-            var segmentationId = await response.Content.ReadAsStringAsync();
-            Trace.TraceInformation($"Segmentation uploaded with id={segmentationId}");
-            var flatAnonymizedDicomFiles = anonymisedDicomData.SelectMany(x => x.DicomFiles);
-            return (segmentationId, flatAnonymizedDicomFiles);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new SegmentationClientException(response.ReasonPhrase);
+                }
+
+                var segmentationId = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                Trace.TraceInformation($"Segmentation uploaded with id={segmentationId}");
+                var flatAnonymizedDicomFiles = anonymisedDicomData.SelectMany(x => x.DicomFiles);
+                return (segmentationId, flatAnonymizedDicomFiles);
+            }
         }
 
         /// <inheritdoc />
         public async Task PingAsync()
         {
-            var response = await _client.GetAsync("v1/ping");
+            var response = await _client.GetAsync(new Uri("v1/ping", UriKind.Relative)).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {

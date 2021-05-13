@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.Common.Helpers
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
@@ -24,7 +25,7 @@
         BEExplicitRTCT,
     }
 
-    public class DcmtkHelpers
+    public static class DcmtkHelpers
     {
         private static string StoreSCUPath { get; } = "Assets\\storescu.exe";
 
@@ -44,9 +45,11 @@
         /// <returns>The result for the Store SCU function. This string will be empty if it completed succesfully.</returns>
         public static string SendFolderUsingDCMTK(string path, int port, ScuProfile scuProfile, TestContext testContext, bool scanDirectories = true, bool waitForExit = true, bool abort = false, string applicationEntityTitle = "STORESCU", string calledAETitle = "ANY-SCP", string hostIP = "127.0.0.1")
         {
+            path = path ?? throw new ArgumentNullException(nameof(path));
+
             var directoryPath = path;
 
-            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
                 directoryPath += Path.DirectorySeparatorChar;
             }
@@ -74,11 +77,13 @@
         /// <returns>The result for the Store SCU function. This string will be empty if it completed succesfully.</returns>
         public static string SendFileUsingDCMTK(string path, int port, ScuProfile scuProfile, TestContext testContext, bool waitForExit = true, bool abort = false, string applicationEntityTitle = "STORESCU", string calledAETitle = "ANY-SCP", string hostIP = "127.0.0.1")
         {
+            path = path ?? throw new ArgumentNullException(nameof(path));
+
             var filePath = path;
 
-            if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString()))
+            if (filePath.StartsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
-                var currentExecutionLocation = (new DirectoryInfo(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
+                var currentExecutionLocation = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
                 filePath = currentExecutionLocation + filePath;
             }
 
@@ -91,7 +96,7 @@
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(path));
 
-            var currentExecutionLocation = (new DirectoryInfo(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
+            var currentExecutionLocation = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.FullName;
 
             Assert.IsNotNull(StoreSCUPath, "storescu.exe not found on system PATH");
             var fileName = StoreSCUPath;
@@ -108,26 +113,27 @@
 
             testContext?.WriteLine($"Sending file via DCMTK StoreSCU from: {path}");
 
-            var process = new Process();
-
-            process.StartInfo.FileName = fileName;
-            process.StartInfo.Arguments = $"{logLevel}{abortS}{sd} -aec {calledAETitle} -aet {applicationEntityTitle} -xf \"{configPath}\" {scuProfileString} {hostIP} {port} \"{path}\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-
-            testContext?.WriteLine($"DCMTK StoreSCU start arguments: {process.StartInfo.Arguments}");
-
-            process.Start();
-
-            if (waitForExit)
+            using (var process = new Process())
             {
-                var stdOut = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
+                process.StartInfo.FileName = fileName;
+                process.StartInfo.Arguments = $"{logLevel}{abortS}{sd} -aec {calledAETitle} -aet {applicationEntityTitle} -xf \"{configPath}\" {scuProfileString} {hostIP} {port} \"{path}\"";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
 
-                return stdOut;
+                testContext?.WriteLine($"DCMTK StoreSCU start arguments: {process.StartInfo.Arguments}");
+
+                process.Start();
+
+                if (waitForExit)
+                {
+                    var stdOut = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    return stdOut;
+                }
+
+                return string.Empty;
             }
-
-            return string.Empty;
         }
     }
 }

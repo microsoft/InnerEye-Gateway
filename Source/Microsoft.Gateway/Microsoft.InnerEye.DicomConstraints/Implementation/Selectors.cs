@@ -7,9 +7,7 @@
     /// Default selector - selects the source
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "TBD")]
-#pragma warning disable SA1649
     internal class DefaultSelector<T> : ISelector<T, T>
-#pragma warning restore SA1649
     {
         /// <summary>
         /// Constructor

@@ -1,14 +1,12 @@
 ﻿namespace Microsoft.InnerEye.Gateway.MessageQueueing.Sqlite
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
-
-    using Newtonsoft.Json;
-
+    using InnerEye.Gateway.MessageQueueing.Exceptions;
     using Microsoft.InnerEye.Gateway.Sqlite;
     using Microsoft.InnerEye.Gateway.Sqlite.Extensions;
-    using InnerEye.Gateway.MessageQueueing.Exceptions;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Message queue service using SQLite as the backend database.
@@ -105,9 +103,9 @@
         /// <exception cref="SqliteException">If we fail to open a connection to the database.</exception>
         public SqliteMessageQueue(string tableName, uint transactionLeaseMs = 60 * 1000)
         {
-            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException(nameof(tableName));
+            _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : throw new ArgumentException("tableName should be non-empty", nameof(tableName));
 
-            _transactionLeaseMs = transactionLeaseMs >= 1000 ? transactionLeaseMs : throw new ArgumentException(nameof(transactionLeaseMs));
+            _transactionLeaseMs = transactionLeaseMs >= 1000 ? transactionLeaseMs : throw new ArgumentException("transactionLeaseMs should be at least 1000", nameof(transactionLeaseMs));
             _transactionRenewLeaseMs = transactionLeaseMs / 2; // Attempt to renew leases using timeout divided by 2
 
             SqliteManager = new SqliteManager(tableName, DatabaseConnectionStringFormat, QueueTableDataColumnNames);
@@ -135,14 +133,13 @@
         {
             SqliteExtensions.ExecuteNonQueryNewConnection(
                 connectionString: _databaseConnectionString,
-                commandText: string.Format(SqliteManager.ClearTableCommandTextFormat, QueuePath));
+                commandText: string.Format(CultureInfo.InvariantCulture, SqliteManager.ClearTableCommandTextFormat, QueuePath));
         }
 
         /// <inheritdoc />
         /// <exception cref="ArgumentException">If the queue transaction is null or is not the correct type.</exception>
         /// <exception cref="ArgumentNullException">If input value is null.</exception>
         /// <exception cref="MessageQueueWriteException">If the queue cannot write the input value.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void Enqueue<T>(T value, IQueueTransaction queueTransaction)
         {
             if (value == null)
@@ -150,11 +147,9 @@
                 throw new ArgumentNullException(nameof(value));
             }
 
-            var transaction = queueTransaction as SqliteMessageQueueTransaction;
-
-            if (transaction == null)
+            if (!(queueTransaction is SqliteMessageQueueTransaction transaction))
             {
-                throw new ArgumentException(nameof(queueTransaction));
+                throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }
 
             // Create a unique row ID for this item (this will also be used for the commit and abort commands)
@@ -172,7 +167,7 @@
                 command.Parameters.AddWithValue($"@{QueueTableEnqueueTimeColumn.ColumnName}", DateTime.UtcNow.Ticks);
 
                 // Execute the query and insert the row
-                var result = command.ExecuteNonQueryWithRetry(string.Format(SqliteManager.GetInsertRowCommandFormat(), QueuePath));
+                var result = command.ExecuteNonQueryWithRetry(string.Format(CultureInfo.InvariantCulture, SqliteManager.GetInsertRowCommandFormat(), QueuePath));
 
                 if (result == 0)
                 {
@@ -195,11 +190,9 @@
         /// <exception cref="MessageQueueReadException">If the queue deos not have any items on the queue.</exception>
         public T DequeueNextMessage<T>(IQueueTransaction queueTransaction)
         {
-            var transaction = queueTransaction as SqliteMessageQueueTransaction;
-
-            if (transaction == null)
+            if (!(queueTransaction is SqliteMessageQueueTransaction transaction))
             {
-                throw new ArgumentException(nameof(queueTransaction));
+                throw new ArgumentException("queueTransaction is not a SqliteMessageQueueTransaction", nameof(queueTransaction));
             }
 
             var result = default(T);
@@ -216,7 +209,7 @@
                             // Note: We change the row ID to a new ID so we know which row to read (but leave the enqueue row ID)
                             (QueueTableRowIdColumn.ColumnName, rowId.ToString()),
                             (QueueTableTransactionIdColumn.ColumnName, string.Empty), // Empty the transaction ID
-                            (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString()) // Set a lease
+                            (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString(CultureInfo.InvariantCulture)) // Set a lease
                         },
                         $"WHERE {QueueTableRowIdColumn.ColumnName} IN (SELECT {QueueTableRowIdColumn.ColumnName} FROM [{QueuePath}] WHERE ({QueueTableTransactionIdColumn.ColumnName} = \"\" AND {QueueTableTransactionLeaseColumn.ColumnName} < {DateTime.UtcNow.Ticks}) OR {QueueTableTransactionIdColumn.ColumnName} = \"{transaction.TransactionId}\" ORDER BY {QueueTableEnqueueTimeColumn.ColumnName} ASC LIMIT 1)"));
 
@@ -238,7 +231,7 @@
             // Enqueue a function to renew the lease for this row on a timer task.
             transaction.EnqueueRenewLeaseCommand(
                 () => GetUpdateSqlCommandText(
-                        new[] { (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString()) },
+                        new[] { (QueueTableTransactionLeaseColumn.ColumnName, DateTime.UtcNow.AddMilliseconds(_transactionLeaseMs).Ticks.ToString(CultureInfo.InvariantCulture)) },
                         GetWhereClauseRowIdCommandText(rowId, QueueTableRowIdColumn.ColumnName)));
 
             // Create a new command to expire the lease if the transaction is aborted.
@@ -254,6 +247,7 @@
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

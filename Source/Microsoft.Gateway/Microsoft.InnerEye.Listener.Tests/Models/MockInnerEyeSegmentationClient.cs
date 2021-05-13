@@ -45,13 +45,13 @@
             return DelayAndThrowExceptionIfNotNull(PingException);
         }
 
-        public async Task<ModelResult> SegmentationResultAsync(string modelId, string segmentationId, IEnumerable<DicomFile> referenceDicomFiles, IEnumerable<TagReplacement> userSettingsForResultRTFile)
+        public async Task<ModelResult> SegmentationResultAsync(string modelId, string segmentationId, IEnumerable<DicomFile> referenceDicomFiles, IEnumerable<TagReplacement> userReplacements)
         {
-            await DelayAndThrowExceptionIfNotNull(SegmentationResultException);
+            await DelayAndThrowExceptionIfNotNull(SegmentationResultException).ConfigureAwait(false);
 
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userSettingsForResultRTFile);
+                return await _InnerEyeSegmentationClient.SegmentationResultAsync(modelId, segmentationId, referenceDicomFiles, userReplacements).ConfigureAwait(false);
             }
             else if (SegmentationProgressResult != null)
             {
@@ -59,7 +59,7 @@
             }
             else
             {
-                var dicomFile = await DicomFile.OpenAsync(SegmentationResultFile, FileReadOption.ReadAll);
+                var dicomFile = await DicomFile.OpenAsync(SegmentationResultFile, FileReadOption.ReadAll).ConfigureAwait(false);
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions,
                     $@"InnerEye AI Model: Test.Name\" +
@@ -68,13 +68,13 @@
                     $@"InnerEye Version: Test.AssemblyVersion\");
 
                 dicomFile.Dataset.AddOrUpdate(DicomTag.SeriesDate,
-                    $"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month.ToString("D2")}{DateTime.UtcNow.Day.ToString("D2")}");
+                    $"{DateTime.UtcNow.Year}{DateTime.UtcNow.Month:D2}{DateTime.UtcNow.Day:D2}");
 
                 var anonymized = DeanonymizeDicomFile(
                     dicomFile,
                     referenceDicomFiles,
                     TopLevelReplacements,
-                    userSettingsForResultRTFile,
+                    userReplacements,
                     SegmentationAnonymisationProtocolId,
                     SegmentationAnonymisationProtocol);
                 return new ModelResult(100, string.Empty, anonymized);
@@ -97,15 +97,15 @@
                     anonymisationProtocolId,
                     anonymisationProtocol);
 
-        public async Task<(string segmentationId, IEnumerable<DicomFile> postedImages)> StartSegmentationAsync(string modelId, IEnumerable<ChannelData> dicomFiles)
+        public async Task<(string segmentationId, IEnumerable<DicomFile> postedImages)> StartSegmentationAsync(string modelId, IEnumerable<ChannelData> channelIdsAndDicomFiles)
         {
             if (RealSegmentation)
             {
-                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, dicomFiles);
+                return await _InnerEyeSegmentationClient.StartSegmentationAsync(modelId, channelIdsAndDicomFiles).ConfigureAwait(false);
             }
             else
             {
-                return (Guid.NewGuid().ToString(), dicomFiles.SelectMany(x => x.DicomFiles).ToList());
+                return (Guid.NewGuid().ToString(), channelIdsAndDicomFiles.SelectMany(x => x.DicomFiles).ToList());
             }
         }
 
@@ -123,7 +123,7 @@
 
         private async Task DelayAndThrowExceptionIfNotNull(Exception e)
         {
-            await Task.Delay(ResponseDelay);
+            await Task.Delay(ResponseDelay).ConfigureAwait(false);
 
             if (e != null)
             {

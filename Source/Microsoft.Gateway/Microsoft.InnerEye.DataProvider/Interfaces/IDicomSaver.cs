@@ -9,7 +9,7 @@ namespace Microsoft.InnerEye.Listener.DataProvider.Interfaces
     /// <summary>
     /// Interface for Dicom saving.
     /// </summary>
-	public interface IDicomSaver
+    public interface IDicomSaver
     {
         /// <summary>
         /// Gets the root folder where all data will be saved.

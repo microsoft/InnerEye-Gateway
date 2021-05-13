@@ -127,14 +127,14 @@
 
                 try
                 {
-                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken);
+                    queueItem = await DequeueNextMessageAsync(transaction, cancellationToken).ConfigureAwait(false);
 
                     // Download the segmentation results
                     var segmentationResult = await GetSegmentationResultAsync(
                         queueItem,
                         _downloadServiceConfig.DownloadRetryTimespan,
                         _downloadServiceConfig.DownloadWaitTimeout,
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
 
                     // The result can be null if the API encountered an error. This is logged by the above method.
                     if (segmentationResult != null)
@@ -144,7 +144,7 @@
                                            downloadQueueItem: queueItem));
 
                         // Save the results to the result folder using the association Guid
-                        await SaveDicomFilesAsync(queueItem.ResultsDirectory, segmentationResult);
+                        await SaveDicomFilesAsync(queueItem.ResultsDirectory, segmentationResult).ConfigureAwait(false);
 
                         // Enqueue the segmentation result onto the push queue only when we are not in dry run mode
                         // and we have something to push
@@ -178,7 +178,9 @@
                     transaction.Abort();
                     throw;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogError(LogEntry.Create(AssociationStatus.DownloadError, downloadQueueItem: queueItem),
                              e);
@@ -256,7 +258,7 @@
                         modelId: downloadQueueItem.ModelId,
                         segmentationId: downloadQueueItem.SegmentationID,
                         referenceDicomFiles: referenceDicomFiles,
-                        userReplacements: tagReplacements);
+                        userReplacements: tagReplacements).ConfigureAwait(false);
 
                     if (modelResult.Progress == 100 && modelResult.DicomResult != null)
                     {
@@ -268,7 +270,7 @@
                                      downloadQueueItem: downloadQueueItem,
                                      downloadProgress: modelResult.Progress,
                                      downloadError: modelResult.Error),
-                                new Exception("Failed to get a segmentation result."));
+                                new ProcessorServiceException("Failed to get a segmentation result."));
 
                         // We cannot recover from this error, so we log and continue.
                         return null;
@@ -282,7 +284,7 @@
                     }
 
                     // Make sure you pass the cancellation token, not the timeout token, so the service can stop timely
-                    await Task.Delay(retryDelay, cancellationToken);
+                    await Task.Delay(retryDelay, cancellationToken).ConfigureAwait(false);
                 }
             }
 

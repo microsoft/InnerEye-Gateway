@@ -38,8 +38,6 @@
                 file.CopyTo(Path.Combine(tempFolder.FullName, file.Name));
             }
 
-            var client = GetMockInnerEyeSegmentationClient();
-
             using (var dicomDataReceiver = new ListenerDataReceiver(new ListenerDicomSaver(CreateTemporaryDirectory().FullName)))
             {
                 var eventCount = 0;
@@ -55,6 +53,7 @@
 
                 StartDicomDataReceiver(dicomDataReceiver, testAETConfigModel.AETConfig.Destination.Port);
 
+                using (var client = GetMockInnerEyeSegmentationClient())
                 using (var pushService = CreatePushService())
                 using (var uploadService = CreateUploadService(client))
                 using (var uploadQueue = uploadService.UploadQueue)
@@ -96,15 +95,13 @@
 
                     SpinWait.SpinUntil(() => eventCount >= 3);
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
-                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
+                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
-
-                    dicomFile = null;
-
-                    TryDeleteDirectory(folderPath);
                 }
             }
         }
@@ -119,7 +116,7 @@
             {
                 downloadService.Start();
 
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 downloadService.OnStop();
 
@@ -134,9 +131,6 @@
         public async Task GatewayLiveEndToEndTest()
         {
             var testAETConfigModel = GetTestAETConfigModel();
-
-            // Change this to real client to run a live pipeline
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
 
             var resultDirectory = CreateTemporaryDirectory();
 
@@ -155,6 +149,7 @@
 
                 var receivePort = 141;
 
+                using (var segmentationClient = GetMockInnerEyeSegmentationClient())
                 using (var deleteService = CreateDeleteService())
                 using (var pushService = CreatePushService())
                 using (var downloadService = CreateDownloadService(segmentationClient))
@@ -172,7 +167,7 @@
                         testAETConfigModel.CallingAET,
                         testAETConfigModel.CalledAET,
                         receivePort,
-                        "127.0.0.1");
+                        "127.0.0.1").ConfigureAwait(false);
 
                     Assert.IsTrue(echoResult == DicomOperationResult.Success);
 
@@ -187,15 +182,13 @@
                     // Wait for all events to finish on the data received
                     SpinWait.SpinUntil(() => eventCount >= 3, TimeSpan.FromMinutes(3));
 
+#pragma warning disable CA1508 // Avoid dead conditional code
                     Assert.IsFalse(string.IsNullOrWhiteSpace(folderPath));
+#pragma warning restore CA1508 // Avoid dead conditional code
 
-                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName);
+                    var dicomFile = await DicomFile.OpenAsync(new DirectoryInfo(folderPath).GetFiles()[0].FullName).ConfigureAwait(false);
 
                     Assert.IsNotNull(dicomFile);
-
-                    dicomFile = null;
-
-                    TryDeleteDirectory(folderPath);
                 }
             }
         }
@@ -208,10 +201,9 @@
         {
             var receivePort = 141;
 
-            var segmentationClient = GetMockInnerEyeSegmentationClient();
-
             var testAETConfigModel = GetTestAETConfigModel();
 
+            using (var segmentationClient = GetMockInnerEyeSegmentationClient())
             using (var deleteService = CreateDeleteService())
             using (var pushService = CreatePushService())
             using (var downloadService = CreateDownloadService(segmentationClient))
@@ -233,7 +225,7 @@
                     applicationEntityTitle: testAETConfigModel.CallingAET,
                     calledAETitle: testAETConfigModel.CalledAET);
 
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 WaitUntilNoMessagesOnQueue(uploadQueue);
 

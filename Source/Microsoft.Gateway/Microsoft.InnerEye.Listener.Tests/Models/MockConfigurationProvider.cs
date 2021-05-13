@@ -11,7 +11,7 @@
         /// <summary>
         /// Configuration.
         /// </summary>
-        private T _configuration;
+        private readonly T _configuration;
 
         /// <summary>
         /// TestException to throw on GetConfiguration to mock failure.
@@ -31,7 +31,7 @@
         /// Return configuration or throw an exception.
         /// </summary>
         /// <returns>Configuration.</returns>
-        public T GetConfiguration()
+        public T Configuration()
         {
             if (TestException != null)
             {

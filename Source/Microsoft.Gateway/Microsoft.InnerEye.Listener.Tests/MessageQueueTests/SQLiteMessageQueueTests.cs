@@ -19,7 +19,7 @@
         [TestMethod]
         public void SqliteTransactionExceptionTests1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 3000;
 
@@ -41,7 +41,7 @@
         [TestMethod]
         public void SqliteTransactionExceptionTests2()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 3000;
 
@@ -62,7 +62,7 @@
         [TestMethod]
         public async Task SqliteRenewLeaseTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -82,7 +82,7 @@
                     var dequeued = messageQueue.DequeueNextMessage<PushQueueItem>(queueTransaction1);
 
                     // Wait for twice the time - the lease should have expired if the renew code is not working
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     Assert.ThrowsException<MessageQueueReadException>(() => messageQueue.DequeueNextMessage<PushQueueItem>(queueTransaction1));
                 }
@@ -102,7 +102,7 @@
         [TestMethod]
         public async Task SqliteExpiredLeaseTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -125,7 +125,7 @@
                     AssertCompare(expected, actual1);
 
                     // Wait for twice the time - the lease should have now expired
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     // Dequeue on a different transaction
                     var actual2 = TransactionalDequeue<PushQueueItem>(messageQueue);
@@ -144,7 +144,7 @@
         [TestMethod]
         public async Task SqliteClearDuringTransaction1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             const uint transactionLeaseMs = 1000;
 
@@ -167,7 +167,7 @@
                     AssertCompare(expected, actual);
 
                     // Wait for the renew lease task to be called at least once.
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
                 }
 
                 using (var transaction = messageQueue.CreateQueueTransaction())
@@ -182,7 +182,7 @@
                     AssertCompare(expected, actual);
 
                     // Wait for the renew lease task to be called at least once.
-                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2));
+                    await Task.Delay(TimeSpan.FromMilliseconds(transactionLeaseMs * 2)).ConfigureAwait(false);
 
                     // Make sure no exception is thrown.
                     transaction.Commit();
@@ -196,7 +196,7 @@
         [TestMethod]
         public void SqliteTransactionTests1()
         {
-            string messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -227,7 +227,7 @@
         [TestMethod]
         public void SqliteTransactionTests2()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -259,7 +259,7 @@
         [TestMethod]
         public void SqliteTransactionDisposeTest1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
             var expected = CreateRandomQueueItem();
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
@@ -298,7 +298,7 @@
         [TestMethod]
         public void SqliteNestedTransactionTest()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
 
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -329,7 +329,7 @@
         [TestMethod]
         public void SqliteTestConcurrentReadWrite1()
         {
-            var messageQueuePath = $@".\Private$\{Guid.NewGuid().ToString()}";
+            var messageQueuePath = $@".\Private$\{Guid.NewGuid()}";
             const int numberMessages = 100;
 
             var expectedResults = new PushQueueItem[numberMessages];
@@ -618,7 +618,7 @@
             }
         }
 
-        private PushQueueItem CreateRandomQueueItem(int index = 0)
+        private static PushQueueItem CreateRandomQueueItem(int index = 0)
         {
             return new PushQueueItem(
                 new GatewayApplicationEntity(Guid.NewGuid().ToString(), index, Guid.NewGuid().ToString()),
@@ -632,7 +632,7 @@
             };
         }
 
-        private void AssertCompare(PushQueueItem expected, PushQueueItem actual)
+        private static void AssertCompare(PushQueueItem expected, PushQueueItem actual)
         {
             Assert.AreEqual(expected.AssociationGuid, actual.AssociationGuid);
             Assert.AreEqual(expected.CalledApplicationEntityTitle, actual.CalledApplicationEntityTitle);
@@ -649,7 +649,7 @@
             }
         }
 
-        private void Enqueue(PushQueueItem queueItem, string messageQueuePath)
+        private static void Enqueue(PushQueueItem queueItem, string messageQueuePath)
         {
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {
@@ -657,7 +657,7 @@
             }
         }
 
-        private void Enqueue(PushQueueItem queueItem, SqliteMessageQueue messageQueue)
+        private static void Enqueue(PushQueueItem queueItem, SqliteMessageQueue messageQueue)
         {
             using (var queueTransaction = messageQueue.CreateQueueTransaction())
             {
@@ -667,7 +667,7 @@
             }
         }
 
-        private PushQueueItem Dequeue(string messageQueuePath)
+        private static PushQueueItem Dequeue(string messageQueuePath)
         {
             using (var messageQueue = new SqliteMessageQueue(messageQueuePath))
             {

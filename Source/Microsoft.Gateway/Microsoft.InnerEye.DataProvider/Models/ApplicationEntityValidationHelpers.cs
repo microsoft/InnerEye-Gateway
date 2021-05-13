@@ -55,7 +55,7 @@
                 return true;
             }
 
-            if (string.IsNullOrWhiteSpace(address) || !IPAddress.TryParse(address, out IPAddress parsedAddress))
+            if (string.IsNullOrWhiteSpace(address) || !IPAddress.TryParse(address, out var parsedAddress))
             {
                 return false;
             }

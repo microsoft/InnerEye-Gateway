@@ -1,6 +1,5 @@
 ﻿namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 {
-    using System;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -32,8 +31,7 @@
 
             ConfigurationProviderTests.Serialise(expectedGatewayReceiveConfig1, configurationDirectory, GatewayReceiveConfigProvider.GatewayReceiveConfigFileName);
 
-            var client = GetMockInnerEyeSegmentationClient();
-
+            using (var client = GetMockInnerEyeSegmentationClient())
             using (var gatewayReceiveConfigProvider = CreateGatewayReceiveConfigProvider(configurationDirectory))
             using (var receiveService = CreateReceiveService(gatewayReceiveConfigProvider.ReceiveServiceConfig))
             using (var uploadQueue = receiveService.UploadQueue)
@@ -111,18 +109,16 @@
         {
             var testAETConfigModel = GetTestAETConfigModel();
 
-            var client = GetMockInnerEyeSegmentationClient();
-
             var gatewayReceiveConfig = GetTestGatewayReceiveServiceConfig(140);
             var mockReceiverConfigurationProvider = new MockConfigurationProvider<ReceiveServiceConfig>(gatewayReceiveConfig);
 
-            using (var receiveService = CreateReceiveService(mockReceiverConfigurationProvider.GetConfiguration))
+            using (var receiveService = CreateReceiveService(mockReceiverConfigurationProvider.Configuration))
             using (var uploadQueue = receiveService.UploadQueue)
             {
                 receiveService.Start();
 
                 // This should cause an exception to be raised in ReceiveService.GetAcceptedSopClassesAndTransferSyntaxes
-                mockReceiverConfigurationProvider.TestException = new Exception("A general exception.");
+                mockReceiverConfigurationProvider.TestException = new ConfigurationException("A general exception.");
 
                 uploadQueue.Clear();
 
@@ -222,7 +218,7 @@
                     "Hello",
                     testAETConfigModel.CalledAET,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));
@@ -243,7 +239,7 @@
                     "Hello",
                     testAETConfigModel.CalledAET,
                     receivePort,
-                    "127.0.0.1");
+                    "127.0.0.1").ConfigureAwait(false);
 
                 // Check nothing is added to the message queue
                 Assert.ThrowsException<MessageQueueReadException>(() => TransactionalDequeue<UploadQueueItem>(uploadQueue, timeoutMs: 1000));
