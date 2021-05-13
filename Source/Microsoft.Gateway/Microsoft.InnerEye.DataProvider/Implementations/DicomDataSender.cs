@@ -72,6 +72,12 @@
 
                 Trace.TraceError($"[{GetType().Name}] A socket exception occured during the Dicom echo. Failed to get a response. Exception: {e}");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Trace.TraceError($"[{GetType().Name}] An unkown exception occured during the Dicom echo. Exception: {e}");
+            }
 
             return result;
         }

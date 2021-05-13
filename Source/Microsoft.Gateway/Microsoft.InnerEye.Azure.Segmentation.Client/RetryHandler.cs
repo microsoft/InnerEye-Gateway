@@ -58,7 +58,9 @@
                         return httpResponseMessage;
                     }
                 }
-                catch (HttpRequestException e)
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Trace.TraceWarning($"Request failed Method: {request.Method}, RequestUri: {request.RequestUri}, with exception {e}");
                 }
