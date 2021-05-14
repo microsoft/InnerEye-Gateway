@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.DicomConstraints.Tests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.DicomConstraints.Tests
 {
     using Dicom;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Processor
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Processor
 {
     using System;
     using System.Collections;

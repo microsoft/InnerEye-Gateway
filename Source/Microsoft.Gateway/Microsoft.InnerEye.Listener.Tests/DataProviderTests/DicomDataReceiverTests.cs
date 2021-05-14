@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.DataProviderTests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests.DataProviderTests
 {
     using System;
     using System.Globalization;

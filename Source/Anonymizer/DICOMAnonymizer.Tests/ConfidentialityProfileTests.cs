@@ -1,4 +1,7 @@
-﻿namespace DICOMAnonymizer.Tests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace DICOMAnonymizer.Tests
 {
     using Dicom;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

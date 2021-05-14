@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.Logging
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.Logging
 {
     using System;
     using Microsoft.Extensions.Logging;

@@ -1,4 +1,7 @@
-﻿namespace DICOMAnonymizer.Tools
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace DICOMAnonymizer.Tools
 {
     using System.Collections.Generic;
 

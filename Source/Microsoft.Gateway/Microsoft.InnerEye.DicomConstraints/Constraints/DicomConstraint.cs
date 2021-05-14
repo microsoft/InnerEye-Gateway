@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.DicomConstraints
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.DicomConstraints
 {
     using System.Runtime.Serialization;
     using Dicom;

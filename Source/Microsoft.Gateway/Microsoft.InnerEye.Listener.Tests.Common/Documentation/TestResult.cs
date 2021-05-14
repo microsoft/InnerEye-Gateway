@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.Common.Documentation
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests.Common.Documentation
 {
     using System;
 

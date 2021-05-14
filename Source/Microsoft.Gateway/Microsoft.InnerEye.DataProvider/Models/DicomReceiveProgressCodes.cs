@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.DataProvider.Models
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.DataProvider.Models
 {
     /// <summary>
     /// List of progress codes for receiving data over Dicom.

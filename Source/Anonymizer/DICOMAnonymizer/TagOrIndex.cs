@@ -1,4 +1,7 @@
-﻿namespace DICOMAnonymizer
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace DICOMAnonymizer
 {
     using System.Globalization;
     using Dicom;

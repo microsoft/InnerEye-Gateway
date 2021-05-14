@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.MessageQueueing.Exceptions
 {
     using System;
     using System.Runtime.Serialization;

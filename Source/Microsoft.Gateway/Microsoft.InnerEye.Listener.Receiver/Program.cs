@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Receiver
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Receiver
 {
     using Common.Services;
     using Microsoft.Extensions.Logging;

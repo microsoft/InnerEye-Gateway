@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.MessageQueueing
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.MessageQueueing
 {
     using System;
 

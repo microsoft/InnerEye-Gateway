@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Processor.Services
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Processor.Services
 {
     using System;
     using System.Runtime.Serialization;

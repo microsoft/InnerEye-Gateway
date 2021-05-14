@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Integration.Tests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Integration.Tests
 {
     using System;
     using System.Collections.Concurrent;

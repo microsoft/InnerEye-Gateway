@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.LoggingTests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests.LoggingTests
 {
     using System.Diagnostics;
     using Microsoft.InnerEye.Listener.Common.Providers;
