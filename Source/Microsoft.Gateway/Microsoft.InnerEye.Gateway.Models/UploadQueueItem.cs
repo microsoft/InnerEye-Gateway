@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.Models
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.Models
 {
     using System;
 

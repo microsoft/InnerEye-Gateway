@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.DicomConstraints
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.DicomConstraints
 {
     /// <summary>
     /// Interface to select an element TSelection from an instance of type TSource

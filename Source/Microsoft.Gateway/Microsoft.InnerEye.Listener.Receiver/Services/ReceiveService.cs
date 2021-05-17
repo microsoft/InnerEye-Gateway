@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Receiver.Services
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Receiver.Services
 {
     using System;
     using System.Globalization;

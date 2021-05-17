@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.DataProvider.Interfaces
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.DataProvider.Interfaces
 {
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Azure.Segmentation.Client
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Azure.Segmentation.Client
 {
     using System;
     using System.Diagnostics;

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.DataProvider
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.DataProvider
 {
     using System;
 

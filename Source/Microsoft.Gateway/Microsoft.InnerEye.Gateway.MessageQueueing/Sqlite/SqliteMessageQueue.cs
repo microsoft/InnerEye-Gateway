@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.MessageQueueing.Sqlite
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.MessageQueueing.Sqlite
 {
     using System;
     using System.Globalization;

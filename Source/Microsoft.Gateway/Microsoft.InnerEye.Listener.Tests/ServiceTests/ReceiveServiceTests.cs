@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 {
     using System.IO;
     using System.Threading;

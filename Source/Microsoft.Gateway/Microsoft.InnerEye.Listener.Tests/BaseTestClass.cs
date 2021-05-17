@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests
 {
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Common.Services
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Common.Services
 {
     using System;
     using System.Threading;

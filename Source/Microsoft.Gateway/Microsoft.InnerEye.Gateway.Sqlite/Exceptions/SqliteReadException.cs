@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Gateway.Sqlite.Exceptions
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Gateway.Sqlite.Exceptions
 {
     using System;
     using System.Runtime.Serialization;

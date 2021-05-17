@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
 {
     /// <summary>
     /// The anonymisation method enumeration that defines what type of anonymisation should be applied to a DICOM tag.

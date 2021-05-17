@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Wix.Actions
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Wix.Actions
 {
     using System;
     using System.Threading.Tasks;

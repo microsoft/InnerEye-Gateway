@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Tests.MessageQueueTests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Tests.MessageQueueTests
 {
     using System;
     using System.Linq;

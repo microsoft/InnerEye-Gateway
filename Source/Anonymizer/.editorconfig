@@ -161,3 +161,5 @@ csharp_using_directive_placement = inside_namespace
 
 # IDE0065: Misplaced using directive
 dotnet_diagnostic.IDE0065.severity = silent
+
+file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT license.

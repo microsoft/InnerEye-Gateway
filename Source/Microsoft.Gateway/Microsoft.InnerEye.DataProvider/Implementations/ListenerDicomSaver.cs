@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.DataProvider.Implementations
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.DataProvider.Implementations
 {
     using System;
     using System.Diagnostics;

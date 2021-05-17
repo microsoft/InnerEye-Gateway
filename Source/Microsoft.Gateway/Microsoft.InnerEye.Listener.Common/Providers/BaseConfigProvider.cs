@@ -1,4 +1,7 @@
-﻿namespace Microsoft.InnerEye.Listener.Common.Providers
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.InnerEye.Listener.Common.Providers
 {
     using System;
     using System.Collections.Generic;
