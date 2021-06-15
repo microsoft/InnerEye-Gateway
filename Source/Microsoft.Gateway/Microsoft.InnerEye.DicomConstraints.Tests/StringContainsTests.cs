@@ -43,9 +43,17 @@ namespace Microsoft.InnerEye.DicomConstraints.Tests
                 { DicomTag.ImageType, new  [] {"ORIGINAL","PRIMARY", "AXIAL" } },
             };
 
+            // The first component does contain "RIG"
+            var constraint1 = new StringContainsConstraint(DicomTag.ImageType, "RIG", -1);
+            Assert.IsTrue(constraint1.Check(dataset).Result);
+
+            // The second component does contain "RIM"
+            var constraint2 = new StringContainsConstraint(DicomTag.ImageType, "RIM", -1);
+            Assert.IsTrue(constraint2.Check(dataset).Result);
+
             // The last component does contain "XIA"
-            var constraint = new StringContainsConstraint(DicomTag.ImageType, "XIA", -1);
-            Assert.IsTrue(constraint.Check(dataset).Result);
+            var constraint3 = new StringContainsConstraint(DicomTag.ImageType, "XIA", -1);
+            Assert.IsTrue(constraint3.Check(dataset).Result);
         }
 
     }
