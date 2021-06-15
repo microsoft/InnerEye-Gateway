@@ -6,6 +6,7 @@ namespace Microsoft.InnerEye.DicomConstraints
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using Dicom;
     using Newtonsoft.Json;
@@ -78,9 +79,21 @@ namespace Microsoft.InnerEye.DicomConstraints
             }
 
             var r = new Regex(Expression, Options);
-            var s = dataSet.GetValue<string>(Index.DicomTag, Ordinal);
 
-            return new DicomConstraintResult(r.IsMatch(s), this);
+            if (Ordinal >= 0)
+            {
+                var s = dataSet.GetValue<string>(Index.DicomTag, Ordinal);
+
+                return new DicomConstraintResult(r.IsMatch(s), this);
+            }
+            else
+            {
+                var vs = dataSet.GetValues<string>(Index.DicomTag);
+
+                var contains = vs.Any(s => r.IsMatch(s));
+
+                return new DicomConstraintResult(contains, this);
+            }
         }
 
         /// <inheritdoc/>
