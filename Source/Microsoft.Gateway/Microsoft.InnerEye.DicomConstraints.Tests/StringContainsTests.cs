@@ -3,6 +3,8 @@
 
 namespace Microsoft.InnerEye.DicomConstraints.Tests
 {
+    using System;
+    using System.Globalization;
     using Dicom;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,51 +12,46 @@ namespace Microsoft.InnerEye.DicomConstraints.Tests
     public class StringContainsTests
     {
         [TestCategory("StringContainsConstraints")]
+        [DataRow("RIG", 0)]
+        [DataRow("RIM", 1)]
+        [DataRow("XIA", 2)]
         [TestMethod]
-        public void StringContainsSomeOrdinal()
+        public void StringContainsSomeOrdinal(string match, int ordinal)
         {
+            match = match ?? throw new ArgumentNullException(nameof(match));
+
             var dataset = new DicomDataset
             {
                 { DicomTag.ImageType, new  [] {"ORIGINAL","PRIMARY", "AXIAL" } },
             };
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 3; i++)
             {
-                // The first two components don't contain "XIA"
-                var constraint = new StringContainsConstraint(DicomTag.ImageType, "XIA", i);
-                Assert.IsFalse(constraint.Check(dataset).Result);
+                var constraint = new StringContainsConstraint(DicomTag.ImageType, match, i);
+                Assert.AreEqual(i == ordinal, constraint.Check(dataset).Result);
+
+                var constraintLower = new StringContainsConstraint(DicomTag.ImageType, match.ToLower(CultureInfo.CurrentCulture), i);
+                Assert.IsFalse(constraintLower.Check(dataset).Result);
             }
-
-            // The last component does contain "XIA"
-            var constraint2 = new StringContainsConstraint(DicomTag.ImageType, "XIA", 2);
-            Assert.IsTrue(constraint2.Check(dataset).Result);
-
-            // Check that this is case sensitive
-            var constraint3 = new StringContainsConstraint(DicomTag.ImageType, "xia", 2);
-            Assert.IsFalse(constraint3.Check(dataset).Result);
         }
 
         [TestCategory("StringContainsConstraints")]
+        [DataRow("RIG", true)]
+        [DataRow("RIM", true)]
+        [DataRow("XIA", true)]
+        [DataRow("RIH", false)]
+        [DataRow("RIN", false)]
+        [DataRow("XIB", false)]
         [TestMethod]
-        public void StringContainsAnyOrdinal()
+        public void StringContainsAnyOrdinal(string match, bool expected)
         {
             var dataset = new DicomDataset
             {
                 { DicomTag.ImageType, new  [] {"ORIGINAL","PRIMARY", "AXIAL" } },
             };
 
-            // The first component does contain "RIG"
-            var constraint1 = new StringContainsConstraint(DicomTag.ImageType, "RIG", -1);
-            Assert.IsTrue(constraint1.Check(dataset).Result);
-
-            // The second component does contain "RIM"
-            var constraint2 = new StringContainsConstraint(DicomTag.ImageType, "RIM", -1);
-            Assert.IsTrue(constraint2.Check(dataset).Result);
-
-            // The last component does contain "XIA"
-            var constraint3 = new StringContainsConstraint(DicomTag.ImageType, "XIA", -1);
-            Assert.IsTrue(constraint3.Check(dataset).Result);
+            var constraint = new StringContainsConstraint(DicomTag.ImageType, match, -1);
+            Assert.AreEqual(expected, constraint.Check(dataset).Result);
         }
-
     }
 }
