@@ -4,6 +4,7 @@
 namespace Microsoft.InnerEye.DicomConstraints
 {
     using System;
+    using System.Linq;
     using Dicom;
 
     /// <summary>
@@ -33,18 +34,33 @@ namespace Microsoft.InnerEye.DicomConstraints
                 throw new ArgumentNullException(nameof(dataSet));
             }
 
-            var selector = new TSelector();
-
-            try
+            Func<TExtract, bool> predicate = datasetValue =>
             {
-                // Get will throw if the tag is not there.
-                var datasetValue = dataSet.GetValue<TExtract>(t, ordinal);
+                var selector = new TSelector();
 
                 // CompareTo is < 0 | 0 | > 0
                 var r = v.CompareTo(selector.SelectValue(datasetValue));
-                r = (r < 0) ? 4 : (r > 0) ? 1 : 2;
+                var ro = (r < 0) ? Order.GreaterThan : (r > 0) ? Order.LessThan : Order.Equal;
 
-                return new DicomConstraintResult((r & (int)order) != 0, constraint);
+                return (ro & order) != 0;
+            };
+
+            try
+            {
+                if (ordinal >= 0)
+                {
+                    // Get will throw if the tag is not there.
+                    var datasetValue = dataSet.GetValue<TExtract>(t, ordinal);
+
+                    return new DicomConstraintResult(predicate(datasetValue), constraint);
+                }
+                else
+                {
+                    // Get will throw if the tag is not there.
+                    var datasetValues = dataSet.GetValues<TExtract>(t);
+
+                    return new DicomConstraintResult(datasetValues.Any(predicate), constraint);
+                }
             }
 
             // Catch if we have tried to parse the value into the wrong type and return false
