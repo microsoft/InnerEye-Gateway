@@ -33,13 +33,17 @@ namespace Microsoft.InnerEye.DicomConstraints
                 // Predicate function to compare the value in the dataSet with v
                 Func<TExtract, bool> predicate = datasetValue =>
                 {
+                    // Compare v with datasetValue. This is logically the wrong way round but v may have
+                    // an override of CompareTo. For example see OrderedString.CompareTo.
                     var r = v.CompareTo(new TSelector().SelectValue(datasetValue));
                     // CompareTo is < 0 | 0 | > 0
                     // < 0 means that v precedes datasetValue in sort order, i.e. datasetValue follows v
                     // > 0 means that v follows datasetValue in sort order, i.e. datasetValue predeces v
                     // = 0 otherwise
-                    // Flip the ordering...
-                    var ro = (r < 0) ? Order.GreaterThan : (r > 0) ? Order.LessThan : Order.Equal;
+                    // Reverse the ordering to get datasetValue compared with v.
+                    r *= -1;
+                    // Map onto Order
+                    var ro = (r < 0) ? Order.LessThan : (r > 0) ? Order.GreaterThan : Order.Equal;
 
                     return (ro & order) != 0;
                 };
