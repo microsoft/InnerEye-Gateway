@@ -52,18 +52,13 @@ namespace Microsoft.InnerEye.DicomConstraints
         /// Checks the Dicom tag contains the given string
         /// </summary>
         /// <exception cref="ArgumentNullException"> If dataset is null</exception>
-        /// <param name="dataSet"></param>
-        /// <returns></returns>
+        /// <param name="dataSet">DICOM dataset to test.</param>
+        /// <returns>New DicomConstraintResult.</returns>
         public override DicomConstraintResult Check(DicomDataset dataSet)
         {
-            if (dataSet == null)
-            {
-                throw new ArgumentNullException(nameof(dataSet));
-            }
+            Func<string, bool> predicate = v => v.Contains(Match);
 
-            var v = dataSet.GetValue<string>(Index.DicomTag, Ordinal);
-
-            return new DicomConstraintResult(v.Contains(Match), this);
+            return DicomConstraintResult.Check(dataSet, Index.DicomTag, Ordinal, predicate, this);
         }
 
         /// <inheritdoc/>

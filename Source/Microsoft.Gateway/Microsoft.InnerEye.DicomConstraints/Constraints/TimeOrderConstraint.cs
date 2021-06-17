@@ -47,11 +47,8 @@ namespace Microsoft.InnerEye.DicomConstraints
         /// </summary>
         /// <param name="dataSet"></param>
         /// <returns></returns>
-        public override DicomConstraintResult Check(DicomDataset dataSet)
-        {
-            return BaseOrderConstraint<TimeSpan, DateTime, TimeSelector>.
-                Check(dataSet, Function.Order, Function.Value, Index.DicomTag, this, Function.Ordinal);
-        }
+        public override DicomConstraintResult Check(DicomDataset dataSet) =>
+            BaseOrderConstraint.Check<TimeSpan, DateTime, TimeSelector>(dataSet, Function, this);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

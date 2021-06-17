@@ -5,6 +5,8 @@ namespace Microsoft.InnerEye.DicomConstraints
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using Dicom;
 
     /// <summary>
     /// Dicom constraint result.
@@ -32,6 +34,34 @@ namespace Microsoft.InnerEye.DicomConstraints
             : this(result, constraint)
         {
             ChildResults = childResults;
+        }
+
+        /// <summary>
+        /// Test the predicate against the tag in the DICOM dataset and return a new <see cref="DicomConstraintResult"/> class.
+        /// </summary>
+        /// <param name="dataSet">DICOM dataset to test.</param>
+        /// <param name="tag">Tag in dataset to test.</param>
+        /// <param name="ordinal">Ordinal in tag to test.</param>
+        /// <param name="predicate">Predicate to use for test.</param>
+        /// <param name="constraint">Source constraint.</param>
+        /// <returns>New DicomConstraintResult.</returns>
+        public static DicomConstraintResult Check<T>(DicomDataset dataSet, DicomTag tag, int ordinal, Func<T, bool> predicate, DicomConstraint constraint)
+        {
+            dataSet = dataSet ?? throw new ArgumentNullException(nameof(dataSet));
+            predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
+
+            if (ordinal >= 0)
+            {
+                var s = dataSet.GetValue<T>(tag, ordinal);
+
+                return new DicomConstraintResult(predicate(s), constraint);
+            }
+            else
+            {
+                var vs = dataSet.GetValues<T>(tag);
+
+                return new DicomConstraintResult(vs.Any(predicate), constraint);
+            }
         }
 
         /// <summary>

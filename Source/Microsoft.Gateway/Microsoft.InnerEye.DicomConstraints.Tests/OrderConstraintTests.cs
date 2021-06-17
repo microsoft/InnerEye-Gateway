@@ -63,6 +63,74 @@ namespace Microsoft.InnerEye.DicomConstraints.Tests
 
         [TestCategory("DicomConstraints")]
         [TestMethod]
+        public void ConstraintsTestOrderVM()
+        {
+            var ds = new DicomDataset
+            {
+                { DicomTag.SelectorSequencePointerItems, new[] { 41, 42, 43 } },
+            };
+
+            for (var i = -1; i < 3; i++)
+            {
+                var o0 = new OrderedIntConstraint(Order.Never, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o1 = new OrderedIntConstraint(Order.LessThan, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o2 = new OrderedIntConstraint(Order.LessThanOrEqual, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o3 = new OrderedIntConstraint(Order.Equal, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o4 = new OrderedIntConstraint(Order.GreaterThan, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o5 = new OrderedIntConstraint(Order.GreaterThanOrEqual, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o6 = new OrderedIntConstraint(Order.NotEqual, 42, DicomTag.SelectorSequencePointerItems, i);
+                var o7 = new OrderedIntConstraint(Order.Always, 42, DicomTag.SelectorSequencePointerItems, i);
+
+                if (i == -1)
+                {
+                    // The ANY case
+                    Assert.IsFalse(o0.Check(ds).Result);
+                    Assert.IsTrue(o1.Check(ds).Result);
+                    Assert.IsTrue(o2.Check(ds).Result);
+                    Assert.IsTrue(o3.Check(ds).Result);
+                    Assert.IsTrue(o4.Check(ds).Result);
+                    Assert.IsTrue(o5.Check(ds).Result);
+                    Assert.IsTrue(o6.Check(ds).Result);
+                    Assert.IsTrue(o7.Check(ds).Result);
+                }
+                else if (i == 0)
+                {
+                    Assert.IsFalse(o0.Check(ds).Result);
+                    Assert.IsTrue(o1.Check(ds).Result);
+                    Assert.IsTrue(o2.Check(ds).Result);
+                    Assert.IsFalse(o3.Check(ds).Result);
+                    Assert.IsFalse(o4.Check(ds).Result);
+                    Assert.IsFalse(o5.Check(ds).Result);
+                    Assert.IsTrue(o6.Check(ds).Result);
+                    Assert.IsTrue(o7.Check(ds).Result);
+                }
+                else if (i == 1)
+                {
+                    Assert.IsFalse(o0.Check(ds).Result);
+                    Assert.IsFalse(o1.Check(ds).Result);
+                    Assert.IsTrue(o2.Check(ds).Result);
+                    Assert.IsTrue(o3.Check(ds).Result);
+                    Assert.IsFalse(o4.Check(ds).Result);
+                    Assert.IsTrue(o5.Check(ds).Result);
+                    Assert.IsFalse(o6.Check(ds).Result);
+                    Assert.IsTrue(o7.Check(ds).Result);
+                }
+                else
+                {
+                    Assert.IsFalse(o0.Check(ds).Result);
+                    Assert.IsFalse(o1.Check(ds).Result);
+                    Assert.IsFalse(o2.Check(ds).Result);
+                    Assert.IsFalse(o3.Check(ds).Result);
+                    Assert.IsTrue(o4.Check(ds).Result);
+                    Assert.IsTrue(o5.Check(ds).Result);
+                    Assert.IsTrue(o6.Check(ds).Result);
+                    Assert.IsTrue(o7.Check(ds).Result);
+                }
+            }
+        }
+
+        [TestCategory("DicomConstraints")]
+        [TestMethod]
         public void ConstraintsTime()
         {
             var o0 = new TimeOrderConstraint(Order.Never, new TimeSpan(11, 11, 11), DicomTag.SeriesTime);
@@ -159,6 +227,23 @@ namespace Microsoft.InnerEye.DicomConstraints.Tests
             Assert.IsTrue(d0.Check(ds).Result);
             var d1 = new OrderedStringConstraint(Order.NotEqual, orderedCaseInsensitive, DicomTag.BodyPartExamined);
             Assert.IsTrue(d1.Check(ds).Result);
+        }
+
+        /// <summary>
+        /// Test that trying to convert a string to an int as part of an OrderedIntConstraint just returns false.
+        /// </summary>
+        [TestCategory("DicomConstraints")]
+        [TestMethod]
+        public void ConstraintStringToIntFails()
+        {
+            var o3 = new OrderedIntConstraint(Order.Equal, 42, DicomTag.BodyPartExamined);
+
+            var ds = new DicomDataset
+            {
+                { DicomTag.BodyPartExamined, "PELVIS" },
+            };
+
+            Assert.IsFalse(o3.Check(ds).Result);
         }
     }
 }

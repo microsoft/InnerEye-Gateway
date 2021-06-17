@@ -67,20 +67,16 @@ namespace Microsoft.InnerEye.DicomConstraints
         /// <summary>
         /// Test the regular expression with the given options against a string extracted from the dicom tag specified.
         /// </summary>
-        /// <param name="dataSet"></param>
+        /// <param name="dataSet">DICOM dataset to test.</param>
         /// <exception cref="ArgumentNullException">If dataset is null </exception>
-        /// <returns></returns>
+        /// <returns>New DicomConstraintResult.</returns>
         public override DicomConstraintResult Check(DicomDataset dataSet)
         {
-            if (dataSet == null)
-            {
-                throw new ArgumentNullException(nameof(dataSet));
-            }
-
             var r = new Regex(Expression, Options);
-            var s = dataSet.GetValue<string>(Index.DicomTag, Ordinal);
 
-            return new DicomConstraintResult(r.IsMatch(s), this);
+            Func<string, bool> predicate = s => r.IsMatch(s);
+
+            return DicomConstraintResult.Check(dataSet, Index.DicomTag, Ordinal, predicate, this);
         }
 
         /// <inheritdoc/>
