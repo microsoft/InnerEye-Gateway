@@ -228,5 +228,22 @@ namespace Microsoft.InnerEye.DicomConstraints.Tests
             var d1 = new OrderedStringConstraint(Order.NotEqual, orderedCaseInsensitive, DicomTag.BodyPartExamined);
             Assert.IsTrue(d1.Check(ds).Result);
         }
+
+        /// <summary>
+        /// Test that trying to convert a string to an int as part of an OrderedIntConstraint just returns false.
+        /// </summary>
+        [TestCategory("DicomConstraints")]
+        [TestMethod]
+        public void ConstraintStringToIntFails()
+        {
+            var o3 = new OrderedIntConstraint(Order.Equal, 42, DicomTag.BodyPartExamined);
+
+            var ds = new DicomDataset
+            {
+                { DicomTag.BodyPartExamined, "PELVIS" },
+            };
+
+            Assert.IsFalse(o3.Check(ds).Result);
+        }
     }
 }

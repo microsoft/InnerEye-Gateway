@@ -83,7 +83,7 @@ namespace Microsoft.InnerEye.DicomConstraints
                 // Check will throw if the tag is not there.
                 return DicomConstraintResult.Check(dataSet, dicomTag, ordinal, predicate, constraint);
             }
-            catch (FormatException)
+            catch (InvalidCastException)
             {
                 // Catch if we have tried to parse the value into the wrong type and return false
 
