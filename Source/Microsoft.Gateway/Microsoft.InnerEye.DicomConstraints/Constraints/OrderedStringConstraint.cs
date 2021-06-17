@@ -49,11 +49,8 @@ namespace Microsoft.InnerEye.DicomConstraints
         /// </summary>
         /// <param name="dataSet"></param>
         /// <returns></returns>
-        public override DicomConstraintResult Check(DicomDataset dataSet)
-        {
-            return BaseOrderConstraint<OrderedString, string, ConvertSelector<string, OrderedString>>.
-                Check(dataSet, Function.Order, Function.Value, Index.DicomTag, this, Function.Ordinal);
-        }
+        public override DicomConstraintResult Check(DicomDataset dataSet) =>
+            BaseOrderConstraint.Check<OrderedString, string, ConvertSelector<string, OrderedString>>(dataSet, Function, this);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

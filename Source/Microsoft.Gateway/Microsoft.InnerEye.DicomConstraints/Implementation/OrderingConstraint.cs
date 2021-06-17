@@ -57,10 +57,7 @@ namespace Microsoft.InnerEye.DicomConstraints
         /// </summary>
         /// <param name="dataSet"></param>
         /// <returns></returns>
-        public override DicomConstraintResult Check(DicomDataset dataSet)
-        {
-            return BaseOrderConstraint<T, T, DefaultSelector<T>>.
-                Check(dataSet, Function.Order, Function.Value, Index.DicomTag, this, Function.Ordinal);
-        }
+        public override DicomConstraintResult Check(DicomDataset dataSet) =>
+            BaseOrderConstraint.Check(dataSet, Function, this);
     }
 }
