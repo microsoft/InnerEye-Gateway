@@ -237,7 +237,7 @@ This service watches the **Upload** message queue for messages from the [Receive
 
     a. Reads the received DICOM image files from the subfolder of the RootDicomFolder.
 
-    b. Temoves the DICOM tags for de-identification.
+    b. Removes the DICOM tags for de-identification.
 
     c. Saves the de-identified image files to the DryRunModelAnonymizedImage subfolder of the RootDicomFolder.
 
