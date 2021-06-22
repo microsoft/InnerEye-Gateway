@@ -6,7 +6,7 @@ This document has instructions specially for InnerEye-Gateway [https://github.co
 
 *For InnerEye-Inference repo please visit* [*this*](https://github.com/microsoft/InnerEye-Inference) *documentation.*
 
-The InnerEye-Gateway comprises Windows services that act as a DICOM Service Class Provider. After an Association Request to C-STORE a set of DICOM image files, these will be anonymised and passed to a web service running [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference). Inference will then pass them to an instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) running on Azure to execute InnerEye-DeepLearning models. The result is downloaded, deanonymised and passed to a configurable DICOM destination. All DICOM image files, and the model output, are automatically deleted immediately after use.
+The InnerEye-Gateway comprises Windows services that act as a DICOM Service Class Provider. After an Association Request to C-STORE a set of DICOM image files, these will be anonymised by removing a user-defined set of identifiers, and passed to a web service running [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference). Inference will then pass them to an instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) running on Azure to execute InnerEye-DeepLearning models. The result is downloaded, deanonymised and passed to a configurable DICOM destination. All DICOM image files, and the model output, are automatically deleted immediately after use.
 
 The gateway should be installed on a machine within your DICOM network that is able to access a running instance of [InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference).
 
@@ -201,7 +201,7 @@ In detail, this:
 
 ### Processor Application
 
-The second application is `Microsoft.InnerEye.Listener.Processor`. This waits for messages on the **Upload** message queue from the [Receiver Application](#receiver-application). When a new message is received it: copies and anonymises the received DICOM images, sends them to the InnerEye-Inference web service, waits and then downloads the resulting DICOM-RT file. This is then de-anonymised and sent on to the configured destination.
+The second application is `Microsoft.InnerEye.Listener.Processor`. This waits for messages on the **Upload** message queue from the [Receiver Application](#receiver-application). When a new message is received it: copies and de-identifies the received DICOM images, sends them to the InnerEye-Inference web service, waits and then downloads the resulting DICOM-RT file. This is then de-anonymised and sent on to the configured destination.
 
 This is configured in [Processor Configuration](#processor-configuration).
 
@@ -221,7 +221,7 @@ This service watches the **Upload** message queue for messages from the [Receive
 
     c. Compares each group with each channel config until a set of filtered DICOM image files matches the constraints in the channel config.
 
-    d. Copies the image data and only the required DICOM tags to a set of new images, anonymises the remaining DICOM tags.
+    d. Copies the image data and only the required DICOM tags to a set of new images, removing the remaining DICOM tags.
 
     e. Zips the images and POSTs them to the InnerEye-Inference web service.
 
@@ -235,7 +235,7 @@ This service watches the **Upload** message queue for messages from the [Receive
 
     a. Reads the received DICOM image files from the subfolder of the RootDicomFolder.
 
-    b. Anonymises the DICOM tags.
+    b. Removes the user-defined DICOM tags sepcified for de-identification.
 
     c. Saves the anonymised image files to the DryRunModelAnonymizedImage subfolder of the RootDicomFolder.
 
@@ -274,6 +274,8 @@ This service watches the **Push** message queue for messages from the [Download 
 This service watches the **Delete** message queue for messages from the other services. If it receives a message it will delete the specified files or folders.
 
 ## Anonymisation
+
+The InnerEye Gateway allows users to define a set of identifiers that will be removed before being sent to the InnerEye-Inference web service. The set of identifier tags for removal are user-defined in InnerEyeSegmentationClient.cs(/Source/Microsoft.Gateway/Microsoft.InnerEye.Azure.Segmentation.Client/InnerEyeSegmentationClient.cs). The Gateway service processes and de-identifies the DICOM files using the procedure below.
 
 The process for handling DICOM files is:
 
@@ -759,7 +761,7 @@ Where:
 
     - `Config` consists of the pair:
 
-        - `AETConfigType` is one of "Model", "ModelDryRun", or "ModelWithResultDryRun". "Model" is the normal case, the other two are for debugging. "ModelDryRun" means that the received DICOM image files will be anonymised and saved to the DryRunModelAnonymizedImage subfolder of RootDicomFolder. "ModelWithResultDryRun" means almost the same as "Model" except that the DICOM-RT file is downloaded to the DryRunRTResultDeAnonymized subfolder of RootDicomFolder and it is not pushed to a DICOM destination.
+        - `AETConfigType` is one of "Model", "ModelDryRun", or "ModelWithResultDryRun". "Model" is the normal case, the other two are for debugging. "ModelDryRun" means that the received DICOM image files will be de-identified by removing a user-defined set of identifiers and saved to the DryRunModelAnonymizedImage subfolder of RootDicomFolder. "ModelWithResultDryRun" means almost the same as "Model" except that the DICOM-RT file is downloaded to the DryRunRTResultDeAnonymized subfolder of RootDicomFolder and it is not pushed to a DICOM destination.
 
         - `ModelsConfig` is an array of [ModelsConfig](#modelsconfig) objects, described below.
 
