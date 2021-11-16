@@ -164,4 +164,7 @@ dotnet_diagnostic.IDE0065.severity = silent
 
 dotnet_diagnostic.IDE0120.severity = suggestion
 
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = suggestion
+
 file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT license.
