@@ -151,6 +151,9 @@ dotnet_diagnostic.CA5359.severity = suggestion
 # CA5394: Do not use insecure randomness
 dotnet_diagnostic.CA5394.severity = suggestion
 
+# IDE0002: Simplify Member Access
+dotnet_diagnostic.IDE0002.severity = suggestion
+
 # IDE0010: Add missing cases
 dotnet_diagnostic.IDE0010.severity = suggestion
 
@@ -180,5 +183,8 @@ csharp_using_directive_placement = inside_namespace
 
 # IDE0065: Misplaced using directive
 dotnet_diagnostic.IDE0065.severity = silent
+
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = suggestion
 
 file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT license.
