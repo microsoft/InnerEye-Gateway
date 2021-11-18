@@ -22,7 +22,8 @@ The gateway should be installed on a machine within your DICOM network that is a
 - [License Keys](#license-keys)
 - [To Build The Gateway](#to-build-the-gateway)
 - [To Run The Tests](#to-run-the-tests)
-- [To Run The Gateway](#to-run-the-gateway)
+- [To Run The Gateway In Development](#to-run-the-gateway-in-development)
+- [To Run The Gateway In Production](#to-run-the-gateway-in-production)
 - [Architecture](#architecture)
     - [Receiver Application](#receiver-application)
     - [Processor Application](#processor-application)
@@ -108,6 +109,8 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 ## To Run The Tests
 
+1. Run Visual Studio as Administrator, because one of the tests needs to access system environment variables.
+
 1. [Build the gateway](#to-build-the-gateway).
 
 1. For end to end tests:
@@ -118,7 +121,7 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
         - `LicenseKeyEnvVar` is the name of the environment variable which contains the license key for the InnerEye-Inference web service at `InferenceUri`. See [License Keys](#license-keys) for more details.
 
-    - check the configuration settings for the test application entity models in [./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"](./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"). The tests will use the first found application entity model so check that `ModelId` in the first `ModelsConfig` is a valid PassThrough model id for the configured InnerEye-Inference service. Note that the PassThrough model is a special model intended for testing that simply returns a hard-coded list of structures for any input DICOM image series; it will always return the structures `["SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus"]`. If this is not present in the instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) build the model by running the command:
+    - check the configuration settings for the test application entity models in [./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json](./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json). The tests will use the first found application entity model so check that `ModelId` in the first `ModelsConfig` is a valid PassThrough model id for the configured InnerEye-Inference service. Note that the PassThrough model is a special model intended for testing that simply returns a hard-coded list of structures for any input DICOM image series; it will always return the structures `["SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus"]`. If this is not present in the instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) build the model by running the command:
 
     ```cmd
     python InnerEye/ML/runner.py --azureml=True --model=PassThroughModel
@@ -136,7 +139,7 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 1. The log for the test execution can be found in the Output window.
 
-## To Run The Gateway
+## To Run The Gateway In Development
 
 1. The gateway uses multiple startup projects: `Microsoft.InnerEye.Listener.Processor` and `Microsoft.InnerEye.Listener.Receiver`. Configure this in Visual Studio by right clicking on the Solution in Solution Explorer and selecting "Set Startup Projects...". Click the radio button "Multiple startup projects" and for the projects above select "Start" in the "Action" combo box.
 
@@ -176,6 +179,16 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 ```
 
 All JSON files in this folder are loaded and parsed. If the same `CallingAET` and `CalledAET` are found in more than one instance then the `ModelsConfig` arrays are concatenated to create one instance sharing all the other properties (which are taken from the first instance found). More details are in [Model Configuration](#model-configuration).
+
+## To Run The Gateway In Production
+
+The [WixToolset](https://wixtoolset.org/) will build an installer when the gateway is built. For a release build it will be:
+
+[./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/bin/x64/Release/Microsoft.InnerEye.Gateway.msi](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/bin/x64/Release/Microsoft.InnerEye.Gateway.msi)
+
+Note that the installer will include the configuration files in the folder [./Source/Microsoft.Gateway/SampleConfigurations](./Source/Microsoft.Gateway/SampleConfigurations), as well as the receiver and processor applications. Therefore the workflow should be to evolve the configuration files running the gateway as above and when the configuration files are correct then rebuild the gateway to include the new configuration files in the installer.
+
+
 
 ## Architecture
 
