@@ -188,7 +188,31 @@ The [WixToolset](https://wixtoolset.org/) will build an installer when the gatew
 
 Note that the installer will include the configuration files in the folder [./Source/Microsoft.Gateway/SampleConfigurations](./Source/Microsoft.Gateway/SampleConfigurations), as well as the receiver and processor applications. Therefore the workflow should be to evolve the configuration files running the gateway as above and when the configuration files are correct then rebuild the gateway to include the new configuration files in the installer.
 
+By default the installer will put the files in the folder: `C:\Program Files\Microsoft InnerEye Gateway`, with the following folder structure (with the default GatewayModelRulesConfig):
 
+```
+├── Config
+│   ├── GatewayModelRulesConfig
+│   │   ├── GatewayModelRulesConfigPassThrough1.json
+│   │   ├── GatewayModelRulesConfigPassThrough2.json
+│   │   ├── GatewayModelRulesConfigPelvis.json
+│   ├── GatewayProcessorConfig.json
+│   ├── GatewayReceiveConfig.json
+├── Microsoft InnerEye Gateway Processor
+│   ├── Microsoft.InnerEye.Listener.Processor.exe
+│   ├── log4net.config
+│   ├── ... (all other dependencies)
+├── Microsoft InnerEye Gateway Receiver
+│   ├── Microsoft.InnerEye.Listener.Receiver.exe
+│   ├── log4net.config
+│   ├── ... (all other dependencies)
+```
+
+Both processor and receiver are installed as windows services that start automatically. The config files `log4net.config` control the logging for their respective service. They are copied from the source folders, e.g.
+
+[./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Processor/log4net.config](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Processor/log4net.config)
+
+By default they are both set to create a new log file each day and keep a total of 5 log files.
 
 ## Architecture
 
