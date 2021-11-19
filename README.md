@@ -23,6 +23,7 @@ The gateway should be installed on a machine within your DICOM network that is a
 - [To Build The Gateway](#to-build-the-gateway)
 - [To Run The Tests](#to-run-the-tests)
 - [To Run The Gateway In Development](#to-run-the-gateway-in-development)
+- [To Manually Test The Gateway](#to-manually-test-the-gateway)
 - [To Run The Gateway In Production](#to-run-the-gateway-in-production)
 - [Architecture](#architecture)
     - [Receiver Application](#receiver-application)
@@ -80,6 +81,8 @@ To get started with setting up this project you will need the following pre-requ
     ```
 
     and agree to the change.
+
+    The tools downloaded are: [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)
 
 1. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
 
@@ -179,6 +182,12 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 ```
 
 All JSON files in this folder are loaded and parsed. If the same `CallingAET` and `CalledAET` are found in more than one instance then the `ModelsConfig` arrays are concatenated to create one instance sharing all the other properties (which are taken from the first instance found). More details are in [Model Configuration](#model-configuration).
+
+## To Manually Test The Gateway
+
+The [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) can be used to push DICOM images into the gateway.
+
+
 
 ## To Run The Gateway In Production
 
