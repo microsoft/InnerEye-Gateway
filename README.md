@@ -24,6 +24,9 @@ The gateway should be installed on a machine within your DICOM network that is a
 - [To Run The Tests](#to-run-the-tests)
 - [To Run The Gateway In Development](#to-run-the-gateway-in-development)
 - [To Manually Test The Gateway](#to-manually-test-the-gateway)
+    - [storescp](#storescp)
+    - [storescu](#storescu)
+    - [To Test](#to-test)
 - [To Run The Gateway In Production](#to-run-the-gateway-in-production)
 - [Architecture](#architecture)
     - [Receiver Application](#receiver-application)
@@ -185,9 +188,84 @@ All JSON files in this folder are loaded and parsed. If the same `CallingAET` an
 
 ## To Manually Test The Gateway
 
-The [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) can be used to push DICOM images into the gateway.
+The [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) can be used to push DICOM images into the gateway, and receive the segmented DICOM-RT file that is returned.
 
+As described later in [Model Configuration](#model-configuration), the gateway can be configured to support multiple application entity models. For a manual test, pick one of these, which will be called the `target ae model` below.
 
+### storescp
+
+The tool [storescp](https://support.dcmtk.org/docs/storescp.html) can be used to store the segmented images. A sample Powershell script is provided [here](./Source/Microsoft.Gateway/test_recv.ps1) which will start `storescp` and wait for the segmented images to be returned from the gateway, and is copied below:
+
+```powershell
+$ReceiveFolder = "TestReceived"
+$AETitle = "PACS"
+$Port = 104
+
+if (-not(Test-Path $ReceiveFolder))
+{
+	New-Item $ReceiveFolder -ItemType Directory
+}
+
+& ".\dcmtk-3.6.5-win64-dynamic\bin\storescp.exe" `
+	--log-level trace                 <# log level #> `
+	--aetitle $AETitle                <# set my AE title #> `
+	--output-directory $ReceiveFolder <# write received objects to existing directory TestReceived #> `
+	$Port                             <# port #>
+```
+
+Here:
+  1. `$ReceiveFolder` is a folder that will be used to store the returned segmented DICOM images (the sample script creates it if it does not already exist).
+  1. `$AETitle` is the Application Entity Title for this application. In principle it should match the `Title` set in the `Destination` part of the `target ae model`, but in practice this is not validated.
+  1. `$Port` is the port that this application will listen on. It must match the `Port` set in the `Destination` part of the `target ae model`.
+
+### storescu
+
+The tool [storescu](https://support.dcmtk.org/docs/storescu.html) can be used to send a set of DICOM images to the gateway for segmentation. A sample Powershell script is provided [here](./Source/Microsoft.Gateway/test_push.ps1) which will send a folder of DICOM files to the gateway, and is copied below:
+
+```powershell
+$AETitle = "RADIOMICS_APP"
+$Call = "PassThroughModel"
+$Port = 111
+$SendFolder = "..\..\Images\HN\"
+
+& ".\dcmtk-3.6.5-win64-dynamic\bin\storescu.exe" `
+	--log-level trace                      <# log level #> `
+	--scan-directories                     <# scan directories for input files #> `
+	--scan-pattern "*.dcm"                 <# pattern for filename matching (wildcards) #> `
+	--aetitle $AETitle                     <# set my calling AE title #> `
+	--call $Call                           <# set called AE title of peer #> `
+	127.0.0.1                              <# peer #> `
+	$Port                                  <# port #> `
+	$SendFolder                           <# dcmfile-in #>
+```
+
+Here:
+  1. `$AETitle` is the calling Application Entity Title for this application. It should match the `CallingAET` set in the `target ae model`.
+  1. `$Call` is the called Application Entity Title. It should match the `CalledAET` set in the `target ae model`.
+  1. `$Port` is the port that the gateway is listening on, as configured in `GatewayReceiveConfig.json` in the `ReceiveServiceConfig.GatewayDicomEndPoint.Port` parameter.
+  1. `$SendFolder` is the path to the folder of DICOM images to send to the gateway.
+
+### To Test
+
+1. Check the powershell script [test_recv.ps1](./Source/Microsoft.Gateway/test_recv.ps1) and start it in one shell. Leave it running, it will print "T: Timeout while waiting for incoming network data".
+
+1. Start Visual Studio debugging, making sure that both projects `Microsoft.InnerEye.Listener.Processor` and `Microsoft.InnerEye.Listener.Receiver` are set to start.
+
+1. Check the powershell script [test_push.ps1](./Source/Microsoft.Gateway/test_push.ps1) and start it in another shell. This will send the folder of images in [./Images/HN/](./Images/HN/) to the gateway.
+
+1. Check that the `ReceiveService` of the `Receiver` application received the images.
+
+1. Check that the `UploadService` of the `Processor` application uploaded the images to the Inference service.
+
+1. Check that the `DownloadService` of the `Processor` application polled the Inference service for the segmentation result (this event will have "DownloadProgress": 50 until the segmentation is available).
+
+1. Check that the `DeleteService` deleted the received DICOM image files.
+
+1. Check that the `DownloadService` finally downloaded the segmenttion.
+
+1. Check that the `PushService` pushed the segmentation to [storescp](#storescp).
+
+1. Check that the `DeleteService` deleted the segmentation.
 
 ## To Run The Gateway In Production
 
