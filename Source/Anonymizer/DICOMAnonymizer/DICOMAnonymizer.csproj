@@ -20,6 +20,6 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="fo-dicom" Version="4.0.4" />
+    <PackageReference Include="fo-dicom" Version="4.0.8" />
   </ItemGroup>
 </Project>

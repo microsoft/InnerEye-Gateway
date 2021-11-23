@@ -22,7 +22,12 @@ The gateway should be installed on a machine within your DICOM network that is a
 - [License Keys](#license-keys)
 - [To Build The Gateway](#to-build-the-gateway)
 - [To Run The Tests](#to-run-the-tests)
-- [To Run The Gateway](#to-run-the-gateway)
+- [To Run The Gateway In Development](#to-run-the-gateway-in-development)
+- [To Manually Test The Gateway](#to-manually-test-the-gateway)
+    - [storescp](#storescp)
+    - [storescu](#storescu)
+    - [To Test](#to-test)
+- [To Run The Gateway In Production](#to-run-the-gateway-in-production)
 - [Architecture](#architecture)
     - [Receiver Application](#receiver-application)
     - [Processor Application](#processor-application)
@@ -80,6 +85,8 @@ To get started with setting up this project you will need the following pre-requ
 
     and agree to the change.
 
+    The tools downloaded are: [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)
+
 1. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
 
 ## License Keys
@@ -108,6 +115,8 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 ## To Run The Tests
 
+1. Run Visual Studio as Administrator, because one of the tests needs to access system environment variables.
+
 1. [Build the gateway](#to-build-the-gateway).
 
 1. For end to end tests:
@@ -118,7 +127,7 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
         - `LicenseKeyEnvVar` is the name of the environment variable which contains the license key for the InnerEye-Inference web service at `InferenceUri`. See [License Keys](#license-keys) for more details.
 
-    - check the configuration settings for the test application entity models in [./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"](./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json"). The tests will use the first found application entity model so check that `ModelId` in the first `ModelsConfig` is a valid PassThrough model id for the configured InnerEye-Inference service. Note that the PassThrough model is a special model intended for testing that simply returns a hard-coded list of structures for any input DICOM image series; it will always return the structures `["SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus"]`. If this is not present in the instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) build the model by running the command:
+    - check the configuration settings for the test application entity models in [./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json](./Source/Microsoft.GatewayMicrosoft.InnerEye.Listener.Tests/TestConfigurations/GatewayModelRulesConfig/GatewayModelRulesConfig.json). The tests will use the first found application entity model so check that `ModelId` in the first `ModelsConfig` is a valid PassThrough model id for the configured InnerEye-Inference service. Note that the PassThrough model is a special model intended for testing that simply returns a hard-coded list of structures for any input DICOM image series; it will always return the structures `["SpinalCord", "Lung_R", "Lung_L", "Heart", "Esophagus"]`. If this is not present in the instance of [InnerEye-Deeplearning](https://github.com/microsoft/InnerEye-DeepLearning) build the model by running the command:
 
     ```cmd
     python InnerEye/ML/runner.py --azureml=True --model=PassThroughModel
@@ -136,7 +145,7 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 
 1. The log for the test execution can be found in the Output window.
 
-## To Run The Gateway
+## To Run The Gateway In Development
 
 1. The gateway uses multiple startup projects: `Microsoft.InnerEye.Listener.Processor` and `Microsoft.InnerEye.Listener.Receiver`. Configure this in Visual Studio by right clicking on the Solution in Solution Explorer and selecting "Set Startup Projects...". Click the radio button "Multiple startup projects" and for the projects above select "Start" in the "Action" combo box.
 
@@ -176,6 +185,121 @@ setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
 ```
 
 All JSON files in this folder are loaded and parsed. If the same `CallingAET` and `CalledAET` are found in more than one instance then the `ModelsConfig` arrays are concatenated to create one instance sharing all the other properties (which are taken from the first instance found). More details are in [Model Configuration](#model-configuration).
+
+## To Manually Test The Gateway
+
+The [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) can be used to push DICOM images into the gateway, and receive the segmented DICOM-RT file that is returned.
+
+As described later in [Model Configuration](#model-configuration), the gateway can be configured to support multiple application entity models. For a manual test, pick one of these, which will be called the `target ae model` below.
+
+### storescp
+
+The tool [storescp](https://support.dcmtk.org/docs/storescp.html) can be used to store the segmented images. A sample Powershell script is provided [here](./Source/Microsoft.Gateway/test_recv.ps1) which will start `storescp` and wait for the segmented images to be returned from the gateway, and is copied below:
+
+```powershell
+$ReceiveFolder = "TestReceived"
+$AETitle = "PACS"
+$Port = 104
+
+if (-not(Test-Path $ReceiveFolder))
+{
+	New-Item $ReceiveFolder -ItemType Directory
+}
+
+& ".\dcmtk-3.6.5-win64-dynamic\bin\storescp.exe" `
+	--log-level trace                 <# log level #> `
+	--aetitle $AETitle                <# set my AE title #> `
+	--output-directory $ReceiveFolder <# write received objects to existing directory TestReceived #> `
+	$Port                             <# port #>
+```
+
+Here:
+  1. `$ReceiveFolder` is a folder that will be used to store the returned segmented DICOM images (the sample script creates it if it does not already exist).
+  1. `$AETitle` is the Application Entity Title for this application. In principle it should match the `Title` set in the `Destination` part of the `target ae model`, but in practice this is not validated.
+  1. `$Port` is the port that this application will listen on. It must match the `Port` set in the `Destination` part of the `target ae model`.
+
+### storescu
+
+The tool [storescu](https://support.dcmtk.org/docs/storescu.html) can be used to send a set of DICOM images to the gateway for segmentation. A sample Powershell script is provided [here](./Source/Microsoft.Gateway/test_push.ps1) which will send a folder of DICOM files to the gateway, and is copied below:
+
+```powershell
+$AETitle = "RADIOMICS_APP"
+$Call = "PassThroughModel"
+$Port = 111
+$SendFolder = "..\..\Images\HN\"
+
+& ".\dcmtk-3.6.5-win64-dynamic\bin\storescu.exe" `
+	--log-level trace                      <# log level #> `
+	--scan-directories                     <# scan directories for input files #> `
+	--scan-pattern "*.dcm"                 <# pattern for filename matching (wildcards) #> `
+	--aetitle $AETitle                     <# set my calling AE title #> `
+	--call $Call                           <# set called AE title of peer #> `
+	127.0.0.1                              <# peer #> `
+	$Port                                  <# port #> `
+	$SendFolder                           <# dcmfile-in #>
+```
+
+Here:
+  1. `$AETitle` is the calling Application Entity Title for this application. It should match the `CallingAET` set in the `target ae model`.
+  1. `$Call` is the called Application Entity Title. It should match the `CalledAET` set in the `target ae model`.
+  1. `$Port` is the port that the gateway is listening on, as configured in `GatewayReceiveConfig.json` in the `ReceiveServiceConfig.GatewayDicomEndPoint.Port` parameter.
+  1. `$SendFolder` is the path to the folder of DICOM images to send to the gateway.
+
+### To Test
+
+1. Check the powershell script [test_recv.ps1](./Source/Microsoft.Gateway/test_recv.ps1) and start it in one shell. Leave it running, it will print "T: Timeout while waiting for incoming network data".
+
+1. Start Visual Studio debugging, making sure that both projects `Microsoft.InnerEye.Listener.Processor` and `Microsoft.InnerEye.Listener.Receiver` are set to start.
+
+1. Check the powershell script [test_push.ps1](./Source/Microsoft.Gateway/test_push.ps1) and start it in another shell. This will send the folder of images in [./Images/HN/](./Images/HN/) to the gateway.
+
+1. Check that the `ReceiveService` of the `Receiver` application received the images.
+
+1. Check that the `UploadService` of the `Processor` application uploaded the images to the Inference service.
+
+1. Check that the `DownloadService` of the `Processor` application polled the Inference service for the segmentation result (this event will have "DownloadProgress": 50 until the segmentation is available).
+
+1. Check that the `DeleteService` deleted the received DICOM image files.
+
+1. Check that the `DownloadService` finally downloaded the segmenttion.
+
+1. Check that the `PushService` pushed the segmentation to [storescp](#storescp).
+
+1. Check that the `DeleteService` deleted the segmentation.
+
+## To Run The Gateway In Production
+
+The [WixToolset](https://wixtoolset.org/) will build an installer when the gateway is built. For a release build it will be:
+
+[./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/bin/x64/Release/Microsoft.InnerEye.Gateway.msi](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Wix/bin/x64/Release/Microsoft.InnerEye.Gateway.msi)
+
+Note that the installer will include the configuration files in the folder [./Source/Microsoft.Gateway/SampleConfigurations](./Source/Microsoft.Gateway/SampleConfigurations), as well as the receiver and processor applications. Therefore the workflow should be to evolve the configuration files running the gateway as above and when the configuration files are correct then rebuild the gateway to include the new configuration files in the installer.
+
+By default the installer will put the files in the folder: `C:\Program Files\Microsoft InnerEye Gateway`, with the following folder structure (with the default GatewayModelRulesConfig):
+
+```
+├── Config
+│   ├── GatewayModelRulesConfig
+│   │   ├── GatewayModelRulesConfigPassThrough1.json
+│   │   ├── GatewayModelRulesConfigPassThrough2.json
+│   │   ├── GatewayModelRulesConfigPelvis.json
+│   ├── GatewayProcessorConfig.json
+│   ├── GatewayReceiveConfig.json
+├── Microsoft InnerEye Gateway Processor
+│   ├── Microsoft.InnerEye.Listener.Processor.exe
+│   ├── log4net.config
+│   ├── ... (all other dependencies)
+├── Microsoft InnerEye Gateway Receiver
+│   ├── Microsoft.InnerEye.Listener.Receiver.exe
+│   ├── log4net.config
+│   ├── ... (all other dependencies)
+```
+
+Both processor and receiver are installed as windows services that start automatically. The config files `log4net.config` control the logging for their respective service. They are copied from the source folders, e.g.
+
+[./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Processor/log4net.config](./Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Processor/log4net.config)
+
+By default they are both set to create a new log file each day and keep a total of 5 log files.
 
 ## Architecture
 
