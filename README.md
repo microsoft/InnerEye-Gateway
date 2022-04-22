@@ -16,46 +16,47 @@ The gateway should be installed on a machine within your DICOM network that is a
 
 <!-- TOC depthFrom:2 -->
 
-- [Overview](#overview)
-- [Contents](#contents)
-- [Getting Started](#getting-started)
-- [License Keys](#license-keys)
-- [To Build The Gateway](#to-build-the-gateway)
-- [To Run The Tests](#to-run-the-tests)
-- [To Run The Gateway In Development](#to-run-the-gateway-in-development)
-- [To Manually Test The Gateway](#to-manually-test-the-gateway)
+- [InnerEye-Gateway](#innereye-gateway)
+  - [Overview](#overview)
+  - [Contents](#contents)
+  - [Getting Started](#getting-started)
+  - [License Keys](#license-keys)
+  - [To Build The Gateway](#to-build-the-gateway)
+  - [To Run The Tests](#to-run-the-tests)
+  - [To Run The Gateway In Development](#to-run-the-gateway-in-development)
+  - [To Manually Test The Gateway](#to-manually-test-the-gateway)
     - [storescp](#storescp)
     - [storescu](#storescu)
     - [To Test](#to-test)
-- [To Run The Gateway In Production](#to-run-the-gateway-in-production)
-- [Architecture](#architecture)
+  - [To Run The Gateway In Production](#to-run-the-gateway-in-production)
+  - [Architecture](#architecture)
     - [Receiver Application](#receiver-application)
     - [Processor Application](#processor-application)
-        - [Upload Service](#upload-service)
-        - [Download Service](#download-service)
-        - [Push Service](#push-service)
-        - [Delete Service](#delete-service)
-- [Anonymisation](#anonymisation)
-- [Configuration](#configuration)
+      - [Upload Service](#upload-service)
+      - [Download Service](#download-service)
+      - [Push Service](#push-service)
+      - [Delete Service](#delete-service)
+  - [Anonymisation](#anonymisation)
+  - [Configuration](#configuration)
     - [Common Configuration](#common-configuration)
     - [Processor Configuration](#processor-configuration)
     - [Receiver Configuration](#receiver-configuration)
     - [Model Configuration](#model-configuration)
-        - [ModelsConfig](#modelsconfig)
-        - [ChannelConstraint](#channelconstraint)
+      - [ModelsConfig](#modelsconfig)
+      - [ChannelConstraint](#channelconstraint)
     - [DicomConstraint](#dicomconstraint)
-        - [GroupConstraint](#groupconstraint)
-        - [RequiredTagConstraint](#requiredtagconstraint)
+      - [GroupConstraint](#groupconstraint)
+      - [RequiredTagConstraint](#requiredtagconstraint)
     - [DicomTagConstraint](#dicomtagconstraint)
-        - [GroupTagConstraint](#grouptagconstraint)
-        - [StringContainsConstraint](#stringcontainsconstraint)
-        - [RegexConstraint](#regexconstraint)
-        - [OrderedDateTimeConstraint, OrderedDoubleConstraint, OrderedIntConstraint, OrderedStringConstraint](#ordereddatetimeconstraint-ordereddoubleconstraint-orderedintconstraint-orderedstringconstraint)
-        - [UIDStringOrderConstraint](#uidstringorderconstraint)
-        - [TimeOrderConstraint](#timeorderconstraint)
-- [Licensing](#licensing)
-- [Contributing](#contributing)
-- [Microsoft Open Source Code of Conduct](#microsoft-open-source-code-of-conduct)
+      - [GroupTagConstraint](#grouptagconstraint)
+      - [StringContainsConstraint](#stringcontainsconstraint)
+      - [RegexConstraint](#regexconstraint)
+      - [OrderedDateTimeConstraint, OrderedDoubleConstraint, OrderedIntConstraint, OrderedStringConstraint](#ordereddatetimeconstraint-ordereddoubleconstraint-orderedintconstraint-orderedstringconstraint)
+      - [UIDStringOrderConstraint](#uidstringorderconstraint)
+      - [TimeOrderConstraint](#timeorderconstraint)
+  - [Licensing](#licensing)
+  - [Contributing](#contributing)
+  - [Microsoft Open Source Code of Conduct](#microsoft-open-source-code-of-conduct)
 
 <!-- /TOC -->
 
@@ -73,21 +74,20 @@ To get started with setting up this project you will need the following pre-requ
 
 1. Wix Toolset for building the installer [Download WixToolset](https://wixtoolset.org/releases/)
 
-1. Run the PowerShell script to download two DICOM tools required for testing the gateway: [./Source/Microsoft.Gateway/download_dcmtk.ps1](./Source/Microsoft.Gateway/download_dcmtk.ps1). Note that these tools are only required for testing but the test projects and therefore the gateway will not build without them. Note also that the default PowerShell execution policy will not allow running scripts, more information is available here: [about execution policies](https:/go.microsoft.com/fwlink/?LinkID=135170). In brief:
+2. Ensure you have run the [`download_dcmtk.ps1`](./Source/Microsoft.Gateway/download_dcmtk.ps1) PowerShell script to download two DICOM tools ([DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)) required for testing the gateway. Note that these tools are only required for testing but the test projects and therefore the gateway will not build without them. To [enable]((https:/go.microsoft.com/fwlink/?LinkID=135170)) and run the script:
+   1. Start PowerShell with the `Run as administrator` option.
+   2.   Run the PowerShell command:
 
-    a. Start PowerShell with the `Run as administrator` option.
+        ``` Set-ExecutionPolicy -ExecutionPolicy Unrestricted ```
 
-    b. Run the PowerShell command:
+   3. Agree to the change
+   4. From the root dir, run the following command:
 
-    ```shell
-    Set-ExecutionPolicy -ExecutionPolicy Unrestricted
-    ```
+        ```.\Source\Microsoft.Gateway\download_dcmtk.ps1```
 
-    and agree to the change.
+   5. If you get an error similar to the following: `Invoke-WebRequest : The remote server returned an error: (404) Not Found.` then it's highly likely the Dicom3tools link is outdated. You'll need to navigate to [dclunie.com](https://www.dclunie.com/), locate [the latest work-in-progress copy of the windows dicom3tools](https://www.dclunie.com/dicom3tools/workinprogress/winexe/index.html) (this link should be correct), copy the download link of the latest `.zip` file displayed, and replace the URL in line 5 of the [`download_dcmtk.ps1`](./Source/Microsoft.Gateway/download_dcmtk.ps1) script before running again (you may need to remove files downloaded on the failed run first).
+3. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
 
-    The tools downloaded are: [DCMTK - DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)
-
-1. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
 
 ## License Keys
 
@@ -1408,6 +1408,7 @@ For example:
 ```
 
 Where the `Function` and `Index` are as above, except that the constraint test is applied to a DICOM tag TimeOfDay property.
+
 
 ## Licensing
 
