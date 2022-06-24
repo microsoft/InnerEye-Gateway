@@ -4,7 +4,7 @@
   },
   "ProcessorSettings": {
     "LicenseKeyEnvVar": "INNEREYE_INFERENCE_DEV_KEY",
-    "InferenceUri": "https://innereyeinferencedev.azurewebsites.net"
+    "InferenceUri": "https://test-uhb-inference-peter.azurewebsites.net"
   },
   "DequeueServiceConfig": {
     "MaximumQueueMessageAgeSeconds": 100.0,

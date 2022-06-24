@@ -59,7 +59,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             new DicomTagAnonymisation(DicomTag.ImageType, AnonymisationMethod.Keep),
 
             // UIDs
-            new DicomTagAnonymisation(DicomTag.PatientID, AnonymisationMethod.Hash),
+            // new DicomTagAnonymisation(DicomTag.PatientID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.SeriesInstanceUID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.StudyInstanceUID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.SOPInstanceUID, AnonymisationMethod.Hash),
@@ -68,6 +68,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             // RT
             // RT DicomFrameOfReference
             new DicomTagAnonymisation(DicomTag.FrameOfReferenceUID, AnonymisationMethod.Hash),
+            new DicomTagAnonymisation(DicomTag.PositionReferenceIndicator, AnonymisationMethod.Keep),
             new DicomTagAnonymisation(DicomTag.RTReferencedStudySequence, AnonymisationMethod.Keep),
 
             // RT DicomRTContour

@@ -97,6 +97,9 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.PatientBirthDate), dicomFile.Dataset.GetSingleValue<string>(DicomTag.PatientBirthDate));
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyInstanceUID));
                     Assert.AreEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.StudyID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.StudyID));
+                    //Assert.AreNotEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.FrameOfReferenceUID), dicomFile.Dataset.GetSingleValue<string>(DicomTag.FrameOfReferenceUID));
+                    //Assert.AreNotEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.FrameOfReferenceUID), "String");
+                    //Assert.AreNotEqual(originalSlice.Dataset.GetSingleValue<string>(DicomTag.PositionReferenceIndicator), "String");
 
                     Assert.IsTrue(dicomFile.Dataset.GetString(DicomTag.SoftwareVersions).StartsWith("Microsoft InnerEye Gateway:", StringComparison.Ordinal));
                     Assert.IsTrue(dicomFile.Dataset.GetValue<string>(DicomTag.SoftwareVersions, 1).StartsWith("InnerEye AI Model:", StringComparison.Ordinal));
@@ -284,7 +287,9 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                     .Replace("Error - Bad Sequence number of Items 0 (1-n Required by Module definition) Element=<ContourSequence> Module=<ROIContour>", string.Empty)
                     .Replace("Error - Bad attribute Value Multiplicity Type 3 Optional Element=<ContourSequence> Module=<ROIContour>", string.Empty)
                     .ToUpperInvariant();
-
+                System.Console.WriteLine("### Peter Dumping Log here");
+                System.Console.WriteLine(output);
+                System.Console.WriteLine("### End of log dump");
                 Assert.IsFalse(output.Contains("ERROR"));
             }
         }
@@ -311,6 +316,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                 DicomTag.ImagePositionPatient,
                 DicomTag.ImageOrientationPatient,
                 DicomTag.FrameOfReferenceUID,
+                DicomTag.PositionReferenceIndicator,
                 DicomTag.SliceLocation,
                 DicomTag.SamplesPerPixel,
                 DicomTag.PhotometricInterpretation,
@@ -341,7 +347,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 
             var tagsInDataset = dicomFile.Dataset.Select(x => x.Tag).ToList();
 
-            Assert.IsTrue(tagsInDataset.Count <= 29);
+            Assert.IsTrue(tagsInDataset.Count <= 30);
 
             foreach (var item in tagsInDataset)
             {
