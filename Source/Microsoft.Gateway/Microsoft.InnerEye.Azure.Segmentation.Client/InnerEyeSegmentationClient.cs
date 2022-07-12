@@ -59,7 +59,6 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             new DicomTagAnonymisation(DicomTag.ImageType, AnonymisationMethod.Keep),
 
             // UIDs
-            new DicomTagAnonymisation(DicomTag.PatientID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.SeriesInstanceUID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.StudyInstanceUID, AnonymisationMethod.Hash),
             new DicomTagAnonymisation(DicomTag.SOPInstanceUID, AnonymisationMethod.Hash),
