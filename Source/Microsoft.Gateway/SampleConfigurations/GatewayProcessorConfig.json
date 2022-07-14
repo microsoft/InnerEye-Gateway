@@ -3,8 +3,8 @@
     "RunAsConsole": true
   },
   "ProcessorSettings": {
-    "LicenseKeyEnvVar": "INNEREYE_INFERENCE_PRD_KEY",
-    "InferenceUri": "https://innereyeinferenceprd.azurewebsites.net"
+    "LicenseKeyEnvVar": "INNEREYE_INFERENCE_DEV_KEY",
+    "InferenceUri": "https://innereyeinferencedev.azurewebsites.net"
   },
   "DequeueServiceConfig": {
     "MaximumQueueMessageAgeSeconds": 100.0,
