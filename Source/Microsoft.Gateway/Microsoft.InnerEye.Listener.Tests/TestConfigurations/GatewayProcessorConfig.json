@@ -19,221 +19,202 @@
     "ApplyConfigDateTime": "2020-05-31T20:14:51",
     "ConfigurationRefreshDelaySeconds": 60.0
   },
-  "DicomTagsAnonymisationConfig": [
-    // Geometry Tags
-    {
-      "DicomTagID": "PatientPosition",
-      "AnonymisationMethod": "Keep"
-    },
-    {
 
-      "DicomTagID": "Columns",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "Rows",
-      "AnonymisationMethod": "Keep"
-    },
-    {
+  "AnonymisationSettings": {
+    "DicomTagsAnonymisationConfig": [
+      {
+        "DicomTagID": "PatientPosition",
+        "AnonymisationMethod": "Keep"
+      },
+      {
 
-      "DicomTagID": "PixelSpacing",
-      "AnonymisationMethod": "Keep"
-    },
-    {
+        "DicomTagID": "Columns",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "Rows",
+        "AnonymisationMethod": "Keep"
+      },
+      {
 
-      "DicomTagID": "ImagePositionPatient",
-      "AnonymisationMethod": "Keep"
-    },
-    {
+        "DicomTagID": "PixelSpacing",
+        "AnonymisationMethod": "Keep"
+      },
+      {
 
-      "DicomTagID": "ImageOrientationPatient",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "SliceLocation",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "BodyPartExamined",
-      "AnonymisationMethod": "Keep"
-    },
+        "DicomTagID": "ImagePositionPatient",
+        "AnonymisationMethod": "Keep"
+      },
+      {
 
-    // Modality Tags
-    {
-      "DicomTagID": "Modality",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ModalityLUTSequence",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "HighBit",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "BitsStored",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "BitsAllocated",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "SamplesPerPixel",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "PixelData",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "PhotometricInterpretation",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "PixelRepresentation",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "RescaleIntercept",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "RescaleSlope",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ImageType",
-      "AnonymisationMethod": "Keep"
-    },
+        "DicomTagID": "ImageOrientationPatient",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SliceLocation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BodyPartExamined",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "Modality",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ModalityLUTSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "HighBit",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BitsStored",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BitsAllocated",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SamplesPerPixel",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PixelData",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PhotometricInterpretation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PixelRepresentation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RescaleIntercept",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RescaleSlope",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ImageType",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SeriesInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "StudyInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "SOPInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "SOPClassUID",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "FrameOfReferenceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "RTReferencedStudySequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedROINumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIDisplayColor",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIContourSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedSOPClassUID",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedSOPInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "NumberOfContourPoints",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourData",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourGeometricType",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourImageSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RTROIObservationsSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ObservationNumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RTReferencedSeriesSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "StructureSetLabel",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "StructureSetName",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "ReferencedFrameOfReferenceSequence",
+        "AnonymisationMethod": "Keep"
 
-    // UID Tags
-    {
-      "DicomTagID": "SeriesInstanceUID",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "StudyInstanceUID",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "SOPInstanceUID",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "SOPClassUID",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT
-    // RT DicomFrameOfReference
-    {
-      "DicomTagID": "FrameOfReferenceUID",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "RTReferencedStudySequence",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT DicomRTContour Tags
-    {
-      "DicomTagID": "ReferencedROINumber",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ROIDisplayColor",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ContourSequence",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ROIContourSequence",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT DicomRTContourImageItem Tags
-    {
-      "DicomTagID": "ReferencedSOPClassUID",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ReferencedSOPInstanceUID",
-      "AnonymisationMethod": "Hash"
-    },
-
-    // RT DicomRTContourItem Tags
-    {
-      "DicomTagID": "NumberOfContourPoints",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ContourData",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ContourGeometricType",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ContourImageSequence",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT DicomRTObservation Tags
-    {
-      "DicomTagID": "RTROIObservationsSequence",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ObservationNumber",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT DicomRTReferencedStudy Tags
-    {
-      "DicomTagID": "RTReferencedSeriesSequence",
-      "AnonymisationMethod": "Keep"
-    },
-
-    // RT DicomRTStructureSet Tags
-    {
-      "DicomTagID": "StructureSetLabel",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "StructureSetName",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "ReferencedFrameOfReferenceSequence",
-      "AnonymisationMethod": "Keep"
-
-    },
-
-    // RT DicomRTStructureSetROI Tags
-    {
-      "DicomTagID": "ROINumber",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ROIName",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "ReferencedFrameOfReferenceUID",
-      "AnonymisationMethod": "Hash"
-    },
-    {
-      "DicomTagID": "ROIGenerationAlgorithm",
-      "AnonymisationMethod": "Keep"
-    },
-    {
-      "DicomTagID": "StructureSetROISequence",
-      "AnonymisationMethod": "Keep"
-    },
-  ]
+      },
+      {
+        "DicomTagID": "ROINumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIName",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedFrameOfReferenceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "ROIGenerationAlgorithm",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "StructureSetROISequence",
+        "AnonymisationMethod": "Keep"
+      }
+    ]
+  }
 }
