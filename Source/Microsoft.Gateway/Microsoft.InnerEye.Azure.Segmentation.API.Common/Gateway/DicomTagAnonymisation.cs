@@ -17,25 +17,27 @@ namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
     /// </summary>
     public class DicomTagAnonymisation
     {
-
-        private readonly DicomTag _dicomTagID;
-        private readonly AnonymisationMethod _anonymisationProtocol;
         /// <summary>
         /// Initializes a new instance of the <see cref="DicomTagAnonymisation"/> class.
         /// </summary>
-        /// <param name="dicomTagID">The dicom tag name.</param>
+        /// <param name="dicomTag">The dicom tag.</param>
         /// <param name="anonymisationProtocol">The anonymisation protocol.</param>
-        public DicomTagAnonymisation(DicomTag dicomTagID, AnonymisationMethod anonymisationProtocol)
+        public DicomTagAnonymisation(DicomTag dicomTag, AnonymisationMethod anonymisationProtocol)
+            : this(new DicomTagIndex(dicomTag), anonymisationProtocol)
         {
-            _dicomTagID = dicomTagID;
-            _anonymisationProtocol = anonymisationProtocol;
         }
 
         /// <summary>
-        /// Gets the name of the DICOM tag.
-        /// </summary
-        [Required]
-        public DicomTag DicomTagID => _dicomTagID;
+        /// Initializes a new instance of the <see cref="DicomTagAnonymisation"/> class.
+        /// </summary>
+        /// <param name="dicomTagIndex">The serializable Dicom tag.</param>
+        /// <param name="anonymisationProtocol">The anonymisation protocol.</param>
+        [JsonConstructor]
+        public DicomTagAnonymisation(DicomTagIndex dicomTagIndex, AnonymisationMethod anonymisationProtocol)
+        {
+            DicomTagIndex = dicomTagIndex;
+            AnonymisationProtocol = anonymisationProtocol;
+        }
 
         /// <summary>
         /// Gets the serializable dicom tag index.
@@ -43,8 +45,8 @@ namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
         /// <value>
         /// The serializable dicom tag index.
         /// </value>
-        [JsonIgnore]
-        public DicomTagIndex DicomTagIndex => new DicomTagIndex(_dicomTagID);
+        [Required]
+        public DicomTagIndex DicomTagIndex { get; }
 
         /// <summary>
         /// Gets the anonymisation protocol that should be used for this DICOM tag.
@@ -54,6 +56,6 @@ namespace Microsoft.InnerEye.Azure.Segmentation.API.Common
         /// </value>
         [Required]
         [JsonConverter(typeof(StringEnumConverter))]
-        public AnonymisationMethod AnonymisationProtocol => _anonymisationProtocol;
+        public AnonymisationMethod AnonymisationProtocol { get; }
     }
 }

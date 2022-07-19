@@ -56,7 +56,7 @@ namespace Microsoft.InnerEye.Gateway.Models
                     if (string.Equals(field.Name, dicomTagConfig["DicomTagID"], StringComparison.Ordinal))
                     {
                         parsedDicomTags.Add(new DicomTagAnonymisation(
-                          dicomTagID: (DicomTag)field.GetValue(null),
+                          dicomTag: (DicomTag)field.GetValue(null),
                           anonymisationProtocol: anonMethod)
                         );
                         break;

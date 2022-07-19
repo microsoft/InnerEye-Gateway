@@ -37,7 +37,6 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                 Converters = new[] { new StringEnumConverter() },
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             };
 
             var path = Path.Combine(folder, filename);
@@ -141,15 +140,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 
         public static AnonymisationSettings MockAnonymisationSettings()
         {
-            var mockTagConfig = new Dictionary<string, string>
-            {
-                { "DicomTagID", "Columns" },
-                { "AnonymisationMethod", "Hash" }
-            };
-            var mockTagSettings = new Dictionary<string, string>[]
-            {
-                mockTagConfig
-            };
+            var mockTagSettings = Array.Empty<Dictionary<string, string>>();
 
             return new AnonymisationSettings(mockTagSettings);
         }
