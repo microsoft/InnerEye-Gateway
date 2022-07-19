@@ -74,9 +74,9 @@ To get started with setting up this project you will need the following pre-requ
 
 1. Wix Toolset for building the installer [Download WixToolset](https://wixtoolset.org/releases/)
 
-2. Ensure you have run the [`download_dcmtk.ps1`](./Source/Microsoft.Gateway/download_dcmtk.ps1) PowerShell script to download two DICOM tools ([DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)) required for testing the gateway. Note that these tools are only required for testing but the test projects and therefore the gateway will not build without them. To [enable]((https:/go.microsoft.com/fwlink/?LinkID=135170)) and run the script:
+1. Ensure you have run the [`download_dcmtk.ps1`](./Source/Microsoft.Gateway/download_dcmtk.ps1) PowerShell script to download two DICOM tools ([DICOM Toolkit](https://dcmtk.org/dcmtk.php.en) and [Dicom3tools](https://www.dclunie.com/dicom3tools.html)) required for testing the gateway. Note that these tools are only required for testing but the test projects and therefore the gateway will not build without them. To [enable]((https:/go.microsoft.com/fwlink/?LinkID=135170)) and run the script:
    1. Start PowerShell with the `Run as administrator` option.
-   2.   Run the PowerShell command:
+   2. Run the PowerShell command:
 
         ``` Set-ExecutionPolicy -ExecutionPolicy Unrestricted ```
 
@@ -86,8 +86,7 @@ To get started with setting up this project you will need the following pre-requ
         ```.\Source\Microsoft.Gateway\download_dcmtk.ps1```
 
    5. If you get an error similar to the following: `Invoke-WebRequest : The remote server returned an error: (404) Not Found.` then it's highly likely the Dicom3tools link is outdated. You'll need to navigate to [dclunie.com](https://www.dclunie.com/), locate [the latest work-in-progress copy of the windows dicom3tools](https://www.dclunie.com/dicom3tools/workinprogress/winexe/index.html) (this link should be correct), copy the download link of the latest `.zip` file displayed, and replace the URL in line 5 of the [`download_dcmtk.ps1`](./Source/Microsoft.Gateway/download_dcmtk.ps1) script before running again (you may need to remove files downloaded on the failed run first).
-3. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
-
+1. InnerEye-Inference service from [https://github.com/microsoft/InnerEye-Inference](https://github.com/microsoft/InnerEye-Inference) running as a web service, using, for example [Azure Web Services](https://azure.microsoft.com/en-gb/services/app-service/web/). Note the URI that the service has been deployed to and the license key stored in the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` on the InnerEye-Inference deployment, they are needed as explained below.
 
 ## License Keys
 
@@ -203,17 +202,18 @@ $Port = 104
 
 if (-not(Test-Path $ReceiveFolder))
 {
-	New-Item $ReceiveFolder -ItemType Directory
+  New-Item $ReceiveFolder -ItemType Directory
 }
 
 & ".\dcmtk-3.6.5-win64-dynamic\bin\storescp.exe" `
-	--log-level trace                 <# log level #> `
-	--aetitle $AETitle                <# set my AE title #> `
-	--output-directory $ReceiveFolder <# write received objects to existing directory TestReceived #> `
-	$Port                             <# port #>
+  --log-level trace                 <# log level #> `
+  --aetitle $AETitle                <# set my AE title #> `
+  --output-directory $ReceiveFolder <# write received objects to existing directory TestReceived #> `
+  $Port                             <# port #>
 ```
 
 Here:
+
   1. `$ReceiveFolder` is a folder that will be used to store the returned segmented DICOM images (the sample script creates it if it does not already exist).
   1. `$AETitle` is the Application Entity Title for this application. In principle it should match the `Title` set in the `Destination` part of the `target ae model`, but in practice this is not validated.
   1. `$Port` is the port that this application will listen on. It must match the `Port` set in the `Destination` part of the `target ae model`.
@@ -229,17 +229,18 @@ $Port = 111
 $SendFolder = "..\..\Images\HN\"
 
 & ".\dcmtk-3.6.5-win64-dynamic\bin\storescu.exe" `
-	--log-level trace                      <# log level #> `
-	--scan-directories                     <# scan directories for input files #> `
-	--scan-pattern "*.dcm"                 <# pattern for filename matching (wildcards) #> `
-	--aetitle $AETitle                     <# set my calling AE title #> `
-	--call $Call                           <# set called AE title of peer #> `
-	127.0.0.1                              <# peer #> `
-	$Port                                  <# port #> `
-	$SendFolder                           <# dcmfile-in #>
+  --log-level trace                      <# log level #> `
+  --scan-directories                     <# scan directories for input files #> `
+  --scan-pattern "*.dcm"                 <# pattern for filename matching (wildcards) #> `
+  --aetitle $AETitle                     <# set my calling AE title #> `
+  --call $Call                           <# set called AE title of peer #> `
+  127.0.0.1                              <# peer #> `
+  $Port                                  <# port #> `
+  $SendFolder                           <# dcmfile-in #>
 ```
 
 Here:
+
   1. `$AETitle` is the calling Application Entity Title for this application. It should match the `CallingAET` set in the `target ae model`.
   1. `$Call` is the called Application Entity Title. It should match the `CalledAET` set in the `target ae model`.
   1. `$Port` is the port that the gateway is listening on, as configured in `GatewayReceiveConfig.json` in the `ReceiveServiceConfig.GatewayDicomEndPoint.Port` parameter.
@@ -277,7 +278,8 @@ Note that the installer will include the configuration files in the folder [./So
 
 By default the installer will put the files in the folder: `C:\Program Files\Microsoft InnerEye Gateway`, with the following folder structure (with the default GatewayModelRulesConfig):
 
-```
+```shell
+
 ├── Config
 │   ├── GatewayModelRulesConfig
 │   │   ├── GatewayModelRulesConfigPassThrough1.json
@@ -399,141 +401,39 @@ This service watches the **Delete** message queue for messages from the other se
 
 ## Anonymisation
 
-The InnerEye Gateway allows users to define a set of identifiers that will be removed before being sent to the InnerEye-Inference web service. The set of identifier tags for removal are user-defined in InnerEyeSegmentationClient.cs(/Source/Microsoft.Gateway/Microsoft.InnerEye.Azure.Segmentation.Client/InnerEyeSegmentationClient.cs). The Gateway service processes and de-identifies the DICOM files using the procedure below.
+The InnerEye Gateway allows users to define a set of DICOM tags that will be sent to the InnerEye-Inference web service. These tags are user-defined in `GatewayProcessorConfig.json`, under `"AnonymisationSettings"`. Only tags specified in this configuration file are sent to the inference service.
 
 The process for handling DICOM files is:
 
 1. The [Receiver Application](#receiver-application) saves the incoming DICOM files directly to a subfolder of RootDicomFolder and passes a message to the [Upload Service](#upload-service).
 
-1. The [Upload Service](#upload-service) loads the DICOM files and makes a copy of each file in memory (discarding the image data), as `reference images` for de-anonymisation later. The following tags are kept, along with the tags mentioned below:
+2. The [Upload Service](#upload-service) loads the DICOM files and makes a copy of each file in memory (discarding the image data) to use as reference images for de-anonymisation later. The following tags are always kept, as well as any additional tags specified in `GatewayProcessorConfig.json`:
 
-```c#
-// Patient module
-PatientID,
-PatientName,
-PatientBirthDate,
-PatientSex,
+      ```c#
+      // Patient module
+      PatientID,
+      PatientName,
+      PatientBirthDate,
+      PatientSex,
 
-// Study module
-StudyDate,
-StudyTime,
-ReferringPhysicianName,
-StudyID,
-AccessionNumber,
-StudyDescription
-```
+      // Study module
+      StudyDate,
+      StudyTime,
+      ReferringPhysicianName,
+      StudyID,
+      AccessionNumber,
+      StudyDescription
+      ```
 
 3. The [Upload Service](#upload-service) loads the DICOM files again and makes a second copy of each file in memory, performing the following transformations to the DICOM tags:
 
-a. The following tags are kept unchanged:
+   1. Tags specified in `GatewayProcessorConfig.json` are kept and transformed according to their specified anonymisation method (i.e "Keep", "Hash" or "Random").
 
-```c#
-// Geometry
-PatientPosition,
-Columns,
-Rows,
-PixelSpacing,
-ImagePositionPatient,
-ImageOrientationPatient,
-SliceLocation,
-BodyPartExamined,
+   2. All other tags are discarded.
 
-// Modality
-Modality,
-ModalityLUTSequence,
-HighBit,
-BitsStored,
-BitsAllocated,
-SamplesPerPixel,
-PixelData,
-PhotometricInterpretation,
-PixelRepresentation,
-RescaleIntercept,
-RescaleSlope,
-ImageType,
+   3. The transformed, anonymised DICOM files are then zipped before sending to the InnerEye-Inference web service.
 
-// UIDs
-SOPClassUID,
-
-// RT
-// RT DicomFrameOfReference
-RTReferencedStudySequence,
-
-// RT DicomRTContour
-ReferencedROINumber,
-ROIDisplayColor,
-ContourSequence,
-ROIContourSequence,
-
-// RT DicomRTContourImageItem
-ReferencedSOPClassUID,
-
-// RT DicomRTContourItem
-NumberOfContourPoints,
-ContourData,
-ContourGeometricType,
-ContourImageSequence,
-
-// RT DicomRTObservation
-RTROIObservationsSequence,
-ObservationNumber,
-
-// RT DicomRTReferencedStudy
-RTReferencedSeriesSequence,
-
-// RT DicomRTStructureSet
-ReferencedFrameOfReferenceSequence,
-
-// RT DicomRTStructureSetROI
-ROINumber,
-ROIName,
-ROIGenerationAlgorithm,
-StructureSetROISequence,
-```
-
-b. The following DICOM tags are replaced with a hash of their value:
-
-```C#
-// UIDs
-PatientID,
-SeriesInstanceUID,
-StudyInstanceUID,
-SOPInstanceUID,
-
-// RT
-// RT DicomFrameOfReference
-FrameOfReferenceUID,
-
-// RT DicomRTContourImageItem
-ReferencedSOPInstanceUID,
-
-// RT DicomRTStructureSet
-StructureSetLabel,
-StructureSetName,
-
-// RT DicomRTStructureSetROI
-ReferencedFrameOfReferenceUID
-```
-
-c. All other tags are discarded.
-
-d. The transformed DICOM image files are then zipped before sending to the InnerEye-Inference web service.
-
-4. After the [Download Service](#download-service) downloads the DICOM-RT file it performs the following de-anonymisation transformations to the DICOM-RT file:
-
-a. The first set of tags 
-
-```c#
-PatientID,
-...
-StudyDescription
-```
-
-are copied from the first `reference image`.
-
-b. All the tags that have been hashed are replaced with tags from the `reference images`.
-
-c. Model configured tag transformations are applied, to either replace a tag entirely or append some fixed text.
+4. Upon completion of the inference run, the [Download Service](#download-service) downloads the DICOM-RT file and de-anonymises the segmented images by replacing their hashed, randomised and discarded tags with those saved in the reference image. 
 
 ## Configuration
 
@@ -610,6 +510,14 @@ The structure of this configuration file is:
     "ConfigCreationDateTime": date/time,
     "ApplyConfigDateTime": date/time,
     "ConfigurationRefreshDelaySeconds": number
+  },
+  "AnonymisationSettings": {
+    "DicomTagsAnonymisationConfig": [
+      {
+        "DicomTagID": string,
+        "AnonymisationMethod": string,
+      }
+    ]
   }
 }
 ```
@@ -637,6 +545,203 @@ For example:
     "ConfigCreationDateTime": "2020-05-31T20:14:51",
     "ApplyConfigDateTime": "2020-05-31T20:14:51",
     "ConfigurationRefreshDelaySeconds": 60
+  },
+  "AnonymisationSettings": {
+    "DicomTagsAnonymisationConfig": [
+      {
+        "DicomTagID": "PatientPosition",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+
+        "DicomTagID": "Columns",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "Rows",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+
+        "DicomTagID": "PixelSpacing",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+
+        "DicomTagID": "ImagePositionPatient",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+
+        "DicomTagID": "ImageOrientationPatient",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SliceLocation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BodyPartExamined",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "Modality",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ModalityLUTSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "HighBit",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BitsStored",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "BitsAllocated",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SamplesPerPixel",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PixelData",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PhotometricInterpretation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "PixelRepresentation",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RescaleIntercept",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RescaleSlope",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ImageType",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "SeriesInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "StudyInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "SOPInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "SOPClassUID",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "FrameOfReferenceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "RTReferencedStudySequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedROINumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIDisplayColor",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIContourSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedSOPClassUID",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedSOPInstanceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "NumberOfContourPoints",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourData",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourGeometricType",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ContourImageSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RTROIObservationsSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ObservationNumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "RTReferencedSeriesSequence",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "StructureSetLabel",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "StructureSetName",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "ReferencedFrameOfReferenceSequence",
+        "AnonymisationMethod": "Keep"
+
+      },
+      {
+        "DicomTagID": "ROINumber",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ROIName",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "ReferencedFrameOfReferenceUID",
+        "AnonymisationMethod": "Hash"
+      },
+      {
+        "DicomTagID": "ROIGenerationAlgorithm",
+        "AnonymisationMethod": "Keep"
+      },
+      {
+        "DicomTagID": "StructureSetROISequence",
+        "AnonymisationMethod": "Keep"
+      }
+    ]
   }
 }
 ```
@@ -656,6 +761,10 @@ Where:
 - `DownloadRetryTimespanInSeconds` is the delay in seconds between attempts to download the completed segmentation from the InnerEye-Inference service.
 
 - `DownloadWaitTimeoutInSeconds` is the maximum time in seconds to wait whilst attempting to download the completed segmentation.
+
+- `AnonymisationSettings: DicomTagAnonymisationConfig` is a list of DICOM tags that will be sent to the inference service, along with the anonymisation method used for each one. "Keep" means that the tag is sent unaltered to this inference service, "Hash" means that the value is hashed first and "Random" replaces the value with a random data time (we do not recommend using this option currently). When altering this setting, please note the following:
+  - Certain tags are needed by the inference service in order to complete the forward pass on the trained model successfully. We do not recommend editing the default settings unless you are sure what you are doing. If in doubt, please open a discussion topic in this repo to ask any questions you may have.
+  - **Any tags not included in this list will *not* be sent to the inference service**
 
 ### Receiver Configuration
 
@@ -733,14 +842,14 @@ Where:
 
 - `AcceptedSopClassesAndTransferSyntaxesUIDs` is a dictionary of [DICOM Service-Object Pair (SOP) Classes](http://dicom.nema.org/dicom/2013/output/chtml/part06/chapter_A.html) and [Transfer Syntax UIDs](http://dicom.nema.org/dicom/2013/output/chtml/part05/chapter_10.html) that the application supports.
     Here:
-    - "1.2.840.10008.1.1" is the Verification SOP Class
-    - "1.2.840.10008.5.1.4.1.1.481.3" is Radiation Therapy Structure Set Storage.
-    - "1.2.840.10008.5.1.4.1.1.2" is CT Image Storage
-    - "1.2.840.10008.5.1.4.1.1.4" is MR Image Storage
+  - "1.2.840.10008.1.1" is the Verification SOP Class
+  - "1.2.840.10008.5.1.4.1.1.481.3" is Radiation Therapy Structure Set Storage.
+  - "1.2.840.10008.5.1.4.1.1.2" is CT Image Storage
+  - "1.2.840.10008.5.1.4.1.1.4" is MR Image Storage
 
-    For each of these SOPs there is a list of supported Transfer Syntax UIDs. For example:
-    - "1.2.840.10008.1.2" is Implicit VR Endian: Default Transfer Syntax for DICOM.
-    - "1.2.840.10008.1.2.4.57" is a type of JPEG.
+- For each of these SOPs there is a list of supported Transfer Syntax UIDs. For example:
+  - "1.2.840.10008.1.2" is Implicit VR Endian: Default Transfer Syntax for DICOM.
+  - "1.2.840.10008.1.2.4.57" is a type of JPEG.
 
 ### Model Configuration
 
@@ -883,21 +992,21 @@ Where:
 
 - `AETConfig` consists of three parts:
 
-    - `Config` consists of the pair:
+  - `Config` consists of the pair:
 
-        - `AETConfigType` is one of "Model", "ModelDryRun", or "ModelWithResultDryRun". "Model" is the normal case, the other two are for debugging. "ModelDryRun" means that the received DICOM image files will be de-identified by removing a user-defined set of identifiers and saved to the DryRunModelAnonymizedImage subfolder of RootDicomFolder. "ModelWithResultDryRun" means almost the same as "Model" except that the DICOM-RT file is downloaded to the DryRunRTResultDeAnonymized subfolder of RootDicomFolder and it is not pushed to a DICOM destination.
+    - `AETConfigType` is one of "Model", "ModelDryRun", or "ModelWithResultDryRun". "Model" is the normal case, the other two are for debugging. "ModelDryRun" means that the received DICOM image files will be de-identified by removing a user-defined set of identifiers and saved to the DryRunModelAnonymizedImage subfolder of RootDicomFolder. "ModelWithResultDryRun" means almost the same as "Model" except that the DICOM-RT file is downloaded to the DryRunRTResultDeAnonymized subfolder of RootDicomFolder and it is not pushed to a DICOM destination.
 
-        - `ModelsConfig` is an array of [ModelsConfig](#modelsconfig) objects, described below.
+    - `ModelsConfig` is an array of [ModelsConfig](#modelsconfig) objects, described below.
 
-    - `Destination` is where to send the resulting DICOM-RT file, consisting of:
+  - `Destination` is where to send the resulting DICOM-RT file, consisting of:
 
-        - `Title` is the destination application entity title,
+    - `Title` is the destination application entity title,
 
-        - `Port` is the destination application entity port,
+    - `Port` is the destination application entity port,
 
-        - `Ip` is the destination IP addres.
+    - `Ip` is the destination IP addres.
 
-    - `ShouldReturnImage` is true if the original received DICOM image files should be returned when InnerEye-Inference service is complete, false otherwise.
+  - `ShouldReturnImage` is true if the original received DICOM image files should be returned when InnerEye-Inference service is complete, false otherwise.
 
 #### ModelsConfig
 
@@ -1025,17 +1134,17 @@ Where:
 
 - `ChannelConstraints` is an array of [ChannelConstraint](#channelconstraint) that are applied to the received DICOM image files. The algorithm here is that:
 
-    - The image files are first grouped by Study Instance UID (which must exist), and then grouped by Series Instance UID (which must also exist)
+  - The image files are first grouped by Study Instance UID (which must exist), and then grouped by Series Instance UID (which must also exist)
 
-    - For each group of shared Study and Series Instance UIDs: the channel constraints for each `ModelsConfig` are applied in order to the image group. If there is a match then the matching ModelsConfig and image group are then used. The [channel constraints](#channelconstraints) are explained below.
+  - For each group of shared Study and Series Instance UIDs: the channel constraints for each `ModelsConfig` are applied in order to the image group. If there is a match then the matching ModelsConfig and image group are then used. The [channel constraints](#channelconstraints) are explained below.
 
 - `TagReplacements` is a list of DICOM tag replacements that are performed for DICOM-RT file de-anonymisation. The algorithm here is during de-anonymisation to work through all the `TagReplacements`:
 
-    - If the file contains the tag as specified in `DicomTagIndex`:
+  - If the file contains the tag as specified in `DicomTagIndex`:
 
-        - If the `Operation` is "UpdateIfExists" then replace the existing tag with `Value`;
+    - If the `Operation` is "UpdateIfExists" then replace the existing tag with `Value`;
 
-        - If the `Operation` is "AppendIfExists" then append `Value` to the existing tag.
+    - If the `Operation` is "AppendIfExists" then append `Value` to the existing tag.
 
 #### ChannelConstraint
 
@@ -1114,7 +1223,7 @@ This constraint acts as a container for a tag constraint and a requirement on th
 
 ```json
 {
-  "RequirementLevel": string, one of "PresentNotEmpty", "PresentCanBeEmpty", or "Optional", 
+  "RequirementLevel": string, one of "PresentNotEmpty", "PresentCanBeEmpty", or "Optional",
   "Constraint": a dicom tag constraint object,
   "discriminator": "RequiredTagConstraint"
 }
@@ -1148,11 +1257,11 @@ Where:
 
 - `RequirementLevel` means:
 
-    - "PresentNotEmpty" - the tag must be present and the conditions on the tag must pass.
+  - "PresentNotEmpty" - the tag must be present and the conditions on the tag must pass.
 
-    - "PresentCanBeEmpty" - the tag must be present and the conditions must pass when the tag is non-empty.
+  - "PresentCanBeEmpty" - the tag must be present and the conditions must pass when the tag is non-empty.
 
-    - "Optional" - the tag does not need to be present but the condition must pass if the tag is present and non-empty.
+  - "Optional" - the tag does not need to be present but the condition must pass if the tag is present and non-empty.
 
 - `Constraint` is any [DicomTagConstraint](#dicomtagconstraint).
 
@@ -1317,11 +1426,11 @@ Where:
 
 - `Function` is the ordering function to apply to the DICOM tag.
 
-    - `Order` is the required relation between the supplied `Value` and the value of the DICOM tag.
+  - `Order` is the required relation between the supplied `Value` and the value of the DICOM tag.
 
-    - `Value` is the value to test the DICOM tag against.
+  - `Value` is the value to test the DICOM tag against.
 
-    - `Ordinal` is the ordinal to extract from the tag or -1 to extract all.
+  - `Ordinal` is the ordinal to extract from the tag or -1 to extract all.
 
 - `Index` is as [DicomTagConstraint](#dicomtagconstraint).
 
@@ -1369,7 +1478,7 @@ For example:
 }
 ```
 
-Where the `Function` and `Index` are as above, except that the constraint test is applied to a DICOM UID tag. 
+Where the `Function` and `Index` are as above, except that the constraint test is applied to a DICOM UID tag.
 
 #### TimeOrderConstraint
 
@@ -1409,7 +1518,6 @@ For example:
 
 Where the `Function` and `Index` are as above, except that the constraint test is applied to a DICOM tag TimeOfDay property.
 
-
 ## Licensing
 
 [MIT License](LICENSE)
@@ -1427,4 +1535,4 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Microsoft Open Source Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) 
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)
