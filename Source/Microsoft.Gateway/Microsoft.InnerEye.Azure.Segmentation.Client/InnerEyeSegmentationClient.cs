@@ -148,7 +148,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
                     TopLevelReplacements,
                     userReplacements,
                     SegmentationAnonymisationProtocolId,
-                    SegmentationAnonymisationProtocol());
+                    GetSegmentationAnonymisationProtocol());
                 return new ModelResult(modelResult.Progress, modelResult.Error, anonymizedDicomFile);
             }
 
@@ -220,7 +220,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             }
 
             // Anonymise data
-            var anonymisedDicomData = channelIdsAndDicomFiles.Select(x => new ChannelData(x.ChannelID, AnonymizeDicomFiles(x.DicomFiles, SegmentationAnonymisationProtocolId, SegmentationAnonymisationProtocol())));
+            var anonymisedDicomData = channelIdsAndDicomFiles.Select(x => new ChannelData(x.ChannelID, AnonymizeDicomFiles(x.DicomFiles, SegmentationAnonymisationProtocolId, GetSegmentationAnonymisationProtocol())));
 
             // Compress anonymised data
             var dataZipped = DicomCompressionHelpers.CompressDicomFiles(
@@ -328,7 +328,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         }
 
         /// <inheritdoc />
-        public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol()
+        public IEnumerable<DicomTagAnonymisation> GetSegmentationAnonymisationProtocol()
         {
             var parsedDicomTags = new List<DicomTagAnonymisation>();
             foreach (var dicomTagConfig in _segmentationAnonymisationProtocol)

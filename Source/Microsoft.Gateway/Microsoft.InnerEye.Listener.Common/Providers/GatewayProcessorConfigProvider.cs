@@ -111,8 +111,8 @@ namespace Microsoft.InnerEye.Listener.Common.Providers
         public Func<IInnerEyeSegmentationClient> CreateInnerEyeSegmentationClient(ILogger logger = null) =>
             () =>
             {
-                /// add call to generate dicom anonymisation protocol here
                 var processorSettings = ProcessorSettings();
+                var anonymisationSettings = AnonymisationSettings();
 
                 var licenseKey = processorSettings.LicenseKey;
 
@@ -124,7 +124,7 @@ namespace Microsoft.InnerEye.Listener.Common.Providers
                     logEntry.Log(logger, LogLevel.Error, new ConfigurationException(message));
                 }
 
-                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);
+                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, anonymisationSettings.DicomTagsAnonymisationConfig, licenseKey);
             };
     }
 }

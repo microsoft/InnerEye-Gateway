@@ -344,11 +344,11 @@ namespace Microsoft.InnerEye.Listener.Tests
             return result;
         }
 
-        protected IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol()
+        protected IEnumerable<DicomTagAnonymisation> GetSegmentationAnonymisationProtocol()
         {
             using (var segmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient().Invoke())
             {
-                return segmentationClient.SegmentationAnonymisationProtocol();
+                return segmentationClient.GetSegmentationAnonymisationProtocol();
             }
         }
 
@@ -631,7 +631,7 @@ namespace Microsoft.InnerEye.Listener.Tests
                     matchedModel.Result.ModelId,
                     matchedModel.Result.ChannelData).ConfigureAwait(false);
 
-                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol().Select(x => x.DicomTagIndex.DicomTag));
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.GetSegmentationAnonymisationProtocol().Select(x => x.DicomTagIndex.DicomTag));
                 return (segmentationId, modelId, referenceDicomFiles);
             }
         }
@@ -651,7 +651,7 @@ namespace Microsoft.InnerEye.Listener.Tests
                     matchedModel.Result.ModelId,
                     matchedModel.Result.ChannelData).ConfigureAwait(false);
 
-                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                var referenceDicomFiles = postedImages.CreateNewDicomFileWithoutPixelData(segmentationClient.GetSegmentationAnonymisationProtocol().Select(x => x.DicomTagIndex.DicomTag));
                 return (segmentationId, modelId, referenceDicomFiles);
             }
         }
