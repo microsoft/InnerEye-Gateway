@@ -35,7 +35,7 @@ namespace Microsoft.InnerEye.Listener.Tests.Models
 
         public bool RealSegmentation { get; set; }
 
-        public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocol;
+        public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocol();
 
         public Guid SegmentationAnonymisationProtocolId => _InnerEyeSegmentationClient.SegmentationAnonymisationProtocolId;
 

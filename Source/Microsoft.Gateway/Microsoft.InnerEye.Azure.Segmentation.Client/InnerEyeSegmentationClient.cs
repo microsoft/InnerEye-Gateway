@@ -32,7 +32,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <summary>
         /// The anonymisation protocol used for any segmentation. If you modify this protocol please update the protocol identifer.
         /// </summary>
-        private readonly IEnumerable<DicomTagAnonymisation> _segmentationAnonymisationProtocol;
+        private readonly IEnumerable<Dictionary<string, string>> _segmentationAnonymisationProtocol;
 
         private readonly HttpClientHandler _httpClientHandler;
         private readonly RetryHandler _retryHandler;
@@ -69,10 +69,11 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <param name="licenseKey">The license key.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
-            IEnumerable<DicomTagAnonymisation> segmentationAnonymisationProtocol,
+            IEnumerable<Dictionary<string, string>> segmenationAnonymisationProtocol,
             string licenseKey)
         {
-            _segmentationAnonymisationProtocol = segmentationAnonymisationProtocol;
+            _segmentationAnonymisationProtocol = segmenationAnonymisationProtocol;
+
             HttpClientHandler httpHandler = null;
             RetryHandler retryHandler = null;
             HttpClient client = null;
@@ -107,9 +108,6 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
 #pragma warning restore CA1508 // Avoid dead conditional code
             }
         }
-
-        /// <inheritdoc />
-        public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol => _segmentationAnonymisationProtocol;
 
         /// <inheritdoc />
         public Guid SegmentationAnonymisationProtocolId => new Guid("f336816b-4de8-4633-9056-fbe0fe007a03");
@@ -150,7 +148,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
                     TopLevelReplacements,
                     userReplacements,
                     SegmentationAnonymisationProtocolId,
-                    SegmentationAnonymisationProtocol);
+                    SegmentationAnonymisationProtocol());
                 return new ModelResult(modelResult.Progress, modelResult.Error, anonymizedDicomFile);
             }
 
@@ -222,7 +220,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             }
 
             // Anonymise data
-            var anonymisedDicomData = channelIdsAndDicomFiles.Select(x => new ChannelData(x.ChannelID, AnonymizeDicomFiles(x.DicomFiles, SegmentationAnonymisationProtocolId, SegmentationAnonymisationProtocol)));
+            var anonymisedDicomData = channelIdsAndDicomFiles.Select(x => new ChannelData(x.ChannelID, AnonymizeDicomFiles(x.DicomFiles, SegmentationAnonymisationProtocolId, SegmentationAnonymisationProtocol())));
 
             // Compress anonymised data
             var dataZipped = DicomCompressionHelpers.CompressDicomFiles(
@@ -328,6 +326,51 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
 
             return anonymisationEngine;
         }
+
+        /// <inheritdoc />
+        public IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol()
+        {
+            var parsedDicomTags = new List<DicomTagAnonymisation>();
+            foreach (var dicomTagConfig in _segmentationAnonymisationProtocol)
+            {
+                AnonymisationMethod anonMethod;
+
+                switch (dicomTagConfig["AnonymisationMethod"])
+                {
+                    case "Keep":
+                        anonMethod = AnonymisationMethod.Keep;
+                        break;
+                    case "Hash":
+                        anonMethod = AnonymisationMethod.Hash;
+                        break;
+                    case "Random":
+                        anonMethod = AnonymisationMethod.RandomiseDateTime;
+                        break;
+                    default:
+                        throw new ArgumentException($"Invalid value for AnonymisationMethod found in Anonymisation config: {dicomTagConfig["AnonymisationMethod"]}. Permitted options are: \"Keep\", \"Hash\" and \"Random\"");
+                }
+
+                var fields = typeof(DicomTag).GetFields();
+                foreach (var field in fields)
+                {
+                    if (string.Equals(field.Name, dicomTagConfig["DicomTagID"], StringComparison.Ordinal))
+                    {
+                        parsedDicomTags.Add(new DicomTagAnonymisation(
+                          dicomTag: (DicomTag)field.GetValue(null),
+                          anonymisationProtocol: anonMethod)
+                        );
+                        break;
+                    }
+                }
+                if (parsedDicomTags.Count == 0)
+                {
+                    throw new ArgumentException($"Unknown DicomTag found in config: {dicomTagConfig["DicomTagID"]}");
+                }
+            }
+
+            return parsedDicomTags;
+        }
+
 
         /// <summary>
         /// Anonymizes a single Dicom file.

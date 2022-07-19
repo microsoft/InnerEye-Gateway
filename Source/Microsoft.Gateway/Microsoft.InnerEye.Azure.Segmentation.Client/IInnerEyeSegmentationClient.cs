@@ -23,7 +23,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <value>
         /// The anonymisation protocol used for the segmentation API.
         /// </value>
-        IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol { get; }
+        IEnumerable<DicomTagAnonymisation> SegmentationAnonymisationProtocol();
 
         /// <summary>
         /// Gets the segmentation anonymisation protocol identifier.

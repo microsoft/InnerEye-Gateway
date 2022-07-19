@@ -238,7 +238,7 @@ namespace Microsoft.InnerEye.Listener.Processor.Services
                     // Anonymize and save the files locally for the dry run using the segmentation anonymisation protocol
                     await AnonymiseAndSaveDicomFilesAsync(
                         anonymisationProtocolId: _innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
-                        anonymisationProtocol: _innerEyeSegmentationClient.SegmentationAnonymisationProtocol,
+                        anonymisationProtocol: _innerEyeSegmentationClient.SegmentationAnonymisationProtocol(),
                         uploadQueueItem: uploadQueueItem,
                         aETConfigType: clientConfiguration.Config.AETConfigType).ConfigureAwait(false);
 

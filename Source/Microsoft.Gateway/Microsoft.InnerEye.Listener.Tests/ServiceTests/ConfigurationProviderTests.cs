@@ -140,7 +140,14 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
 
         public static AnonymisationSettings MockAnonymisationSettings()
         {
-            var mockTagSettings = Array.Empty<Dictionary<string, string>>();
+            var mockDicomTagAnonymisation = new Dictionary<string, string>(){
+                {"DicomTagID", "PixelSpacing"},
+                {"AnonymisationMethod", "Keep"}
+            };
+
+            var mockTagSettings = new Dictionary<string, string>[]{
+                mockDicomTagAnonymisation
+            };
 
             return new AnonymisationSettings(mockTagSettings);
         }
