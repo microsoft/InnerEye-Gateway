@@ -32,78 +32,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <summary>
         /// The anonymisation protocol used for any segmentation. If you modify this protocol please update the protocol identifer.
         /// </summary>
-        private static readonly IEnumerable<DicomTagAnonymisation> _segmentationAnonymisationProtocol = new[]
-        {
-            // Geometry
-            new DicomTagAnonymisation(DicomTag.PatientPosition, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.Columns, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.Rows, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.PixelSpacing, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ImagePositionPatient, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ImageOrientationPatient, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.SliceLocation, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.BodyPartExamined, AnonymisationMethod.Keep),
-
-            // Modality
-            new DicomTagAnonymisation(DicomTag.Modality, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ModalityLUTSequence, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.HighBit, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.BitsStored, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.BitsAllocated, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.SamplesPerPixel, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.PixelData, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.PhotometricInterpretation, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.PixelRepresentation, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.RescaleIntercept, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.RescaleSlope, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ImageType, AnonymisationMethod.Keep),
-
-            // UIDs
-            new DicomTagAnonymisation(DicomTag.SeriesInstanceUID, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.StudyInstanceUID, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.SOPInstanceUID, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.SOPClassUID, AnonymisationMethod.Keep),
-
-            // RT
-            // RT DicomFrameOfReference
-            new DicomTagAnonymisation(DicomTag.FrameOfReferenceUID, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.RTReferencedStudySequence, AnonymisationMethod.Keep),
-
-            // RT DicomRTContour
-            new DicomTagAnonymisation(DicomTag.ReferencedROINumber, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ROIDisplayColor, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ContourSequence, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ROIContourSequence, AnonymisationMethod.Keep),
-
-            // RT DicomRTContourImageItem
-            new DicomTagAnonymisation(DicomTag.ReferencedSOPClassUID, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ReferencedSOPInstanceUID, AnonymisationMethod.Hash),
-
-            // RT DicomRTContourItem
-            new DicomTagAnonymisation(DicomTag.NumberOfContourPoints, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ContourData, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ContourGeometricType, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ContourImageSequence, AnonymisationMethod.Keep),
-
-            // RT DicomRTObservation
-            new DicomTagAnonymisation(DicomTag.RTROIObservationsSequence, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ObservationNumber, AnonymisationMethod.Keep),
-
-            // RT DicomRTReferencedStudy
-            new DicomTagAnonymisation(DicomTag.RTReferencedSeriesSequence, AnonymisationMethod.Keep),
-
-            // RT DicomRTStructureSet
-            new DicomTagAnonymisation(DicomTag.StructureSetLabel, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.StructureSetName, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.ReferencedFrameOfReferenceSequence, AnonymisationMethod.Keep),
-
-                // RT DicomRTStructureSetROI
-            new DicomTagAnonymisation(DicomTag.ROINumber, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ROIName, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.ReferencedFrameOfReferenceUID, AnonymisationMethod.Hash),
-            new DicomTagAnonymisation(DicomTag.ROIGenerationAlgorithm, AnonymisationMethod.Keep),
-            new DicomTagAnonymisation(DicomTag.StructureSetROISequence, AnonymisationMethod.Keep),
-        };
+        private readonly IEnumerable<DicomTagAnonymisation> _segmentationAnonymisationProtocol;
 
         private readonly HttpClientHandler _httpClientHandler;
         private readonly RetryHandler _retryHandler;
@@ -140,8 +69,10 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <param name="licenseKey">The license key.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
+            IEnumerable<DicomTagAnonymisation> segmentationAnonymisationProtocol,
             string licenseKey)
         {
+            _segmentationAnonymisationProtocol = segmentationAnonymisationProtocol;
             HttpClientHandler httpHandler = null;
             RetryHandler retryHandler = null;
             HttpClient client = null;
