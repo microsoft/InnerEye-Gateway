@@ -11,17 +11,17 @@ namespace Microsoft.InnerEye.Gateway.Models
     {
 
         // list of tags and sending protocol to attach to anonymous data
-        private readonly IEnumerable<Dictionary<string, string>> _dicomTagsAnonymisationConfig;
+        private readonly Dictionary<string, IEnumerable<string>> _dicomTagsAnonymisationConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnonymisationSettings"/> class.
         /// </summary>  
-        public AnonymisationSettings(Dictionary<string, string>[] dicomTagsAnonymisationConfig)
+        public AnonymisationSettings(Dictionary<string, IEnumerable<string>> dicomTagsAnonymisationConfig)
         {
             _dicomTagsAnonymisationConfig = dicomTagsAnonymisationConfig ?? throw new ArgumentNullException(nameof(dicomTagsAnonymisationConfig));
         }
 
-        public IEnumerable<Dictionary<string, string>> DicomTagsAnonymisationConfig => _dicomTagsAnonymisationConfig;
+        public Dictionary<string, IEnumerable<string>> DicomTagsAnonymisationConfig => _dicomTagsAnonymisationConfig;
 
         public override bool Equals(object obj)
         {
@@ -29,16 +29,13 @@ namespace Microsoft.InnerEye.Gateway.Models
         }
 
         /// <inheritdoc/>
-        public bool Equals(AnonymisationSettings other)
-        {
-            return other != null;  /// not sure about this! will return equal even if settings aren't the same?
-        }
+        public bool Equals(AnonymisationSettings other) => other != null && DicomTagsAnonymisationConfig.Count == other.DicomTagsAnonymisationConfig.Count;
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
             var hashCode = 1943766103;
-            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<Dictionary<string, string>>>.Default.GetHashCode(DicomTagsAnonymisationConfig);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<string, IEnumerable<string>>>.Default.GetHashCode(DicomTagsAnonymisationConfig);
             return hashCode;
         }
     }

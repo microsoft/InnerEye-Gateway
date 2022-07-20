@@ -32,7 +32,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <summary>
         /// The anonymisation protocol used for any segmentation. If you modify this protocol please update the protocol identifer.
         /// </summary>
-        private readonly IEnumerable<Dictionary<string, string>> _segmentationAnonymisationProtocol;
+        private readonly Dictionary<string, IEnumerable<string>> _segmentationAnonymisationProtocol;
 
         private readonly HttpClientHandler _httpClientHandler;
         private readonly RetryHandler _retryHandler;
@@ -69,7 +69,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <param name="licenseKey">The license key.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
-            IEnumerable<Dictionary<string, string>> segmenationAnonymisationProtocol,
+            Dictionary<string, IEnumerable<string>> segmenationAnonymisationProtocol,
             string licenseKey)
         {
             _segmentationAnonymisationProtocol = segmenationAnonymisationProtocol;
@@ -327,48 +327,57 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             return anonymisationEngine;
         }
 
+        private static DicomTagAnonymisation GetDicomTag(string dicomTagID, string anonymisationMethodKey)
+        {
+            AnonymisationMethod anonMethod;
+#pragma warning disable CA1304 // Specify CultureInfo
+            switch (anonymisationMethodKey.ToUpper())
+#pragma warning restore CA1304 // Specify CultureInfo
+            {
+                case "KEEP":
+                    anonMethod = AnonymisationMethod.Keep;
+                    break;
+                case "HASH":
+                    anonMethod = AnonymisationMethod.Hash;
+                    break;
+                case "RANDOM":
+                    anonMethod = AnonymisationMethod.RandomiseDateTime;
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid value for AnonymisationMethod found in Anonymisation config: {anonymisationMethodKey}. Permitted options are: \"Keep\", \"Hash\" and \"Random\"");
+            }
+
+            var fields = typeof(DicomTag).GetFields();
+            foreach (var field in fields)
+            {
+                if (string.Equals(field.Name, dicomTagID, StringComparison.Ordinal))
+                {
+                    return new DicomTagAnonymisation(
+                      dicomTag: (DicomTag)field.GetValue(null),
+                      anonymisationProtocol: anonMethod
+                     );
+                }
+            }
+            throw new KeyNotFoundException($"Invalid DICOM tag name provided in config: {dicomTagID}");
+        }
+
         /// <inheritdoc />
         public IEnumerable<DicomTagAnonymisation> GetSegmentationAnonymisationProtocol()
         {
             var parsedDicomTags = new List<DicomTagAnonymisation>();
-            foreach (var dicomTagConfig in _segmentationAnonymisationProtocol)
+
+            foreach (var anonymisationList in _segmentationAnonymisationProtocol)
             {
-                AnonymisationMethod anonMethod;
 
-                switch (dicomTagConfig["AnonymisationMethod"])
+                foreach (var dicomTagID in anonymisationList.Value)
                 {
-                    case "Keep":
-                        anonMethod = AnonymisationMethod.Keep;
-                        break;
-                    case "Hash":
-                        anonMethod = AnonymisationMethod.Hash;
-                        break;
-                    case "Random":
-                        anonMethod = AnonymisationMethod.RandomiseDateTime;
-                        break;
-                    default:
-                        throw new ArgumentException($"Invalid value for AnonymisationMethod found in Anonymisation config: {dicomTagConfig["AnonymisationMethod"]}. Permitted options are: \"Keep\", \"Hash\" and \"Random\"");
-                }
-
-                var fields = typeof(DicomTag).GetFields();
-                foreach (var field in fields)
-                {
-                    if (string.Equals(field.Name, dicomTagConfig["DicomTagID"], StringComparison.Ordinal))
-                    {
-                        parsedDicomTags.Add(new DicomTagAnonymisation(
-                          dicomTag: (DicomTag)field.GetValue(null),
-                          anonymisationProtocol: anonMethod)
-                        );
-                        break;
-                    }
-                }
-                if (parsedDicomTags.Count == 0)
-                {
-                    throw new ArgumentException($"Unknown DicomTag found in config: {dicomTagConfig["DicomTagID"]}");
+                    parsedDicomTags.Add(GetDicomTag(dicomTagID, anonymisationList.Key));
                 }
             }
 
-            return parsedDicomTags;
+            return parsedDicomTags.Count != 0
+                ? parsedDicomTags
+                : throw new DicomDataException("No DICOM tags were parsed - please ensure that the GatewayProcessorConfig.json is configured correctly.");
         }
 
 
