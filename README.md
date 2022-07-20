@@ -278,7 +278,7 @@ Note that the installer will include the configuration files in the folder [./So
 
 By default the installer will put the files in the folder: `C:\Program Files\Microsoft InnerEye Gateway`, with the following folder structure (with the default GatewayModelRulesConfig):
 
-```shell
+```text
 
 ├── Config
 │   ├── GatewayModelRulesConfig
