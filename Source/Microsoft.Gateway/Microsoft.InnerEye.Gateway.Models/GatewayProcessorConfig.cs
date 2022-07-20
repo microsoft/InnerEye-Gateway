@@ -21,6 +21,12 @@ namespace Microsoft.InnerEye.Gateway.Models
         /// </summary>
         public ProcessorSettings ProcessorSettings { get; }
 
+
+        /// <summary>
+        /// Configuration for the DICOM Deanonymisation.
+        /// </summary>
+        public AnonymisationSettings AnonymisationSettings { get; }
+
         /// <summary>
         /// Configuration for the services, all are based on the <see cref="DequeueClientServiceBase"/> class.
         /// </summary>
@@ -47,12 +53,14 @@ namespace Microsoft.InnerEye.Gateway.Models
         public GatewayProcessorConfig(
             ServiceSettings serviceSettings,
             ProcessorSettings processorSettings,
+            AnonymisationSettings anonymisationSettings,
             DequeueServiceConfig dequeueServiceConfig,
             DownloadServiceConfig downloadServiceConfig,
             ConfigurationServiceConfig configurationServiceConfig)
         {
             ServiceSettings = serviceSettings;
             ProcessorSettings = processorSettings;
+            AnonymisationSettings = anonymisationSettings;
             DequeueServiceConfig = dequeueServiceConfig;
             DownloadServiceConfig = downloadServiceConfig;
             ConfigurationServiceConfig = configurationServiceConfig;
@@ -70,12 +78,14 @@ namespace Microsoft.InnerEye.Gateway.Models
         public GatewayProcessorConfig With(
             ServiceSettings serviceSettings = null,
             ProcessorSettings processorSettings = null,
+            AnonymisationSettings anonymisationSettings = null,
             DequeueServiceConfig dequeueServiceConfig = null,
             DownloadServiceConfig downloadServiceConfig = null,
             ConfigurationServiceConfig configurationServiceConfig = null) =>
                 new GatewayProcessorConfig(
                     serviceSettings ?? ServiceSettings,
                     processorSettings ?? ProcessorSettings,
+                    anonymisationSettings ?? AnonymisationSettings,
                     dequeueServiceConfig ?? DequeueServiceConfig,
                     downloadServiceConfig ?? DownloadServiceConfig,
                     configurationServiceConfig ?? ConfigurationServiceConfig);
@@ -92,6 +102,7 @@ namespace Microsoft.InnerEye.Gateway.Models
             return other != null &&
                    EqualityComparer<ServiceSettings>.Default.Equals(ServiceSettings, other.ServiceSettings) &&
                    EqualityComparer<ProcessorSettings>.Default.Equals(ProcessorSettings, other.ProcessorSettings) &&
+                   EqualityComparer<AnonymisationSettings>.Default.Equals(AnonymisationSettings, other.AnonymisationSettings) &&
                    EqualityComparer<DequeueServiceConfig>.Default.Equals(DequeueServiceConfig, other.DequeueServiceConfig) &&
                    EqualityComparer<DownloadServiceConfig>.Default.Equals(DownloadServiceConfig, other.DownloadServiceConfig) &&
                    EqualityComparer<ConfigurationServiceConfig>.Default.Equals(ConfigurationServiceConfig, other.ConfigurationServiceConfig);
@@ -103,6 +114,7 @@ namespace Microsoft.InnerEye.Gateway.Models
             var hashCode = -1353736591;
             hashCode = hashCode * -1521134295 + EqualityComparer<ServiceSettings>.Default.GetHashCode(ServiceSettings);
             hashCode = hashCode * -1521134295 + EqualityComparer<ProcessorSettings>.Default.GetHashCode(ProcessorSettings);
+            hashCode = hashCode * -1521134295 + EqualityComparer<AnonymisationSettings>.Default.GetHashCode(AnonymisationSettings);
             hashCode = hashCode * -1521134295 + EqualityComparer<DequeueServiceConfig>.Default.GetHashCode(DequeueServiceConfig);
             hashCode = hashCode * -1521134295 + EqualityComparer<DownloadServiceConfig>.Default.GetHashCode(DownloadServiceConfig);
             hashCode = hashCode * -1521134295 + EqualityComparer<ConfigurationServiceConfig>.Default.GetHashCode(ConfigurationServiceConfig);

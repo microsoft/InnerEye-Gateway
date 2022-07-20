@@ -77,6 +77,12 @@ namespace Microsoft.InnerEye.Listener.Common.Providers
             Config.ProcessorSettings;
 
         /// <summary>
+        /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="AnonymisationSettings"/> from cached <see cref="GatewayProcessorConfig"/>
+        /// </summary>
+        public AnonymisationSettings AnonymisationSettings() =>
+            Config.AnonymisationSettings;
+
+        /// <summary>
         /// Helper to create a <see cref="Func{TResult}"/> for returning <see cref="DequeueServiceConfig"/> from cached <see cref="GatewayProcessorConfig"/>.
         /// </summary>
         /// <returns>Cached <see cref="DequeueServiceConfig"/>.</returns>
@@ -106,6 +112,7 @@ namespace Microsoft.InnerEye.Listener.Common.Providers
             () =>
             {
                 var processorSettings = ProcessorSettings();
+                var anonymisationSettings = AnonymisationSettings();
 
                 var licenseKey = processorSettings.LicenseKey;
 
@@ -117,7 +124,7 @@ namespace Microsoft.InnerEye.Listener.Common.Providers
                     logEntry.Log(logger, LogLevel.Error, new ConfigurationException(message));
                 }
 
-                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, licenseKey);
+                return new InnerEyeSegmentationClient(processorSettings.InferenceUri, anonymisationSettings.DicomTagsAnonymisationConfig, licenseKey);
             };
     }
 }

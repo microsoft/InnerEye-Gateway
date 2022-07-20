@@ -105,7 +105,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
         [TestMethod]
         public void DownloadServiceAPIError()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -155,7 +155,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
         [TestMethod]
         public void TestBadApiWhenAttemptingToSendImageWithResultsTest()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var resultsDirectory = CreateTemporaryDirectory();
 
@@ -210,7 +210,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
         [TestMethod]
         public void DownloadServiceExitsCorrectlyTest()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                 .GetFiles()
@@ -263,7 +263,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
         [TestMethod]
         public void DownloadServiceInvalidDownloadId()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var referenceDicomFiles = new DirectoryInfo(@"Images\1ValidSmall\")
                                                     .GetFiles()

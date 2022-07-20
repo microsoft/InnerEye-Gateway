@@ -21,7 +21,7 @@ namespace Microsoft.InnerEye.Listener.Tests
         [TestMethod]
         public void TestRemovePixelData()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var imagePath = @"Images\1ValidSmall\1.dcm";
             var dicomFile = DicomFile.Open(imagePath);
@@ -39,7 +39,7 @@ namespace Microsoft.InnerEye.Listener.Tests
         [TestMethod]
         public void TestRemovePixelDataInvalidTags()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var imagePath = @"Images\InvalidPN\1.dcm";
             var dicomFile = DicomFile.Open(imagePath);
@@ -66,7 +66,7 @@ namespace Microsoft.InnerEye.Listener.Tests
         [TestMethod]
         public void TestQueueDataLimit()
         {
-            var segmentationAnonymisationProtocol = SegmentationAnonymisationProtocol();
+            var segmentationAnonymisationProtocol = GetSegmentationAnonymisationProtocol();
 
             var dicomFile = DicomFile.Open(@"Images\1ValidSmall\1.dcm");
             var files = new byte[3600][];

@@ -238,7 +238,7 @@ namespace Microsoft.InnerEye.Listener.Processor.Services
                     // Anonymize and save the files locally for the dry run using the segmentation anonymisation protocol
                     await AnonymiseAndSaveDicomFilesAsync(
                         anonymisationProtocolId: _innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
-                        anonymisationProtocol: _innerEyeSegmentationClient.SegmentationAnonymisationProtocol,
+                        anonymisationProtocol: _innerEyeSegmentationClient.GetSegmentationAnonymisationProtocol(),
                         uploadQueueItem: uploadQueueItem,
                         aETConfigType: clientConfiguration.Config.AETConfigType).ConfigureAwait(false);
 
@@ -394,7 +394,7 @@ namespace Microsoft.InnerEye.Listener.Processor.Services
             // Read all the bytes from the reference Dicom file and create new DICOM files with only the required DICOM tags
             var referenceDicomByteArrays = referenceDicomFiles
                                                     .CreateNewDicomFileWithoutPixelData(
-                                                        _innerEyeSegmentationClient.SegmentationAnonymisationProtocol.Select(x => x.DicomTagIndex.DicomTag));
+                                                        _innerEyeSegmentationClient.GetSegmentationAnonymisationProtocol().Select(x => x.DicomTagIndex.DicomTag));
 
             // Start the segmentation
             var (segmentationId, postedImages) = await _innerEyeSegmentationClient.StartSegmentationAsync(modelGuid, channelData).ConfigureAwait(false);
