@@ -263,6 +263,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
             }
         }
 
+
         private static void VerifyDicomFile(string path)
         {
             var verifierPath = Path.Combine("Assets", "dicom3tools", "dciodvfy.exe");

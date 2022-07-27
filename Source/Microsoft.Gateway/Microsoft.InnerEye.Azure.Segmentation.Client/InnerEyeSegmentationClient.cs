@@ -69,10 +69,10 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
         /// <param name="licenseKey">The license key.</param>
         public InnerEyeSegmentationClient(
             Uri baseAddress,
-            Dictionary<string, IEnumerable<string>> segmenationAnonymisationProtocol,
+            Dictionary<string, IEnumerable<string>> segmentationAnonymisationProtocol,
             string licenseKey)
         {
-            _segmentationAnonymisationProtocol = segmenationAnonymisationProtocol;
+            _segmentationAnonymisationProtocol = segmentationAnonymisationProtocol;
 
             HttpClientHandler httpHandler = null;
             RetryHandler retryHandler = null;
@@ -327,6 +327,11 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             return anonymisationEngine;
         }
 
+        /// <summary>
+        /// Creates a DicomTagAnonymisation object from string representations of the DICOM tag and anonymisation method to be used.
+        /// </summary>
+        /// <param name="dicomTagID">The ID of the DICOM tag.</param>
+        /// <param name="anonymisationMethodKey">The anonymisation method to be used.</param>
         private static DicomTagAnonymisation GetDicomTag(string dicomTagID, string anonymisationMethodKey)
         {
             AnonymisationMethod anonMethod;
@@ -361,7 +366,9 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             throw new KeyNotFoundException($"Invalid DICOM tag name provided in config: {dicomTagID}");
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Parses the input anonymisation config and returns a list of DicomTagAnonymisation objects.
+        /// </summary>
         public IEnumerable<DicomTagAnonymisation> GetSegmentationAnonymisationProtocol()
         {
             var parsedDicomTags = new List<DicomTagAnonymisation>();

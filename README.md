@@ -435,6 +435,10 @@ The process for handling DICOM files is:
 
 4. Upon completion of the inference run, the [Download Service](#download-service) downloads the DICOM-RT file and de-anonymises the segmented images by replacing their hashed, randomised and discarded tags with those saved in the reference image. 
 
+### Anonymisation Testing
+
+Anonymisation is tested extensively across multiple sets of tests. These can be found in the [config tests file](Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/ServiceTests/AnonymisationConfigTests.cs), the [DICOM anonymisation tests file](Source/Microsoft.Gateway/Microsoft.InnerEye.Listener.Tests/ServiceTests/DicomAnonymisationTests.cs) and the [end-to-end tests file](Source/Microsoft.Gateway/Microsoft.InnerEye.Integration.Tests/EndToEndTests.cs).
+
 ## Configuration
 
 ### Common Configuration
@@ -512,10 +516,8 @@ The structure of this configuration file is:
     "ConfigurationRefreshDelaySeconds": number
   },
   "AnonymisationSettings": {
-    "DicomTagsAnonymisationConfig": [
-      {
-        "DicomTagID": string,
-        "AnonymisationMethod": string,
+    "DicomTagsAnonymisationConfig": {
+        "string": [string],
       }
     ]
   }
@@ -547,201 +549,61 @@ For example:
     "ConfigurationRefreshDelaySeconds": 60
   },
   "AnonymisationSettings": {
-    "DicomTagsAnonymisationConfig": [
-      {
-        "DicomTagID": "PatientPosition",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-
-        "DicomTagID": "Columns",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "Rows",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-
-        "DicomTagID": "PixelSpacing",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-
-        "DicomTagID": "ImagePositionPatient",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-
-        "DicomTagID": "ImageOrientationPatient",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "SliceLocation",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "BodyPartExamined",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "Modality",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ModalityLUTSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "HighBit",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "BitsStored",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "BitsAllocated",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "SamplesPerPixel",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "PixelData",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "PhotometricInterpretation",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "PixelRepresentation",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "RescaleIntercept",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "RescaleSlope",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ImageType",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "SeriesInstanceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "StudyInstanceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "SOPInstanceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "SOPClassUID",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "FrameOfReferenceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "RTReferencedStudySequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ReferencedROINumber",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ROIDisplayColor",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ContourSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ROIContourSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ReferencedSOPClassUID",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ReferencedSOPInstanceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "NumberOfContourPoints",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ContourData",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ContourGeometricType",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ContourImageSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "RTROIObservationsSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ObservationNumber",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "RTReferencedSeriesSequence",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "StructureSetLabel",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "StructureSetName",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "ReferencedFrameOfReferenceSequence",
-        "AnonymisationMethod": "Keep"
-
-      },
-      {
-        "DicomTagID": "ROINumber",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ROIName",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "ReferencedFrameOfReferenceUID",
-        "AnonymisationMethod": "Hash"
-      },
-      {
-        "DicomTagID": "ROIGenerationAlgorithm",
-        "AnonymisationMethod": "Keep"
-      },
-      {
-        "DicomTagID": "StructureSetROISequence",
-        "AnonymisationMethod": "Keep"
-      }
-    ]
+    "DicomTagsAnonymisationConfig": {
+      "Keep": [
+        "PatientPosition",
+        "Columns",
+        "Rows",
+        "PixelSpacing",
+        "ImagePositionPatient",
+        "ImageOrientationPatient",
+        "SliceLocation",
+        "Modality",
+        "ModalityLUTSequence",
+        "BodyPartExamined",
+        "HighBit",
+        "BitsStored",
+        "BitsAllocated",
+        "SamplesPerPixel",
+        "PixelData",
+        "PhotometricInterpretation",
+        "PixelRepresentation",
+        "RescaleIntercept",
+        "RescaleSlope",
+        "ImageType",
+        "SOPClassUID",
+        "RTReferencedStudySequence",
+        "ReferencedROINumber",
+        "ROIDisplayColor",
+        "ContourSequence",
+        "ROIContourSequence",
+        "ReferencedSOPClassUID",
+        "NumberOfContourPoints",
+        "ContourData",
+        "ContourGeometricType",
+        "ContourImageSequence",
+        "ObservationNumber",
+        "RTReferencedSeriesSequence",
+        "ReferencedFrameOfReferenceSequence",
+        "ROINumber",
+        "ROIName"
+      ],
+      "Hash": [
+        "SeriesInstanceUID",
+        "StudyInstanceUID",
+        "SOPInstanceUID",
+        "FrameOfReferenceUID",
+        "ReferencedSOPInstanceUID",
+        "RTROIObservationsSequence",
+        "StructureSetLabel",
+        "StructureSetName",
+        "ReferencedFrameOfReferenceUID",
+        "ROIGenerationAlgorithm",
+        "StructureSetROISequence",
+      ]
+    }
+  }
+}
   }
 }
 ```
@@ -762,7 +624,7 @@ Where:
 
 - `DownloadWaitTimeoutInSeconds` is the maximum time in seconds to wait whilst attempting to download the completed segmentation.
 
-- `AnonymisationSettings: DicomTagAnonymisationConfig` is a list of DICOM tags that will be sent to the inference service, along with the anonymisation method used for each one. "Keep" means that the tag is sent unaltered to this inference service, "Hash" means that the value is hashed first and "Random" replaces the value with a random data time (we do not recommend using this option currently). When altering this setting, please note the following:
+- `AnonymisationSettings: DicomTagAnonymisationConfig` is a dictionary where the keys correspond to the anonymisation method ("Keep", "Hash" or "Random"), and the entries are lists of DICOM tags that will be sent using that method. "Keep" means that the tag is sent unaltered to this inference service, "Hash" means that the value is hashed first and "Random" replaces the value with a random data time (we do not recommend using this option currently). When altering this setting, please note the following:
   - Certain tags are needed by the inference service in order to complete the forward pass on the trained model successfully. We do not recommend editing the default settings unless you are sure what you are doing. If in doubt, please open a discussion topic in this repo to ask any questions you may have.
   - **Any tags not included in this list will *not* be sent to the inference service**
 
