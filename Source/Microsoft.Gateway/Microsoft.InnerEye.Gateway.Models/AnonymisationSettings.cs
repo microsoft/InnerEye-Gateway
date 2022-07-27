@@ -4,6 +4,7 @@
 namespace Microsoft.InnerEye.Gateway.Models
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
 
 
@@ -29,7 +30,29 @@ namespace Microsoft.InnerEye.Gateway.Models
         }
 
         /// <inheritdoc/>
-        public bool Equals(AnonymisationSettings other) => other != null && DicomTagsAnonymisationConfig.Count == other.DicomTagsAnonymisationConfig.Count;
+        public bool Equals(AnonymisationSettings other)
+        {
+
+            var equal = true;
+            foreach (var entry in DicomTagsAnonymisationConfig)
+            {
+                if (other != null && other.DicomTagsAnonymisationConfig.ContainsKey(entry.Key))
+                {
+                    if (!Enumerable.SequenceEqual(other.DicomTagsAnonymisationConfig[entry.Key], entry.Value))
+                    {
+                        equal = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    equal = false;
+                    break;
+                }
+            }
+
+            return equal;
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
