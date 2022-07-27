@@ -3,8 +3,8 @@
     "RunAsConsole": true
   },
   "ProcessorSettings": {
-    "LicenseKeyEnvVar": "INNEREYE_INFERENCE_PRD_KEY",
-    "InferenceUri": "https://innereyeinferenceprd.azurewebsites.net"
+    "LicenseKeyEnvVar": "INNEREYE_INFERENCE_DEV_KEY",
+    "InferenceUri": "https://innereyeinferencedev.azurewebsites.net"
   },
   "DequeueServiceConfig": {
     "MaximumQueueMessageAgeSeconds": 100.0,
@@ -18,5 +18,61 @@
     "ConfigCreationDateTime": "2020-05-31T20:14:51",
     "ApplyConfigDateTime": "2020-05-31T20:14:51",
     "ConfigurationRefreshDelaySeconds": 60.0
+  },
+
+  "AnonymisationSettings": {
+    "DicomTagsAnonymisationConfig": {
+      "Keep": [
+        "PatientPosition",
+        "Columns",
+        "Rows",
+        "PixelSpacing",
+        "ImagePositionPatient",
+        "ImageOrientationPatient",
+        "SliceLocation",
+        "Modality",
+        "ModalityLUTSequence",
+        "BodyPartExamined",
+        "HighBit",
+        "BitsStored",
+        "BitsAllocated",
+        "SamplesPerPixel",
+        "PixelData",
+        "PhotometricInterpretation",
+        "PixelRepresentation",
+        "RescaleIntercept",
+        "RescaleSlope",
+        "ImageType",
+        "SOPClassUID",
+        "RTReferencedStudySequence",
+        "ReferencedROINumber",
+        "ROIDisplayColor",
+        "ContourSequence",
+        "ROIContourSequence",
+        "ReferencedSOPClassUID",
+        "NumberOfContourPoints",
+        "ContourData",
+        "ContourGeometricType",
+        "ContourImageSequence",
+        "ObservationNumber",
+        "RTReferencedSeriesSequence",
+        "ReferencedFrameOfReferenceSequence",
+        "ROINumber",
+        "ROIName"
+      ],
+      "Hash": [
+        "SeriesInstanceUID",
+        "StudyInstanceUID",
+        "SOPInstanceUID",
+        "FrameOfReferenceUID",
+        "ReferencedSOPInstanceUID",
+        "RTROIObservationsSequence",
+        "StructureSetLabel",
+        "StructureSetName",
+        "ReferencedFrameOfReferenceUID",
+        "ROIGenerationAlgorithm",
+        "StructureSetROISequence"
+      ]
+    }
   }
 }

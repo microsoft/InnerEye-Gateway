@@ -36,7 +36,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
             {
                 Converters = new[] { new StringEnumConverter() },
                 Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
             };
 
             var path = Path.Combine(folder, filename);
@@ -137,6 +137,16 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                 RandomString(random, 12),
                 new Uri("https://" + RandomString(random, 8) + ".com"));
 
+
+        public static AnonymisationSettings MockAnonymisationSettings()
+        {
+            var mockDicomTagAnonymisation = new Dictionary<string, IEnumerable<string>>(){
+                {"Keep", new List<string>() {"PixelSpacing"} },
+            };
+
+            return new AnonymisationSettings(mockDicomTagAnonymisation);
+        }
+
         /// <summary>
         /// Generate random <see cref="DequeueServiceConfig"/>.
         /// </summary>
@@ -170,6 +180,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
             new GatewayProcessorConfig(
                 RandomServiceSettings(random),
                 RandomProcessorSettings(random),
+                MockAnonymisationSettings(),
                 RandomDequeueServiceConfig(random),
                 RandomDownloadServiceConfig(random),
                 RandomConfigurationServiceConfig(random));

@@ -263,6 +263,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
             }
         }
 
+
         private static void VerifyDicomFile(string path)
         {
             var verifierPath = Path.Combine("Assets", "dicom3tools", "dciodvfy.exe");
@@ -565,7 +566,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
             var innerEyeSegmentationClient = TestGatewayProcessorConfigProvider.CreateInnerEyeSegmentationClient()();
 
             // Anonymize the original DICOM file
-            var anonymizedDicomFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+            var anonymizedDicomFile = innerEyeSegmentationClient.AnonymizeDicomFile(originalDicomFile, innerEyeSegmentationClient.SegmentationAnonymisationProtocolId, innerEyeSegmentationClient.GetSegmentationAnonymisationProtocol());
 
             anonymizedDicomFile.Dataset.AddOrUpdate(DicomTag.SoftwareVersions, "Microsoft InnerEye Gateway:");
 
@@ -579,7 +580,7 @@ namespace Microsoft.InnerEye.Listener.Tests.ServiceTests
                 innerEyeSegmentationClient.TopLevelReplacements,
                 tagReplacements,
                 innerEyeSegmentationClient.SegmentationAnonymisationProtocolId,
-                innerEyeSegmentationClient.SegmentationAnonymisationProtocol);
+                innerEyeSegmentationClient.GetSegmentationAnonymisationProtocol());
 
             AssertDeanonymizedFile(originalDicomFile, deanonymizedDicomFile, innerEyeSegmentationClient.TopLevelReplacements, tagReplacements, true);
         }
