@@ -401,9 +401,9 @@ This service watches the **Delete** message queue for messages from the other se
 
 ## Anonymisation
 
-The InnerEye Gateway allows users to define a set of DICOM tags that will be sent to the InnerEye-Inference web service. These tags are user-defined in `GatewayProcessorConfig.json`, under `"AnonymisationSettings"`. Only tags specified in this configuration file are sent to the inference service.
+The InnerEye Gateway allows users to define a set of identifiers that will be removed before being sent to the InnerEye-Inference web service. The set of identifier tags for removal are user-defined in [GatewayProcessorConfig.json](Source/Microsoft.Gateway/SampleConfigurations/GatewayProcessorConfig.json). The Gateway service processes and de-identifies the DICOM files using the procedure below.
 
-The process for handling DICOM files is:
+### Gateway DICOM Process
 
 1. The [Receiver Application](#receiver-application) saves the incoming DICOM files directly to a subfolder of RootDicomFolder and passes a message to the [Upload Service](#upload-service).
 
