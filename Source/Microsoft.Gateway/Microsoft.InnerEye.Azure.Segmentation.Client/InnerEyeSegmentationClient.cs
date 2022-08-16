@@ -90,7 +90,7 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
                 client.BaseAddress = baseAddress;
                 client.Timeout = timeOut;
                 client.DefaultRequestHeaders.Add(AuthTokenHeaderName, licenseKey);
-                client.DefaultRequestHeaders.Add("User-Agent", "IE-Gateway");
+                client.DefaultRequestHeaders.Add("User-Agent", "InnerEye-Gateway");
                 client.DefaultRequestHeaders.Add("Accept", "text/html");
 
                 _httpClientHandler = httpHandler;
