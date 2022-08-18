@@ -37,6 +37,8 @@ The gateway should be installed on a machine within your DICOM network that is a
       - [Push Service](#push-service)
       - [Delete Service](#delete-service)
   - [Anonymisation](#anonymisation)
+    - [Gateway DICOM Process](#gateway-dicom-process)
+    - [Anonymisation Testing](#anonymisation-testing)
   - [Configuration](#configuration)
     - [Common Configuration](#common-configuration)
     - [Processor Configuration](#processor-configuration)
@@ -54,6 +56,7 @@ The gateway should be installed on a machine within your DICOM network that is a
       - [OrderedDateTimeConstraint, OrderedDoubleConstraint, OrderedIntConstraint, OrderedStringConstraint](#ordereddatetimeconstraint-ordereddoubleconstraint-orderedintconstraint-orderedstringconstraint)
       - [UIDStringOrderConstraint](#uidstringorderconstraint)
       - [TimeOrderConstraint](#timeorderconstraint)
+  - [OWASP](#owasp)
   - [Licensing](#licensing)
   - [Contributing](#contributing)
   - [Microsoft Open Source Code of Conduct](#microsoft-open-source-code-of-conduct)
@@ -1379,6 +1382,10 @@ For example:
 ```
 
 Where the `Function` and `Index` are as above, except that the constraint test is applied to a DICOM tag TimeOfDay property.
+
+## OWASP
+
+All communications between a deployed [Inference app service](https://github.com/microsoft/InnerEye-Inference/#running-flask-app-in-azure) and the InnerEye Gateway are compliant with [OWASP 3.0](https://owasp.org/www-pdf-archive/OWASPApplicationSecurityVerificationStandard3.0.pdf).
 
 ## Licensing
 

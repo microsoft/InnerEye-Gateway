@@ -90,6 +90,8 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
                 client.BaseAddress = baseAddress;
                 client.Timeout = timeOut;
                 client.DefaultRequestHeaders.Add(AuthTokenHeaderName, licenseKey);
+                client.DefaultRequestHeaders.Add("User-Agent", "InnerEye-Gateway");
+                client.DefaultRequestHeaders.Add("Accept", "text/html");
 
                 _httpClientHandler = httpHandler;
                 _retryHandler = retryHandler;
@@ -230,6 +232,8 @@ namespace Microsoft.InnerEye.Azure.Segmentation.Client
             using (var content = new ByteArrayContent(dataZipped))
             {
                 // POST
+                content.Headers.Add("Content-Type", "application/zip");
+
                 var response = await _client.PostAsync(new Uri($@"/v1/model/start/{modelId}", UriKind.Relative), content).ConfigureAwait(false);
 
                 if (response.StatusCode.Equals(HttpStatusCode.BadRequest))
