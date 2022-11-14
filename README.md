@@ -95,9 +95,9 @@ To get started with setting up this project you will need the following pre-requ
 
 For security in InnerEye-Gateway and InnerEye-Inference the license keys are stored in environment variables and never stored in JSON or other configuration files. InnerEye-Inference uses the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` whereas InnerEye-Gateway allows the name of the environment variable to be configured in the JSON file in the `LicenseKeyEnvVar` property. This is so that the tests may be configured to run against a different InnerEye-Inference web service. Note also that because the applications run as windows services the environment variables should be system variables, not user variables, so they can be accessed by the services.
 
-Alongside `LicenseKeyEnvVar` the property `InferenceUri` holds the URI of a running instance of InnerEye-Inference and the environment variable identified by `LicenseKeyEnvVar` should hold the license key for that instance.
+Alongside `LicenseKeyEnvVar` the property `InferenceUri` holds the URI of a running instance of InnerEye-Inference and the environment variable identified by `LicenseKeyEnvVar` should hold the license key for that instance. **The license key is a user-created string that is defined when you [configure your inference service](https://github.com/microsoft/InnerEye-Inference/#configuration)**.
 
-For example if `InferenceUri` is "https://myinnereyeinference.azurewebsites.net", `LicenseKeyEnvVar` is "MY_GATEWAY_API_AUTH_SECRET", and the contents of the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` used for "https://myinnereyeinference.azurewebsites.net" is `MYINFERENCELICENSEKEY` then set this environment variable with the PowerShell command, running as administrator:
+For example if `InferenceUri` is "https://myinnereyeinference.azurewebsites.net", `LicenseKeyEnvVar` is "MY_GATEWAY_API_AUTH_SECRET", and the contents of the environment variable `CUSTOMCONNSTR_API_AUTH_SECRET` used for "https://myinnereyeinference.azurewebsites.net" is `MYINFERENCELICENSEKEY`, then set this environment variable with the PowerShell command, running as administrator:
 
 ```cmd
 setx MY_GATEWAY_API_AUTH_SECRET MYINFERENCELICENSEKEY /M
@@ -436,7 +436,7 @@ The InnerEye Gateway allows users to define a set of identifiers that will be re
 
    3. The transformed, anonymised DICOM files are then zipped before sending to the InnerEye-Inference web service.
 
-4. Upon completion of the inference run, the [Download Service](#download-service) downloads the DICOM-RT file and de-anonymises the segmented images by replacing their hashed, randomised and discarded tags with those saved in the reference image. 
+4. Upon completion of the inference run, the [Download Service](#download-service) downloads the DICOM-RT file and de-anonymises the segmented images by replacing their hashed, randomised and discarded tags with those saved in the reference image.
 
 ### Anonymisation Testing
 
