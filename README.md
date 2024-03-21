@@ -1,3 +1,8 @@
+# This project is now archived
+
+This project is no longer under active maintenance. It is read-only, but you can still clone or fork the repo. [Check here for further info](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories).
+Please contact innereye_info@service.microsoft.com if you run into trouble with the "Archived" state of the repo.
+
 # InnerEye-Gateway
 
 ## Overview
